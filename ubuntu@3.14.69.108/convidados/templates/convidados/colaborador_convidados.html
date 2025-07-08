@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Convidados de {{ colaborador.nome }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4; color: #333; }
+        h1 { color: #2c3e50; margin-bottom: 20px; }
+        .nav-links a {
+            display: inline-block;
+            padding: 8px 15px;
+            margin-right: 10px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        .nav-links a:hover {
+            background-color: #0056b3;
+        }
+
+        /* Estilos para a tabela */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px 15px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            color: #333;
+            cursor: pointer;
+            position: relative;
+            padding-right: 25px;
+        }
+        th a {
+            text-decoration: none;
+            color: #333;
+            display: block;
+        }
+        th a:hover {
+            color: #007bff;
+        }
+        th .sort-arrow {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.8em;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        .acoes {
+            white-space: nowrap;
+        }
+        .acoes a {
+            margin-right: 8px;
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .acoes a.edit-btn {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        .acoes a.edit-btn:hover {
+            background-color: #e0a800;
+            color: white;
+        }
+        .acoes .delete-form {
+            display: inline-block;
+            margin-left: 8px;
+        }
+        .acoes .delete-form button {
+            background-color: #dc3545;
+            color: white;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.3s ease;
+        }
+        .acoes .delete-form button:hover {
+            background-color: #c82333;
+        }
+
+        /* Estilos para as mensagens do Django */
+        .messages {
+            list-style-type: none;
+            padding: 10px 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        .messages .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .messages .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .messages .warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+    </style>
+</head>
+<body>
+    <h1>Convidados de {{ colaborador.nome }}</h1>
+    <p><strong>Contato:</strong> {{ colaborador.contato }}</p>
+    <p><strong>Cidade:</strong> {{ colaborador.cidade }}</p>
+    <p><strong>Bairro:</strong> {{ colaborador.bairro }}</p>
+    <p><strong>Cargo:</strong> {{ colaborador.cargo }}</p>
+
+    <div class="nav-links">
+        <a href="{% url 'convidados:cadastrar_convidado_para_colaborador' colaborador.id %}">Incluir Convidado para {{ colaborador.nome }}</a>
+        <a href="{% url 'convidados:lista_convidados' %}">Lista Geral de Convidados</a>
+        <a href="{% url 'dashboard' %}">Página Inicial</a>
+    </div>
+    <br>
+
+    {# Bloco para exibir mensagens do Django #}
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    {% if convidados %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Seq.</th>
+                    <th>
+                        <a href="{% url 'convidados:colaborador_convidados' colaborador.id %}?ordenar_por=nome&direcao={% if ordenar_por == 'nome' and direcao == 'asc' %}desc{% else %}asc{% endif %}">
+                            Nome do Convidado
+                            {% if ordenar_por == 'nome' %}
+                                <span class="sort-arrow">{% if direcao == 'asc' %}&#9650;{% else %}&#9660;{% endif %}</span>
+                            {% endif %}
+                        </a>
+                    </th>
+                    <th>
+                        <a href="{% url 'convidados:colaborador_convidados' colaborador.id %}?ordenar_por=telefone&direcao={% if ordenar_por == 'telefone' and direcao == 'asc' %}desc{% else %}asc{% endif %}">
+                            Telefone
+                            {% if ordenar_por == 'telefone' %}
+                                <span class="sort-arrow">{% if direcao == 'asc' %}&#9650;{% else %}&#9660;{% endif %}</span>
+                            {% endif %}
+                        </a>
+                    </th>
+                    <th>
+                        <a href="{% url 'convidados:colaborador_convidados' colaborador.id %}?ordenar_por=cidade&direcao={% if ordenar_por == 'cidade' and direcao == 'asc' %}desc{% else %}asc{% endif %}">
+                            Cidade
+                            {% if ordenar_por == 'cidade' %}
+                                <span class="sort-arrow">{% if direcao == 'asc' %}&#9650;{% else %}&#9660;{% endif %}</span>
+                            {% endif %}
+                        </a>
+                    </th>
+                    <th>
+                        <a href="{% url 'convidados:colaborador_convidados' colaborador.id %}?ordenar_por=bairro&direcao={% if ordenar_por == 'bairro' and direcao == 'asc' %}desc{% else %}asc{% endif %}">
+                            Bairro
+                            {% if ordenar_por == 'bairro' %}
+                                <span class="sort-arrow">{% if direcao == 'asc' %}&#9650;{% else %}&#9660;{% endif %}</span>
+                            {% endif %}
+                        </a>
+                    </th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for convidado in convidados %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ convidado.nome }}</td>
+                    <td>{{ convidado.telefone }}</td>
+                    <td>{{ convidado.cidade }}</td> {# Nova coluna Cidade #}
+                    <td>{{ convidado.bairro }}</td> {# Nova coluna Bairro #}
+                    <td class="acoes">
+                        <a href="{% url 'convidados:editar_convidado' convidado.id %}" class="edit-btn">Editar</a>
+                        {# FORMULÁRIO DE EXCLUSÃO INDIVIDUAL #}
+                        <form action="{% url 'convidados:excluir_convidado' convidado.id %}" method="post" class="delete-form" onsubmit="return confirm('Tem certeza que deseja excluir o convidado {{ convidado.nome }}?');">
+                            {% csrf_token %}
+                            <button type="submit">Excluir</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Nenhum convidado cadastrado para {{ colaborador.nome }} ainda. <a href="{% url 'convidados:cadastrar_convidado_para_colaborador' colaborador.id %}">Cadastre um agora!</a></p>
+    {% endif %}
+</body>
+</html>

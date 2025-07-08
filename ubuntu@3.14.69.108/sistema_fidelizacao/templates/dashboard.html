@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #eef1f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between; /* Espaça o título principal e o grupo de usuário/logout */
+            align-items: center; /* Centraliza verticalmente os itens */
+            margin-bottom: 40px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+        }
+        .header .main-title {
+            margin: 0; /* Remove margens extras */
+            font-size: 2.0em; /* Título maior */
+            color: #2c3e50;
+            font-weight: bold;
+        }
+        /* Estilos para o grupo de usuário e logout no canto superior direito */
+        .user-info-group {
+            display: flex;
+            align-items: center;
+            gap: 15px; /* Espaço entre o nome e o botão Sair */
+            white-space: nowrap; /* Impede que o texto quebre linha */
+        }
+        .user-info-group h1 {
+            margin: 0; /* Remove margem padrão */
+            color: #555;
+            font-size: 1.2em; /* Tamanho da saudação */
+        }
+        .user-info-group .logout-form {
+            margin: 0; /* Remove margens padrão do formulário */
+        }
+        .user-info-group .logout-form button {
+            background-color: #e74c3c;
+            color: white;
+            padding: 8px 15px; /* Ajusta padding para o tamanho */
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        .user-info-group .logout-form button:hover {
+            background-color: #c0392b;
+        }
+
+        /* Estilos para os cards de contagem */
+        .stats-cards {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 40px;
+            flex-wrap: wrap; /* Permite quebrar linha em telas menores */
+            gap: 20px;
+        }
+        .stat-card {
+            background-color: #f8f9fa; /* Um cinza claro */
+            border: 1px solid #e2e6ea;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            flex: 1; /* Ocupa espaço disponível */
+            min-width: 250px; /* Largura mínima para cada card */
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .stat-card h3 {
+            color: #007bff; /* Azul primário */
+            margin-top: 0;
+            font-size: 1.2em;
+        }
+        .stat-card p {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #333;
+            margin: 10px 0 0;
+        }
+
+        /* Estilos para os botões de ação rápida */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            justify-content: center;
+        }
+        .action-btn {
+            background-color: #3498db;
+            color: white;
+            padding: 35px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.3em;
+            text-align: center;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 150px;
+        }
+        .action-btn:hover {
+            transform: translateY(-8px);
+        }
+        .action-btn span {
+            font-size: 3em;
+            margin-bottom: 15px;
+            line-height: 1;
+        }
+        .action-btn p {
+            margin: 0;
+            font-weight: bold;
+            font-size: 1em;
+        }
+        
+        /* Estilo para o novo botão de Acesso Admin no cabeçalho */
+        .header .admin-access-btn {
+            background-color: #34495e; /* Mesma cor do botão grande, mas aqui é menor */
+            color: white;
+            padding: 0.4px 12px; /* Padding menor */
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none; /* Como é um <a> */
+            font-weight: bold;
+            font-size: 0.6em; /* Texto menor */
+            transition: background-color 1.3s ease;
+            display: flex; /* Para alinhar o ícone e o texto se tivermos os dois */
+            align-items: center;
+            gap: 2px; /* Espaço entre ícone e texto, se tiver */
+        }
+        .header .admin-access-btn span {
+            font-size: 1.2em; /* Tamanho do ícone menor */
+        }
+        .header .admin-access-btn:hover {
+            background-color: #2c3e50;
+        }
+
+
+        /* Cores específicas para os botões de ação */
+        .action-btn.green { background-color: #27ae60; }
+        .action-btn.green:	hover { background-color: #229954; }
+
+        .action-btn.purple { background-color: #8e44ad; }
+        .action-btn.purple:hover { background-color: #7d3c9f; }
+
+        .action-btn.orange { background-color: #f39c12; }
+        .action-btn.orange:hover { background-color: #e67e22; }
+
+        .action-btn.dark-blue { background-color: #2c3e50; }
+        .action-btn.dark-blue:hover { background-color: #1a242f; }
+
+        /* Responsividade básica */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column; /* Em telas pequenas, empilha */
+                align-items: center;
+                text-align: center;
+            }
+            .user-info-group {
+                margin-top: 20px; /* Adiciona espaço no topo */
+                flex-direction: column; /* Empilha no mobile */
+                gap: 10px;
+            }
+            .user-info-group h1 {
+                font-size: 1.5em; /* Ajusta tamanho da saudação no mobile */
+            }
+            .header .main-title {
+                font-size: 1.8em; /* Ajusta tamanho do título no mobile */
+            }
+            .quick-actions, .stats-cards {
+                grid-template-columns: 1fr;
+                flex-direction: column; /* Para os cards, em vez de grid */
+            }
+            .stat-card {
+                min-width: unset; /* Remove largura mínima em telas pequenas */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="main-title">Bem-vindo ao Sistema de Fidelização de Votos!</div>
+            <div class="user-info-group">
+                <h1>Olá, {{ nome_colaborador }}!</h1>
+                 {# NOVO BOTÃO DE ACESSO ADMIN #}
+                 <a href="{% url 'admin:index' %}" class="admin-access-btn">
+                 <span>&#128274;</span> {# Ícone de cadeado (restrito/segurança) #}
+                <p>ADMIN</p>
+                </a>
+                <form action="{% url 'logout' %}" method="post" class="logout-form">
+                    {% csrf_token %}
+                    <button type="submit">Sair</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="quick-actions">
+            <a href="{% url 'colaboradores:lista_colaboradores' %}" class="action-btn purple">
+                <span>&#128188;</span> {# Ícone de maleta executiva #}
+                <p>VER COLABORADORES</p>
+            </a>
+
+            <a href="{% url 'colaboradores:cadastrar_colaborador' %}" class="action-btn dark-blue">
+                <span>&#43;</span> {# Ícone de mais #}
+                <p>CADASTRAR NOVO COLABORADOR</p>
+            </a>
+
+            <a href="{% url 'convidados:lista_convidados' %}" class="action-btn">
+                <span>&#128101;</span> {# Ícone de grupo de pessoas #}
+                <p>VER CONVIDADOS</p>
+            </a>
+
+            <a href="{% url 'convidados:cadastrar_convidado' %}" class="action-btn green">
+                <span>&#43;</span> {# Ícone de mais #}
+                <p>CADASTRAR NOVO CONVIDADO</p>
+            </a>
+
+            <a href="{% url 'mapa_apoiadores' %}" class="action-btn blue"> {# ATENÇÃO AQUI: URL para o mapa #}
+                <span>&#128205;</span> {# Ícone de marcador de mapa #}
+                <p>MAPA DE APOIADORES</p>
+            </a>              
+
+            <a href="#" class="action-btn orange"> {# Futuramente: URL para a página de eventos #}
+                <span>&#128197;</span> {# Ícone de calendário #}
+                <p>PRÓXIMOS EVENTOS</p>
+            </a>
+               
+        </div>
+		<br><br>
+		<div class="stats-cards">
+            <div class="stat-card">
+                <h3>Total de Colaboradores</h3>
+                <p>{{ total_colaboradores }}</p>
+            </div>
+            <div class="stat-card">
+                <h3>Total de Convidados</h3>
+                <p>{{ total_convidados }}</p>
+            </div>
+        </div>
+		
+    </div>
+</body>
+</html>
