@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -22,6 +23,38 @@
             background-color: #0056b3;
         }
 
+        /* Estilos para o campo de busca: MAIS ADEQUADO */
+        .search-container {
+            margin-bottom: 20px;
+            background-color: #ffffff;
+            padding: 15px 20px; /* Ajusta padding */
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08); /* Sombra mais pronunciada */
+            display: flex;
+            align-items: center;
+            gap: 15px; /* Mais espaço entre label e input */
+        }
+        .search-container label {
+            font-weight: bold;
+            color: #2c3e50; /* Cor mais escura */
+            font-size: 1.1em; /* Fonte um pouco maior */
+        }
+        .search-container input[type="text"] {
+            flex: 1;
+            padding: 10px 15px; /* Mais padding */
+            border: 2px solid #a0c4ff; /* Borda mais visível, azul claro */
+            border-radius: 6px; /* Bordas levemente mais arredondadas */
+            font-size: 1.1em; /* Texto maior no input */
+            box-sizing: border-box;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .search-container input[type="text"]:focus {
+            border-color: #007bff; /* Borda azul ao focar */
+            box-shadow: 0 0 8px rgba(0, 123, 255, 0.25); /* Sombra ao focar */
+            outline: none; /* Remove o outline padrão */
+        }
+
+
         /* Estilos para a tabela */
         table {
             width: 100%;
@@ -41,31 +74,51 @@
             background-color: #f2f2f2;
             font-weight: bold;
             color: #333;
-            cursor: pointer; /* Indica que o cabeçalho é clicável */
-            position: relative; /* Para posicionar a seta de ordenação */
-            padding-right: 25px; /* Espaço para a seta */
+            cursor: pointer;
+            position: relative;
+            padding-right: 25px;
         }
-        th a { /* Estilo para o link dentro do cabeçalho */
+        th a {
             text-decoration: none;
             color: #333;
-            display: block; /* Ocupa todo o espaço do th */
+            display: block;
         }
         th a:hover {
-            color: #007bff; /* Mudar cor ao passar o mouse */
+            color: #007bff;
         }
-        th .sort-arrow { /* Estilo para a seta de ordenação */
+        th .sort-arrow {
             position: absolute;
             right: 8px;
             top: 50%;
             transform: translateY(-50%);
             font-size: 0.8em;
         }
-        tr:nth-child(even) {
+        /* tr:nth-child(even) {
             background-color: #f9f9f9;
-        }
+        }*/
         tr:hover {
-            background-color: #f1f1f1;
+            filter: brightness(0.95);
         }
+
+        .meta-abaixo {
+            background-color: #ffcccc;
+        }
+        .meta-atingida {
+            background-color: #ccffcc;
+        }
+        .meta-superada {
+            background-color: #e0ccff;
+        }
+        .meta-abaixo:hover {
+            background-color: #ffe6e6;
+        }
+        .meta-atingida:hover {
+            background-color: #e6ffe6;
+        }
+        .meta-superada:hover {
+            background-color: #f0e6ff;
+        }
+
         .acoes {
             white-space: nowrap;
         }
@@ -103,7 +156,6 @@
             background-color: #c82333;
         }
 
-        /* Estilos para as mensagens do Django */
         .messages {
             list-style-type: none;
             padding: 10px 20px;
@@ -125,27 +177,6 @@
             color: #856404;
             border: 1px solid #ffeeba;
         }
-        .meta-abaixo {
-            background-color: #ffcccc; /* Vermelho claro */
-        }
-        .meta-atingida {
-            background-color: #ccffcc; /* Verde claro */
-        }
-        .meta-superada {
-            background-color: #e0ccff; /* Roxo claro */
-        }
-        .meta-abaixo:hover {
-            background-color: #ffe6e6; /* Um vermelho ainda mais claro */
-            /* Ou use: filter: brightness(1.05); para clarear 5% */
-        }
-        .meta-atingida:hover {
-            background-color: #e6ffe6; /* Um verde ainda mais claro */
-            /* Ou use: filter: brightness(1.05); */
-        }
-        .meta-superada:hover {
-            background-color: #f0e6ff; /* Um roxo ainda mais claro */
-            /* Ou use: filter: brightness(1.05); */
-        }        
     </style>
 </head>
 <body>
@@ -156,7 +187,13 @@
     </div>
     <br>
 
-    {# Bloco para exibir mensagens do Django (sucesso, erro, etc.) #}
+    {# Campo de Busca Dinâmica #}
+    <div class="search-container">
+        <label for="id_search">Buscar Colaborador:</label>
+        <input type="text" id="id_search" name="q" value="{{ query }}" placeholder="Pesquisar por nome, contato, cidade ou bairro...">
+    </div>
+
+    {# Bloco para exibir mensagens do Django #}
     {% if messages %}
         <ul class="messages">
             {% for message in messages %}
@@ -165,85 +202,169 @@
         </ul>
     {% endif %}
 
-    {% if colaboradores %}
-        <table>
-            <thead>
-                <tr>
-                    <th>Seq.</th>
-                    <th>
-                        <a href="{% url 'colaboradores:lista_colaboradores' %}?ordenar_por=nome&direcao={% if ordenar_por == 'nome' and direcao == 'asc' %}desc{% else %}asc{% endif %}">
-                            Nome do Colaborador
-                            {% if ordenar_por == 'nome' %}
-                                <span class="sort-arrow">{% if direcao == 'asc' %}&#9650;{% else %}&#9660;{% endif %}</span>
-                            {% endif %}
-                        </a>
-                    </th>
-                    <th>
-                        <a href="{% url 'colaboradores:lista_colaboradores' %}?ordenar_por=contato&direcao={% if ordenar_por == 'contato' and direcao == 'asc' %}desc{% else %}asc{% endif %}">
-                            Contato
-                            {% if ordenar_por == 'contato' %}
-                                <span class="sort-arrow">{% if direcao == 'asc' %}&#9650;{% else %}&#9660;{% endif %}</span>
-                            {% endif %}
-                        </a>
-                    </th>
-                    <th>
-                        <a href="{% url 'colaboradores:lista_colaboradores' %}?ordenar_por=cidade&direcao={% if ordenar_por == 'cidade' and direcao == 'asc' %}desc{% else %}asc{% endif %}">
-                            Cidade
-                            {% if ordenar_por == 'cidade' %}
-                                <span class="sort-arrow">{% if direcao == 'asc' %}&#9650;{% else %}&#9660;{% endif %}</span>
-                            {% endif %}
-                        </a>
-                    </th>
-                    <th>
-                        <a href="{% url 'colaboradores:lista_colaboradores' %}?ordenar_por=bairro&direcao={% if ordenar_por == 'bairro' and direcao == 'asc' %}desc{% else %}asc{% endif %}">
-                            Bairro
-                            {% if ordenar_por == 'bairro' %}
-                                <span class="sort-arrow">{% if direcao == 'asc' %}&#9650;{% else %}&#9660;{% endif %}</span>
-                            {% endif %}
-                        </a>
-                    </th>
-                    <th>
-                        <a href="{% url 'colaboradores:lista_colaboradores' %}?ordenar_por=num_convidados&direcao={% if ordenar_por == 'num_convidados' and direcao == 'asc' %}desc{% else %}asc{% endif %}">
-                            Convidados
-                            {% if ordenar_por == 'num_convidados' %}
-                                <span class="sort-arrow">{% if direcao == 'asc' %}&#9650;{% else %}&#9660;{% endif %}</span>
-                            {% endif %}
-                        </a>
-                    </th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for colaborador in colaboradores %}
-                <tr class="
-                    {% if colaborador.num_convidados < 15 %}
-                        meta-abaixo
-                    {% elif colaborador.num_convidados == 15 %}
-                        meta-atingida
-                    {% else %} {# colaborador.num_convidados > 15 #}
-                        meta-superada
-                    {% endif %}
-                ">
-                    <td>{{ forloop.counter }}</td>
-                    <td>{{ colaborador.nome }}</td>
-                    <td>{{ colaborador.contato }}</td>
-                    <td>{{ colaborador.cidade }}</td>
-                    <td>{{ colaborador.bairro }}</td>
-                    <td>{{ colaborador.num_convidados }}</td>
-                    <td class="acoes">
-                        <a href="{% url 'convidados:colaborador_convidados' colaborador.id %}">Ver Convidados</a>
-                        <a href="{% url 'colaboradores:editar_colaborador' colaborador.id %}" class="edit-btn">Editar</a>
-                        <form action="{% url 'colaboradores:excluir_colaborador' colaborador.id %}" method="post" class="delete-form" onsubmit="return confirm('Tem certeza que deseja excluir o colaborador {{ colaborador.nome }}? Esta ação é irreversível.');">
-                            {% csrf_token %}
-                            <button type="submit">Excluir</button>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>Nenhum colaborador cadastrado ainda. <a href="{% url 'colaboradores:cadastrar_colaborador' %}">Cadastre um agora!</a></p>
-    {% endif %}
+    <div id="colaboradores-table-container"> {# Container para a tabela que será atualizada #}
+        {% if colaboradores %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Seq.</th>
+                        <th>
+                            <a href="{% url 'colaboradores:lista_colaboradores' %}?ordenar_por=nome&direcao={% if ordenar_por == 'nome' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if query %}&q={{ query }}{% endif %}">
+                                Nome do Colaborador
+                                {% if ordenar_por == 'nome' %}
+                                    <span class="sort-arrow">{% if direcao == 'asc' %}&#9650;{% else %}&#9660;{% endif %}</span>
+                                {% endif %}
+                            </a>
+                        </th>
+                        <th>
+                            <a href="{% url 'colaboradores:lista_colaboradores' %}?ordenar_por=contato&direcao={% if ordenar_por == 'contato' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if query %}&q={{ query }}{% endif %}">
+                                Contato
+                                {% if ordenar_por == 'contato' %}
+                                    <span class="sort-arrow">{% if direcao == 'asc' %}&#9650;{% else %}&#9660;{% endif %}</span>
+                                {% endif %}
+                            </a>
+                        </th>
+                        <th>
+                            <a href="{% url 'colaboradores:lista_colaboradores' %}?ordenar_por=cidade&direcao={% if ordenar_por == 'cidade' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if query %}&q={{ query }}{% endif %}">
+                                Cidade
+                                {% if ordenar_por == 'cidade' %}
+                                    <span class="sort-arrow">{% if direcao == 'asc' %}&#9650;{% else %}&#9660;{% endif %}</span>
+                                {% endif %}
+                            </a>
+                        </th>
+                        <th>
+                            <a href="{% url 'colaboradores:lista_colaboradores' %}?ordenar_por=bairro&direcao={% if ordenar_por == 'bairro' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if query %}&q={{ query }}{% endif %}">
+                                Bairro
+                                {% if ordenar_por == 'bairro' %}
+                                    <span class="sort-arrow">{% if direcao == 'asc' %}&#9650;{% else %}&#9660;{% endif %}</span>
+                                {% endif %}
+                            </a>
+                        </th>
+                        <th>
+                            <a href="{% url 'colaboradores:lista_colaboradores' %}?ordenar_por=num_convidados&direcao={% if ordenar_por == 'num_convidados' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if query %}&q={{ query }}{% endif %}">
+                                Convidados
+                                {% if ordenar_por == 'num_convidados' %}
+                                    <span class="sort-arrow">{% if direcao == 'asc' %}&#9650;{% else %}&#9660;{% endif %}</span>
+                                {% endif %}
+                            </a>
+                        </th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for colaborador in colaboradores %}
+                    <tr class="
+                        {% if colaborador.num_convidados < 15 %}
+                            meta-abaixo
+                        {% elif colaborador.num_convidados == 15 %}
+                            meta-atingida
+                        {% else %}
+                            meta-superada
+                        {% endif %}
+                    ">
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ colaborador.nome }}</td>
+                        <td>{{ colaborador.contato }}</td>
+                        <td>{{ colaborador.cidade }}</td>
+                        <td>{{ colaborador.bairro }}</td>
+                        <td>{{ colaborador.num_convidados }}</td>
+                        <td class="acoes">
+                            <a href="{% url 'convidados:colaborador_convidados' colaborador.id %}">Ver Convidados</a>
+                            <a href="{% url 'colaboradores:editar_colaborador' colaborador.id %}" class="edit-btn">Editar</a>
+                            <form action="{% url 'colaboradores:excluir_colaborador' colaborador.id %}" method="post" class="delete-form" onsubmit="return confirm('Tem certeza que deseja excluir o colaborador {{ colaborador.nome }}? Esta ação é irreversível.');">
+                                {% csrf_token %}
+                                <button type="submit">Excluir</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>Nenhum colaborador encontrado com esta busca. <a href="{% url 'colaboradores:cadastrar_colaborador' %}">Cadastre um agora!</a></p>
+        {% endif %}
+    </div> {# Fim do colaboradores-table-container #}
+   
+    {# Scripts JavaScript para busca dinâmica #}
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'js/jquery.mask.min.js' %}"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+    <script>
+    console.log("Script de busca dinâmica carregado."); // <-- NOVO LOG
+
+    $(document).ready(function() {
+        console.log("DOM pronto para script de busca."); // <-- NOVO LOG
+        var searchInput = $('#id_search');
+        var currentTimeout = null;
+        var currentQuery = searchInput.val();
+
+        console.log("Campo de busca encontrado:", searchInput.length > 0 ? "Sim" : "Não", "ID:", searchInput.attr('id')); // <-- NOVO LOG
+        if (searchInput.length === 0) {
+            console.error("Erro: Campo de busca com ID 'id_search' não encontrado!"); // <-- NOVO LOG
+        }
+
+
+        function loadColaboradores(query) {
+            console.log("Chamando loadColaboradores com query:", query); // <-- NOVO LOG
+            var url = "{% url 'colaboradores:lista_colaboradores' %}";
+            var currentOrder = "{{ ordenar_por }}";
+            var currentDirection = "{{ direcao }}";
+            var params = {};
+
+            if (query) {
+                params.q = query;
+            }
+            if (currentOrder) {
+                params.ordenar_por = currentOrder;
+                params.direcao = currentDirection;
+            }
+            
+            params.is_ajax = 'true';
+
+            var fullUrl = url + ($.isEmptyObject(params) ? '' : '?' + $.param(params));
+
+            console.log("AJAX request URL:", fullUrl);
+            $.ajax({
+                url: fullUrl,
+                type: 'GET',
+                dataType: 'html',
+                success: function(response) {
+                        // AGORA A RESPOSTA 'response' JÁ SERÁ O HTML DO FRAGMENTO
+                        $('#colaboradores-table-container').html(response); // <--- MUDANÇA AQUI!
+                        console.log("Tabela atualizada com sucesso.");
+                        // Reaplicar máscaras se a tabela for recarregada
+                        $('input[name="telefone"]').mask('(00) 00000-0000');
+                        $('input[name="contato"]').mask('(00) 00000-0000'); 
+                },
+                error: function(xhr, status, error) {
+                    console.error("Erro na busca AJAX:", status, error, xhr.responseText);
+                }
+            });
+        }
+
+        // Evento keyup para buscar enquanto digita
+        searchInput.on('keyup', function() {
+            console.log("Evento keyup disparado."); // <-- NOVO LOG
+            var newQuery = $(this).val();
+            if (currentTimeout) {
+                clearTimeout(currentTimeout);
+            }
+            currentTimeout = setTimeout(function() {
+                if (newQuery !== currentQuery) {
+                    currentQuery = newQuery;
+                    loadColaboradores(newQuery);
+                }
+            }, 300);
+        });
+
+        searchInput.on('change', function() {
+            console.log("Evento change disparado."); // <-- NOVO LOG
+            if ($(this).val() === "" && currentQuery !== "") {
+                currentQuery = "";
+                loadColaboradores("");
+            }
+        });
+    });
+</script>
 </body>
 </html>

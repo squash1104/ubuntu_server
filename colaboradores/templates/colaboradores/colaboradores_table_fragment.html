@@ -1,0 +1,81 @@
+{# Conteúdo da tabela para requisições AJAX #}
+{% if colaboradores %}
+    <table>
+        <thead>
+            <tr>
+                <th>Sequência</th>
+                <th>
+                    <a href="{% url 'colaboradores:lista_colaboradores' %}?ordenar_por=nome&direcao={% if ordenar_por == 'nome' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if query %}&q={{ query }}{% endif %}">
+                        Nome do Colaborador
+                        {% if ordenar_por == 'nome' %}
+                            <span class="sort-arrow">{% if direcao == 'asc' %}&#9650;{% else %}&#9660;{% endif %}</span>
+                        {% endif %}
+                    </a>
+                </th>
+                <th>
+                    <a href="{% url 'colaboradores:lista_colaboradores' %}?ordenar_por=contato&direcao={% if ordenar_por == 'contato' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if query %}&q={{ query }}{% endif %}">
+                        Contato
+                        {% if ordenar_por == 'contato' %}
+                            <span class="sort-arrow">{% if direcao == 'asc' %}&#9650;{% else %}&#9660;{% endif %}</span>
+                        {% endif %}
+                    </a>
+                </th>
+                <th>
+                    <a href="{% url 'colaboradores:lista_colaboradores' %}?ordenar_por=cidade&direcao={% if ordenar_por == 'cidade' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if query %}&q={{ query }}{% endif %}">
+                        Cidade
+                        {% if ordenar_por == 'cidade' %}
+                            <span class="sort-arrow">{% if direcao == 'asc' %}&#9650;{% else %}&#9660;{% endif %}</span>
+                        {% endif %}
+                    </a>
+                </th>
+                <th>
+                    <a href="{% url 'colaboradores:lista_colaboradores' %}?ordenar_por=bairro&direcao={% if ordenar_por == 'bairro' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if query %}&q={{ query }}{% endif %}">
+                        Bairro
+                        {% if ordenar_por == 'bairro' %}
+                            <span class="sort-arrow">{% if direcao == 'asc' %}&#9650;{% else %}&#9660;{% endif %}</span>
+                        {% endif %}
+                    </a>
+                </th>
+                <th>
+                    <a href="{% url 'colaboradores:lista_colaboradores' %}?ordenar_por=num_convidados&direcao={% if ordenar_por == 'num_convidados' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if query %}&q={{ query }}{% endif %}">
+                        Convidados
+                        {% if ordenar_por == 'num_convidados' %}
+                            <span class="sort-arrow">{% if direcao == 'asc' %}&#9650;{% else %}&#9660;{% endif %}</span>
+                        {% endif %}
+                    </a>
+                </th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for colaborador in colaboradores %}
+            <tr class="
+                {% if colaborador.num_convidados < 15 %}
+                    meta-abaixo
+                {% elif colaborador.num_convidados == 15 %}
+                    meta-atingida
+                {% else %}
+                    meta-superada
+                {% endif %}
+            ">
+                <td>{{ forloop.counter }}</td>
+                <td>{{ colaborador.nome }}</td>
+                <td>{{ colaborador.contato }}</td>
+                <td>{{ colaborador.cidade }}</td>
+                <td>{{ colaborador.bairro }}</td>
+                <td>{{ colaborador.num_convidados }}</td>
+                <td class="acoes">
+                    <a href="{% url 'convidados:colaborador_convidados' colaborador.id %}">Ver Convidados</a>
+                    <a href="{% url 'colaboradores:editar_colaborador' colaborador.id %}" class="edit-btn">Editar</a>
+                    <form action="{% url 'colaboradores:excluir_colaborador' colaborador.id %}" method="post" class="delete-form" onsubmit="return confirm('Tem certeza que deseja excluir o colaborador {{ colaborador.nome }}? Esta ação é irreversível.');">
+                        {% csrf_token %}
+                        <button type="submit">Excluir</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>Nenhum colaborador encontrado com esta busca.</p>
+{% endif %}

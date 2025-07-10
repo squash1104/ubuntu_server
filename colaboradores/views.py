@@ -5,10 +5,23 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from convidados.models import Convidado
 from django.db.models import Count
+from django.db.models import Q
 
 @login_required
 def lista_colaboradores(request):
     colaboradores = Colaborador.objects.all()
+
+    # --- Lógica de Busca por Texto (novo) ---
+    query = request.GET.get('q')
+    if query:
+        # Filtra por nome, contato, cidade ou bairro (case-insensitive contains)
+        colaboradores = colaboradores.filter(
+            Q(nome__icontains=query) |
+            Q(contato__icontains=query) |
+            Q(cidade__icontains=query) |
+            Q(bairro__icontains=query)
+        )
+    # --- Fim da Lógica de Busca por Texto ---
 
     # --- Lógica de Ordenação ---
     # Pega os parâmetros 'ordenar_por' e 'direcao' da URL (GET request)
@@ -39,7 +52,15 @@ def lista_colaboradores(request):
         'colaboradores': colaboradores,
         'ordenar_por': ordenar_por, # Passa o campo de ordenação atual para o template
         'direcao': direcao,         # Passa a direção de ordenação atual para o template
+        'query': query if query else '',
     }
+    # --- LÓGICA DE RESPOSTA AJAX ---
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        # Se for uma requisição AJAX, renderiza apenas o fragmento da tabela
+        return render(request, 'colaboradores/colaboradores_table_fragment.html', context)
+    # --- FIM DA LÓGICA DE RESPOSTA AJAX ---
+
+    # Para requisições normais (não AJAX), renderiza a página completa
     return render(request, 'colaboradores/lista_colaboradores.html', context)
 
 @login_required
