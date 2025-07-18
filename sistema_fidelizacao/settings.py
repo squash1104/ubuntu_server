@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,7 +26,7 @@ SECRET_KEY = 'django-insecure-ld%33t$+_#cw)_ssw(++i^9s*xc57@jssh(m!8w@wm65@jwm(=
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.18.156', '192.168.18.158', '54.165.61.0', '10.0.3.75']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -78,11 +79,11 @@ WSGI_APPLICATION = 'sistema_fidelizacao.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'sistema_eleicoes_db',
-        'USER': 'sistema_eleicoes_user',
-        'PASSWORD':'lu531676',
-        'HOST': 'localhost',
-        'PORT': '',
+        'NAME': 'dev_sist_db',
+        'USER': 'admmasterdb',
+        'PASSWORD':'Zyj488mode!',
+        'HOST': 'sistema-eleicoes.cefkoo2g2un5.us-east-1.rds.amazonaws.com',
+        'PORT': '5432',
     }
 }
 
@@ -122,9 +123,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
-STATICFILES_DIRS = [
-    BASE_DIR / 'static', # Aponta para a pasta 'static' que criamos na raiz do projeto
-]
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+# STATICFILES_DIRS = [
+#    BASE_DIR / 'static', # Aponta para a pasta 'static' que criamos na raiz do projeto
+#]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

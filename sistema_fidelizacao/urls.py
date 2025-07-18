@@ -18,6 +18,10 @@ from django.contrib import admin
 from django.urls import path, include
 from . import views
 from django.contrib.auth import views as auth_views # Importe as views de autenticação do Django
+from django.http import HttpResponse
+
+def health_check_view(request):
+    return HttpResponse("OK", status=200)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -31,4 +35,5 @@ urlpatterns = [
   
     path('colaboradores/', include('colaboradores.urls', namespace='colaboradores')),
     path('convidados/', include('convidados.urls', namespace='convidados')),
+    path('health/', health_check_view),
 ]
