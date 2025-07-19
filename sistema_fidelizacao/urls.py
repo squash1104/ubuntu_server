@@ -19,6 +19,8 @@ from django.urls import path, include
 from . import views
 from django.contrib.auth import views as auth_views # Importe as views de autenticação do Django
 from django.http import HttpResponse
+from django.conf import settings
+from django.conf.urls.static import static
 
 def health_check_view(request):
     return HttpResponse("OK", status=200)
@@ -37,3 +39,9 @@ urlpatterns = [
     path('convidados/', include('convidados.urls', namespace='convidados')),
     path('health/', health_check_view),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])
+    # Você também pode adicionar o favicon.ico diretamente aqui para facilitar
+    # from django.views.generic.base import RedirectView
+    # urlpatterns += [path('favicon.ico', RedirectView.as_view(url=settings.STATIC_URL + 'favicon.ico'))]
