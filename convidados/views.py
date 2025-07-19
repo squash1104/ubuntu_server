@@ -114,15 +114,12 @@ def editar_convidado(request, convidado_id):
         form = ConvidadoForm(request.POST, instance=convidado)
         if form.is_valid():
             form.save()
+            messages.warning(request, 'Convidado editado com sucesso!')
             # Após salvar, redireciona para a lista de convidados do colaborador, se houver um colaborador associado
             if convidado.colaborador:
-                return redirect('convidados:colaborador_convidados', colaborador_id=convidado.colaborador.id)
-            else:
-                # Caso contrário, redireciona para a lista geral de convidados
                 return redirect('convidados:lista_convidados')
     else:
         form = ConvidadoForm(instance=convidado)
-
     context = {
         'form': form,
         'convidado': convidado, # Passa o objeto convidado para o template
