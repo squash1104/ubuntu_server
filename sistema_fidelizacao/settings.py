@@ -82,7 +82,7 @@ DATABASES = {
         'NAME': 'sistema_eleicoes_db',
         'USER': 'sistema_eleicoes_user',
         'PASSWORD':'lu531676',
-        'HOST': 'localhost',
+        'HOST': '127.0.0.1',
         'PORT': '5432',
     }
 }
