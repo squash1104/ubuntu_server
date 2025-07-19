@@ -30,7 +30,7 @@ urlpatterns = [
     path('', views.dashboard, name='home'),
     path('dashboard/', views.dashboard, name='dashboard'),
   
-    path('login/', auth_views.LoginView.as_view(template_name='login'), name='login'),
+    path('login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(next_page='home'), name='logout'), # Redireciona para home após logout
   
     path('mapa-apoiadores/', views.mapa_apoiadores, name='mapa_apoiadores'),  
