@@ -71,6 +71,7 @@ def cadastrar_colaborador(request):
         if form.is_valid():
             # Se os dados são válidos (passaram na validação do Django)
             form.save() # Salva os dados no banco de dados
+            messages.success(request, 'Colaborador cadastrado com sucesso!')
             return redirect('colaboradores:lista_colaboradores') # Redireciona para a lista de colaboradores
     else:
         # Se a requisição for GET, exibe um formulário vazio
@@ -88,6 +89,7 @@ def editar_colaborador(request, colaborador_id):
         if form.is_valid():
             # Se os dados são válidos, salva as alterações no banco de dados
             form.save()
+            messages.warning(request, 'Colaborador editado com sucesso!')
             # Redireciona para a lista de colaboradores após a edição bem-sucedida
             return redirect('colaboradores:lista_colaboradores')
     else:
