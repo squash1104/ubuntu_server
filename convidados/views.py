@@ -1,40 +1,54 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Convidado # Importa o modelo Convidado
+from .models import Convidado
 from colaboradores.models import Colaborador
 from .forms import ConvidadoForm
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Count
+from django.db.models import Count, Q
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
+
 
 @login_required
 def lista_convidados(request):
     convidados = Convidado.objects.all()
 
-    # --- Lógica de Ordenação ---
-    ordenar_por = request.GET.get('ordenar_por', 'nome') # Padrão: ordenar por nome
-    direcao = request.GET.get('direcao', 'asc')         # Padrão: ascendente
+    query = request.GET.get('q')
+    if query:
+        convidados = convidados.filter(
+            Q(nome__icontains=query) |
+            Q(telefone__icontains=query) |
+            Q(cidade__icontains=query) |
+            Q(bairro__icontains=query) |
+            Q(colaborador__nome__icontains=query)
+        ).distinct()
 
-    # Mapeia os nomes das colunas do template para os nomes dos campos do modelo
+    ordenar_por = request.GET.get('ordenar_por', 'nome')
+    direcao = request.GET.get('direcao', 'asc')
+
     campos_ordenaveis = {
         'nome': 'nome',
         'telefone': 'telefone',
         'cidade': 'cidade',
         'bairro': 'bairro',
-        'colaborador': 'colaborador__nome', # Ordena pelo nome do colaborador relacionado
+        'colaborador': 'colaborador__nome',
     }
 
-    # Verifica se o campo de ordenação é válido e aplica a ordenação
     if ordenar_por in campos_ordenaveis:
         prefixo = '-' if direcao == 'desc' else ''
         convidados = convidados.order_by(f'{prefixo}{campos_ordenaveis[ordenar_por]}')
-    # --- Fim da Lógica de Ordenação ---
 
     context = {
         'convidados': convidados,
-        'ordenar_por': ordenar_por, # Passa o campo de ordenação atual para o template
-        'direcao': direcao,         # Passa a direção de ordenação atual para o template
+        'ordenar_por': ordenar_por,
+        'direcao': direcao,
+        'query': query if query else '',
     }
-    return render(request, 'convidados/lista_convidados.html', context)   
+
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.GET.get('is_ajax') == 'true':
+         return render(request, 'convidados/convidados_table_fragment.html', context)
+
+    return render(request, 'convidados/lista_todos_convidados.html', context)
 
 @login_required
 def colaborador_convidados(request, colaborador_id):
@@ -107,8 +121,8 @@ def cadastrar_convidado(request, colaborador_id=None): # <--- Garanta que aceita
     return render(request, 'convidados/cadastrar_convidado.html', context)
 
 @login_required
-def editar_convidado(request, convidado_id):
-    convidado = get_object_or_404(Convidado, pk=convidado_id)
+def editar_convidado(request, pk):
+    convidado = get_object_or_404(Convidado, pk=pk)
 
     if request.method == 'POST':
         form = ConvidadoForm(request.POST, instance=convidado)
@@ -120,41 +134,22 @@ def editar_convidado(request, convidado_id):
                 return redirect('convidados:lista_convidados')
     else:
         form = ConvidadoForm(instance=convidado)
-    context = {
-        'form': form,
-        'convidado': convidado, # Passa o objeto convidado para o template
-    }
-    return render(request, 'convidados/editar_convidado.html', context)
+    return render(request, 'convidados/editar_convidado.html', {'form': form, 'convidado': convidado})
 
-@login_required # Protege a view de exclusão
-def excluir_convidado(request, convidado_id):
-    convidado = get_object_or_404(Convidado, pk=convidado_id)
-
-    # Opcional: Salva o ID do colaborador antes de excluir, caso precise após a exclusão do convidado
-    colaborador_id_do_convidado = None
-    if convidado.colaborador:
-        colaborador_id_do_convidado = convidado.colaborador.id
-
+@login_required
+def excluir_convidado(request, pk): # <-- A função espera 'pk'
+    convidado = get_object_or_404(Convidado, pk=pk)
     if request.method == 'POST':
-        convidado.delete()
-        messages.success(request, f'Convidado "{convidado.nome}" excluído com sucesso!')
-
-        # --- LÓGICA DE REDIRECIONAMENTO AJUSTADA AQUI ---
-        # Verifica se a requisição veio da página de convidados de um colaborador
-        # Isso é uma forma de inferir de onde a exclusão foi acionada.
-        referer = request.META.get('HTTP_REFERER')
-        if referer and f'/convidados/do_colaborador/{colaborador_id_do_convidado}/' in referer:
-            # Se veio da página específica de um colaborador, volta para lá
-            return redirect('convidados:colaborador_convidados', colaborador_id=colaborador_id_do_convidado)
-        else:
-            # Caso contrário (ex: veio da lista geral), volta para a lista geral
+        try:
+            convidado_nome = convidado.nome
+            convidado.delete()
+            messages.error(request, f'Convidado "{convidado_nome}" excluído com sucesso!')
             return redirect('convidados:lista_convidados')
-        # --- FIM DA LÓGICA AJUSTADA ---
-
-    messages.error(request, 'A exclusão deve ser feita via POST. Por favor, use o botão "Excluir" na lista.')
-
-    # Redirecionamento de fallback caso a exclusão não seja POST (deve gerar erro de segurança antes)
-    if convidado.colaborador:
-        return redirect('convidados:colaborador_convidados', colaborador_id=convidado.colaborador.id)
-    else:
-        return redirect('convidados:lista_convidados')
+        except ProtectedError:
+            messages.error(request, 'Colaborador não pode ser excluído porque possui associações. Por favor, remova as associações primeiro.')
+            # Renderiza o template de confirmação novamente com o contexto de erro
+            return render(request, 'convidados/confirmar_exclusao_convidado.html', {'convidado': convidado}) # Se passar contexto, precisa do template
+        except Exception as e:
+            messages.error(request, f'Ocorreu um erro inesperado ao excluir o convidado: {e}')
+            return render(request, 'convidados/confirmar_exclusao_convidado.html', {'convidado': convidado})
+    return render(request, 'convidados/confirmar_exclusao_convidado.html', {'convidado': convidado})

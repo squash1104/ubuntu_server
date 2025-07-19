@@ -1,0 +1,71 @@
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th>Seq.</th>
+            <th>
+                <a href="{% url 'convidados:lista_convidados' %}?ordenar_por=nome&direcao={% if ordenar_por == 'nome' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if query %}&q={{ query }}{% endif %}" class="sortable-header">
+                    Nome
+                    {% if ordenar_por == 'nome' %}
+                        <span class="sort-arrow">{% if direcao == 'asc' %}&#9650;{% else %}&#9660;{% endif %}</span>
+                    {% endif %}
+                </a>
+            </th>
+            <th>
+                <a href="{% url 'convidados:lista_convidados' %}?ordenar_por=telefone&direcao={% if ordenar_por == 'telefone' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if query %}&q={{ query }}{% endif %}" class="sortable-header">
+                    Telefone
+                    {% if ordenar_por == 'telefone' %}
+                        <span class="sort-arrow">{% if direcao == 'asc' %}&#9650;{% else %}&#9660;{% endif %}</span>
+                    {% endif %}
+                </a>
+            </th>
+            <th>
+                <a href="{% url 'convidados:lista_convidados' %}?ordenar_por=cidade&direcao={% if ordenar_por == 'cidade' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if query %}&q={{ query }}{% endif %}" class="sortable-header">
+                    Cidade
+                    {% if ordenar_por == 'cidade' %}
+                        <span class="sort-arrow">{% if direcao == 'asc' %}&#9650;{% else %}&#9660;{% endif %}</span>
+                    {% endif %}
+                </a>
+            </th>
+            <th>
+                <a href="{% url 'convidados:lista_convidados' %}?ordenar_por=bairro&direcao={% if ordenar_por == 'bairro' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if query %}&q={{ query }}{% endif %}" class="sortable-header">
+                    Bairro
+                    {% if ordenar_por == 'bairro' %}
+                        <span class="sort-arrow">{% if direcao == 'asc' %}&#9650;{% else %}&#9660;{% endif %}</span>
+                    {% endif %}
+                </a>
+            </th>
+            <th>
+                <a href="{% url 'convidados:lista_convidados' %}?ordenar_por=colaborador&direcao={% if ordenar_por == 'colaborador' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if query %}&q={{ query }}{% endif %}" class="sortable-header">
+                    Convidado Por
+                    {% if ordenar_por == 'colaborador' %}
+                        <span class="sort-arrow">{% if direcao == 'asc' %}&#9650;{% else %}&#9660;{% endif %}</span>
+                    {% endif %}
+                </a>
+            </th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for convidado in convidados %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ convidado.nome }}</td>
+            <td>{{ convidado.telefone }}</td>
+            <td>{{ convidado.cidade }}</td>
+            <td>{{ convidado.bairro }}</td>
+            <td>{{ convidado.colaborador.nome }}</td> {# Exibe o nome do colaborador associado #}
+            <td class="acoes">
+                <a href="{% url 'convidados:editar_convidado' pk=convidado.pk %}" class="edit-btn">Editar</a>
+                <form action="{% url 'convidados:excluir_convidado' pk=convidado.pk %}" method="post" class="delete-form" onsubmit="return confirm('Tem certeza que deseja excluir o convidado {{ convidado.nome }}? Esta ação é irreversível.');">
+                    {% csrf_token %}
+                    <button type="submit">Excluir</button>
+                </form>
+            </td>
+        </tr>
+        {% empty %} {# Mensagem se não houver convidados ou a busca não encontrar nada #}
+        <tr>
+            <td colspan="6">Nenhum convidado encontrado. <a href="{% url 'convidados:cadastrar_convidado' %}">Cadastre um agora!</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

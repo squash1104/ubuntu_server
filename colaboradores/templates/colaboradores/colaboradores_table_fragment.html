@@ -3,7 +3,7 @@
     <table>
         <thead>
             <tr>
-                <th>Sequência</th>
+                <th>Seq.</th>
                 <th>
                     <a href="{% url 'colaboradores:lista_colaboradores' %}?ordenar_por=nome&direcao={% if ordenar_por == 'nome' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if query %}&q={{ query }}{% endif %}">
                         Nome do Colaborador

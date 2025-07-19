@@ -66,15 +66,13 @@ def lista_colaboradores(request):
 @login_required
 def cadastrar_colaborador(request):
     if request.method == 'POST':
-        # Se a requisição for POST, o formulário foi enviado
-        form = ColaboradorForm(request.POST) # Cria uma instância do formulário com os dados enviados
+        form = ColaboradorForm(request.POST)
         if form.is_valid():
-            # Se os dados são válidos (passaram na validação do Django)
-            form.save() # Salva os dados no banco de dados
-            messages.success(request, 'Colaborador cadastrado com sucesso!')
-            return redirect('colaboradores:lista_colaboradores') # Redireciona para a lista de colaboradores
+            colaborador = form.save()
+            colaborador_nome = colaborador.nome
+            messages.success(request, f'Colaborador "{colaborador_nome}" cadastrado com sucesso!')
+            return redirect('colaboradores:lista_colaboradores')
     else:
-        # Se a requisição for GET, exibe um formulário vazio
         form = ColaboradorForm()
     return render(request, 'colaboradores/cadastrar_colaborador.html', {'form': form})
 
