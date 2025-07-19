@@ -1,4 +1,4 @@
-#!/home/ubuntu/sistema_eleicoes/.venv/bin/python3
+#!/home/lsouza/sist_eleic/.venv/bin/python3
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function

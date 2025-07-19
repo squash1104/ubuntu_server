@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-ld%33t$+_#cw)_ssw(++i^9s*xc57@jssh(m!8w@wm65@jwm(='
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -79,10 +79,10 @@ WSGI_APPLICATION = 'sistema_fidelizacao.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'dev_sist_db',
-        'USER': 'admmasterdb',
-        'PASSWORD':'Zyj488mode!',
-        'HOST': 'sistema-eleicoes.cefkoo2g2un5.us-east-1.rds.amazonaws.com',
+        'NAME': 'sistema_eleicoes_db',
+        'USER': 'sistema_eleicoes_user',
+        'PASSWORD':'lu531676',
+        'HOST': 'localhost',
         'PORT': '5432',
     }
 }
