@@ -104,8 +104,6 @@
         .acoes .delete-form button:hover {
             background-color: #c82333;
         }
-
-        /* Estilos para as mensagens do Django */
         .messages {
             list-style-type: none;
             padding: 10px 20px;
@@ -127,21 +125,76 @@
             color: #856404;
             border: 1px solid #ffeeba;
         }
+        .colaborador-info-row {
+            display: flex; /* Transforma o container em um flex container */
+            flex-wrap: wrap; /* Permite que os itens quebrem linha em telas menores */
+            gap: 20px; /* Espaçamento entre os itens (detalhes e card) */
+            margin-bottom: 30px; /* Margem abaixo dessa seção */
+        }
+        .colaborador-details-card {
+            flex: 1; /* Permite que este item ocupe o espaço disponível */
+            min-width: 300px; /* Largura mínima para evitar que encolha demais */
+            background-color: #ffffff;
+            padding: -20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            padding-left: 15px;
+            padding-top: 10px;
+        }
+        .total-convidados-card {
+            background-color: #e0f7fa;
+            border-left: 5px solid #00bcd4;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            text-align: center;
+            /* max-width: 300px; A largura será controlada pelo flexbox, mas pode ser um fallback */
+            /* margin: 20px auto; Removido, pois o flexbox controlará o espaçamento */
+            height: fit-content; /* Faz o card ter a altura do seu conteúdo */
+        }
+        .total-convidados-card h5 {
+            margin-bottom: 5px;
+            color: #6c757d;
+        }
+        .total-convidados-card p.number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #007bff;
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }
+        .total-convidados-card small {
+            color: #6c757d;
+        }
     </style>
 </head>
 <body>
-    <h1>Convidados de {{ colaborador.nome }}</h1>
-    <p><strong>Contato:</strong> {{ colaborador.contato }}</p>
-    <p><strong>Cidade:</strong> {{ colaborador.cidade }}</p>
-    <p><strong>Bairro:</strong> {{ colaborador.bairro }}</p>
-    <p><strong>Cargo:</strong> {{ colaborador.cargo }}</p>
+    <div class="container mt-4">
 
-    <div class="nav-links">
-        <a href="{% url 'convidados:cadastrar_convidado_para_colaborador' colaborador.id %}">Incluir Convidado para {{ colaborador.nome }}</a>
-        <a href="{% url 'convidados:lista_convidados' %}">Lista Geral de Convidados</a>
-        <a href="{% url 'dashboard' %}">Página Inicial</a>
-    </div>
-    <br>
+        <h1>Convidados de {{ colaborador.nome }}</h1>
+
+        <div class="colaborador-info-row"> {# NOVO CONTAINER FLEXBOX #}
+            <div class="colaborador-details-card"> {# CARD PARA OS DETALHES DO COLABORADOR #}
+                <h3 class="card-title margin-left: 50px">Informações do Colaborador</h3>
+                <br>
+                <p><strong>    Nome:</strong> {{ colaborador.nome }}</p>
+                <p><strong>    Contato:</strong> {{ colaborador.contato }}</p>
+                <p><strong>    Cidade:</strong> {{ colaborador.cidade }}</p>
+                <p><strong>    Bairro:</strong> {{ colaborador.bairro }}</p>
+                {# Adicione aqui outros dados do colaborador que você exibe #}
+            </div>
+
+            <div class="total-convidados-card"> {# CARD DE TOTAL DE CONVIDADOS #}
+                <h5>Convidados Fidelizados</h5>
+                <p class="number">{{ total_convidados }}</p>
+                <p><h5>Total</h5></p>
+            </div>
+        <div class="nav-links mb-3">
+            <a href="{% url 'convidados:cadastrar_convidado_para_colaborador' colaborador.id %}">Incluir Convidado para {{ colaborador.nome }}</a>
+            <a href="{% url 'convidados:lista_convidados' %}">Lista Geral de Convidados</a>
+            <a href="{% url 'dashboard' %}">Página Inicial</a>
+        </div>
+    </div> {# Fim do colaborador-info-row #}
 
     {# Bloco para exibir mensagens do Django #}
     <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1080;">
@@ -156,7 +209,6 @@
             {% endfor %}
         {% endif %}
     </div>
-
     {% if convidados %}
         <table>
             <thead>
@@ -206,7 +258,7 @@
                     <td>{{ convidado.cidade }}</td> {# Nova coluna Cidade #}
                     <td>{{ convidado.bairro }}</td> {# Nova coluna Bairro #}
                     <td class="acoes">
-                        <a href="{% url 'convidados:editar_convidado' convidado.id %}" class="edit-btn">Editar</a>
+                        <a href="{% url 'convidados:editar_convidado' pk=convidado.pk %}?colaborador_origem_id={{ colaborador.pk }}" class="edit-btn">Editar</a>
                         {# FORMULÁRIO DE EXCLUSÃO INDIVIDUAL #}
                         <form action="{% url 'convidados:excluir_convidado' convidado.id %}" method="post" class="delete-form" onsubmit="return confirm('Tem certeza que deseja excluir o convidado {{ convidado.nome }}?');">
                             {% csrf_token %}

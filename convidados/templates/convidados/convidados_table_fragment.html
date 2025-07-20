@@ -53,7 +53,11 @@
             <td>{{ convidado.telefone }}</td>
             <td>{{ convidado.cidade }}</td>
             <td>{{ convidado.bairro }}</td>
-            <td>{{ convidado.colaborador.nome }}</td> {# Exibe o nome do colaborador associado #}
+            <td>
+                <a href="{% url 'convidados:colaborador_convidados' pk=convidado.colaborador.pk %}">
+                    {{ convidado.colaborador.nome }}
+                </a>
+            </td>
             <td class="acoes">
                 <a href="{% url 'convidados:editar_convidado' pk=convidado.pk %}" class="edit-btn">Editar</a>
                 <form action="{% url 'convidados:excluir_convidado' pk=convidado.pk %}" method="post" class="delete-form" onsubmit="return confirm('Tem certeza que deseja excluir o convidado {{ convidado.nome }}? Esta ação é irreversível.');">

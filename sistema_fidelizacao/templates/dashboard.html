@@ -150,20 +150,26 @@
             cursor: pointer;
             text-decoration: none; /* Como é um <a> */
             font-weight: bold;
-            font-size: 0.6em; /* Texto menor */
+            font-size: 0.9em; /* Texto menor */
             transition: background-color 1.3s ease;
             display: flex; /* Para alinhar o ícone e o texto se tivermos os dois */
             align-items: center;
-            gap: 2px; /* Espaço entre ícone e texto, se tiver */
+            justify-content: center;
+            text-align: left;
+            gap: 2px;
+            width: max(70px);
+            height: min(39px);
+            margin-left: 0px;
         }
         .header .admin-access-btn span {
-            font-size: 1.2em; /* Tamanho do ícone menor */
+            font-size: 1.0em;
+            text-align: center;
+            align-items: center;
+            margin-right: 0px;
         }
         .header .admin-access-btn:hover {
             background-color: #2c3e50;
         }
-
-
         /* Cores específicas para os botões de ação */
         .action-btn.green { background-color: #27ae60; }
         .action-btn.green:hover { background-color: #229954; }
@@ -214,7 +220,7 @@
                 {# NOVO BOTÃO DE ACESSO ADMIN #}
                 <a href="{% url 'admin:index' %}" class="admin-access-btn">
                 <span>&#128274;</span> {# Ícone de cadeado (restrito/segurança) #}
-                <p>Admin</p>
+                <p><br>Admin</p>
                 </a>
                 <form action="{% url 'logout' %}" method="post" class="logout-form">
                     {% csrf_token %}

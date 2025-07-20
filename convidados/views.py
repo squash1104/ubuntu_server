@@ -51,9 +51,10 @@ def lista_convidados(request):
     return render(request, 'convidados/lista_todos_convidados.html', context)
 
 @login_required
-def colaborador_convidados(request, colaborador_id):
-    colaborador = get_object_or_404(Colaborador, pk=colaborador_id)
+def colaborador_convidados(request, pk):
+    colaborador = get_object_or_404(Colaborador, pk=pk)
     convidados_do_colaborador = Convidado.objects.filter(colaborador=colaborador)
+    total_convidados = convidados_do_colaborador.count()
 
     # --- Lógica de Ordenação (similar à lista geral de convidados) ---
     ordenar_por = request.GET.get('ordenar_por', 'nome') # Padrão: ordenar por nome
@@ -65,6 +66,7 @@ def colaborador_convidados(request, colaborador_id):
         'telefone': 'telefone',
         'cidade': 'cidade',
         'bairro': 'bairro',
+        'colaborador': 'colaborador',
     }
 
     # Verifica se o campo de ordenação é válido e aplica a ordenação
@@ -76,6 +78,7 @@ def colaborador_convidados(request, colaborador_id):
     context = {
         'colaborador': colaborador,
         'convidados': convidados_do_colaborador,
+        'total_convidados': convidados_do_colaborador.count(),
         'ordenar_por': ordenar_por, # Passa o campo de ordenação atual para o template
         'direcao': direcao,         # Passa a direção de ordenação atual para o template
     }
@@ -123,6 +126,7 @@ def cadastrar_convidado(request, colaborador_id=None): # <--- Garanta que aceita
 @login_required
 def editar_convidado(request, pk):
     convidado = get_object_or_404(Convidado, pk=pk)
+    colaborador_origem_id = request.GET.get('colaborador_origem_id')
 
     if request.method == 'POST':
         form = ConvidadoForm(request.POST, instance=convidado)
@@ -130,10 +134,12 @@ def editar_convidado(request, pk):
             form.save()
             messages.warning(request, 'Convidado editado com sucesso!')
             # Após salvar, redireciona para a lista de convidados do colaborador, se houver um colaborador associado
-            if convidado.colaborador:
-                return redirect('convidados:lista_convidados')
-    else:
-        form = ConvidadoForm(instance=convidado)
+            if colaborador_origem_id:
+                return redirect('convidados:colaborador_convidados', pk=colaborador_origem_id)
+            else:
+                return redirect('convidados:lista_todos_convidados')
+        else:
+            form = ConvidadoForm(instance=convidado)
     return render(request, 'convidados/editar_convidado.html', {'form': form, 'convidado': convidado})
 
 @login_required
