@@ -89,8 +89,8 @@ WSGI_APPLICATION = 'sistema_fidelizacao.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'sistema_eleicoes_db',
-        'USER': 'sistema_eleicoes_user',
+        'NAME': 'sisvot_db',
+        'USER': 'sisuserdb',
         'PASSWORD':'lu531676',
         'HOST': '127.0.0.1',
         'PORT': '5432',

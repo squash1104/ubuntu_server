@@ -9,7 +9,7 @@ class Colaborador(models.Model):
     cargo = models.CharField(max_length=100, blank=True, null=True)
 
     class Meta:
-        db_table = 'colaboradores_colaborador'
+        db_table = 'colaboradores'
         verbose_name = "Colaborador"
         verbose_name_plural = "Colaboradores"
         ordering = ['nome']
