@@ -1,10 +1,192 @@
-{% extends 'base.html' %}
 {% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Colaboradores</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4; color: #333; }
+        h1 { color: #2c3e50; margin-bottom: 20px; }
+        .nav-links { margin-bottom: 20px; }
+        .nav-links a {
+            display: inline-block;
+            padding: 8px 15px;
+            margin-right: 10px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        .nav-links a:hover {
+            background-color: #0056b3;
+        }
 
-{% block title %}Colaboradores Cadastrados{% endblock %}
+        /* Estilos para o campo de busca: MAIS ADEQUADO */
+        .search-container {
+            margin-bottom: 20px;
+            background-color: #ffffff;
+            padding: 15px 20px; /* Ajusta padding */
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08); /* Sombra mais pronunciada */
+            display: flex;
+            align-items: center;
+            gap: 15px; /* Mais espaço entre label e input */
+        }
+        .search-container label {
+            font-weight: bold;
+            color: #2c3e50; /* Cor mais escura */
+            font-size: 1.1em; /* Fonte um pouco maior */
+        }
+        .search-container input[type="text"] {
+            flex: 1;
+            padding: 10px 15px; /* Mais padding */
+            border: 2px solid #a0c4ff; /* Borda mais visível, azul claro */
+            border-radius: 6px; /* Bordas levemente mais arredondadas */
+            font-size: 1.1em; /* Texto maior no input */
+            box-sizing: border-box;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .search-container input[type="text"]:focus {
+            border-color: #007bff; /* Borda azul ao focar */
+            box-shadow: 0 0 8px rgba(0, 123, 255, 0.25); /* Sombra ao focar */
+            outline: none; /* Remove o outline padrão */
+        }
 
-{% block content %}
+
+        /* Estilos para a tabela */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px 15px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            color: #333;
+            cursor: pointer;
+            position: relative;
+            padding-right: 25px;
+        }
+        th a {
+            text-decoration: none;
+            color: #333;
+            display: block;
+        }
+        th a:hover {
+            color: #007bff;
+        }
+        th .sort-arrow {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.8em;
+        }
+        /* tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }*/
+        tr:hover {
+            filter: brightness(0.95);
+        }
+
+        .meta-abaixo {
+            background-color: #ffcccc;
+        }
+        .meta-atingida {
+            background-color: #ccffcc;
+        }
+        .meta-superada {
+            background-color: #e0ccff;
+        }
+        .meta-abaixo:hover {
+            background-color: #ffe6e6;
+        }
+        .meta-atingida:hover {
+            background-color: #e6ffe6;
+        }
+        .meta-superada:hover {
+            background-color: #f0e6ff;
+        }
+
+        .acoes {
+            white-space: nowrap;
+        }
+        .acoes a {
+            margin-right: 8px;
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .acoes a.edit-btn {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        .acoes a.edit-btn:hover {
+            background-color: #e0a800;
+            color: white;
+        }
+        .acoes .delete-form {
+            display: inline-block;
+            margin-left: 8px;
+        }
+        .acoes .delete-form button {
+            background-color: #dc3545;
+            color: white;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.3s ease;
+        }
+        .acoes .delete-form button:hover {
+            background-color: #c82333;
+        }
+
+        .messages {
+            list-style-type: none;
+            padding: 10px 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        .messages .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .messages .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .messages .warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+    </style>
+</head>
+<body>
     <h1>Colaboradores Cadastrados</h1>
+    <div class="nav-links">
+        <a href="{% url 'colaboradores:cadastrar_colaborador' %}">Cadastrar Novo Colaborador</a>
+        <a href="{% url 'dashboard' %}">Página Inicial</a>
+    </div>
 
     {# Campo de Busca Dinâmica #}
     <div class="search-container">
@@ -12,13 +194,25 @@
         <input type="text" id="id_search" name="q" value="{{ query }}" placeholder="Pesquisar por nome, contato, cidade ou bairro...">
     </div>
 
-    <div id="colaboradores-table-container">
-        {% include 'colaboradores/colaboradores_table_fragment.html' %}
+    {# Bloco para exibir mensagens do Django #}
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1080;">
+        {% if messages %}
+                    {# <ul class="messages"> #}
+            {% for message in messages %}
+                    {# <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li> #}
+                <div class="alert {{ message.tags }} alert-dismissible fade show w-auto" role="alert" style="pointer-events: auto; max-width: 400px;">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
     </div>
-{% endblock content %}
 
-{% block extra_js %}
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'js/jquery.mask.min.js' %}"></script>
+    <script src="{% static 'js/main.js' %}"></script>
 
+    <div id="colaboradores-table-container"> {# Container para a tabela que será atualizada #}
         {% if colaboradores %}
             <table>
                 <thead>
@@ -99,92 +293,88 @@
         {% else %}
             <p>Nenhum colaborador encontrado com esta busca. <a href="{% url 'colaboradores:cadastrar_colaborador' %}">Cadastre um agora!</a></p>
         {% endif %}
-
+    </div> {# Fim do colaboradores-table-container #}
 
     <script>
-        console.log("Script de busca dinâmica carregado.");
+        console.log("Script de busca dinâmica carregado."); // <-- NOVO LOG
 
-        $(document).ready(function() {
-            console.log("DOM pronto para script de busca.");
+        $(document).ready(function()
+         {
+             console.log("DOM pronto para script de busca."); // <-- NOVO LOG
             var searchInput = $('#id_search');
             var currentTimeout = null;
             var currentQuery = searchInput.val();
 
-            console.log("Campo de busca encontrado:", searchInput.length > 0 ? "Sim" : "Não", "ID:", searchInput.attr('id'));
+            console.log("Campo de busca encontrado:", searchInput.length > 0 ? "Sim" : "Não", "ID:", searchInput.attr('id')); // <-- NOVO LOG
             if (searchInput.length === 0) {
-                console.error("Erro: Campo de busca com ID 'id_search' não encontrado!");
+            console.error("Erro: Campo de busca com ID 'id_search' não encontrado!"); // <-- NOVO LOG
+        }
+
+
+        function loadColaboradores(query)
+        {
+            console.log("Chamando loadColaboradores com query:", query); // <-- NOVO LOG
+            var url = "{% url 'colaboradores:lista_colaboradores' %}";
+            var currentOrder = "{{ ordenar_por }}";
+            var currentDirection = "{{ direcao }}";
+            var params = {};
+
+            if (query) {
+                params.q = query;
             }
+            if (currentOrder) {
+                params.ordenar_por = currentOrder;
+                params.direcao = currentDirection;
+            }
+            
+            params.is_ajax = 'true';
 
-            function loadColaboradores(query, orderBy = "{{ ordenar_por }}", direction = "{{ direcao }}") {
-                console.log("Chamando loadColaboradores com query:", query);
-                var url = "{% url 'colaboradores:lista_colaboradores' %}";
-                var currentOrder = "{{ ordenar_por }}";
-                var currentDirection = "{{ direcao }}";
-                var params = {};
+            var fullUrl = url + ($.isEmptyObject(params) ? '' : '?' + $.param(params));
 
-                if (query) {
-                    params.q = query;
-                }
-                if (currentOrder) {
-                    params.ordenar_por = currentOrder;
-                    params.direcao = currentDirection;
-                }
-
-                params.is_ajax = 'true';
-
-                var fullUrl = url + ($.isEmptyObject(params) ? '' : '?' + $.param(params));
-
-                console.log("AJAX request URL:", fullUrl);
-                $.ajax({
-                    url: fullUrl,
-                    type: 'GET',
-                    dataType: 'html',
-                    success: function(response) {
-                        $('#colaboradores-table-container').html(response);
-                        console.log("Tabela atualizada com sucesso.");
-                        $('input[name="telefone"]').mask('(00) 00000-0000');
-                        $('input[name="contato"]').mask('(00) 00000-0000');
-                    },
+            console.log("AJAX request URL:", fullUrl);
+            $.ajax({
+                url: fullUrl,
+                type: 'GET',
+                dataType: 'html',
+                success: function(response)
+                {
+                    // AGORA A RESPOSTA 'response' JÁ SERÁ O HTML DO FRAGMENTO
+                    $('#colaboradores-table-container').html(response); // <--- MUDANÇA AQUI!
+                    console.log("Tabela atualizada com sucesso.");
+                    // Reaplicar máscaras se a tabela for recarregada
+                    $('input[name="telefone"]').mask('(00) 00000-0000');
+                    $('input[name="contato"]').mask('(00) 00000-0000');
+                },
                     error: function(xhr, status, error) {
-                        console.error("Erro na busca AJAX:", status, error, xhr.responseText);
-                    }
-                });
+                    console.error("Erro na busca AJAX:", status, error, xhr.responseText);
+                }
+            });
+        }
+
+        // Evento keyup para buscar enquanto digita
+        searchInput.on('keyup', function() {
+            console.log("Evento keyup disparado."); // <-- NOVO LOG
+            var newQuery = $(this).val();
+            if (currentTimeout) {
+                clearTimeout(currentTimeout);
             }
-
-            searchInput.on('keyup', function() {
-                console.log("Evento keyup disparado.");
-                var newQuery = $(this).val();
-                if (currentTimeout) {
-                    clearTimeout(currentTimeout);
+            currentTimeout = setTimeout(function() {
+                if (newQuery !== currentQuery) {
+                    currentQuery = newQuery;
+                    loadColaboradores(newQuery);
                 }
-                currentTimeout = setTimeout(function() {
-                    if (newQuery !== currentQuery) {
-                        currentQuery = newQuery;
-                        loadColaboradores(newQuery);
-                    }
-                }, 300);
-            });
-
-            searchInput.on('change', function() {
-                console.log("Evento change disparado.");
-                if ($(this).val() === "" && currentQuery !== "") {
-                    currentQuery = "";
-                    loadColaboradores("");
-                }
-            });
-
-            $('#colaboradores-table-container').on('click', '.sortable-header', function(event) {
-                event.preventDefault();
-                var url = $(this).attr('href');
-                var urlParams = new URLSearchParams(url.split('?')[1]);
-                var queryParam = urlParams.get('q');
-                var orderByParam = urlParams.get('ordenar_por');
-                var direcaoParam = urlParams.get('direcao');
-
-                loadColaboradores(queryParam, orderByParam, direcaoParam);
-            });
-
-            loadColaboradores(currentQuery, "{{ ordenar_por }}", "{{ direcao }}");
+            }, 300);
         });
+
+        searchInput.on('change', function() {
+            console.log("Evento change disparado."); // <-- NOVO LOG
+            if ($(this).val() === "" && currentQuery !== "") {
+                currentQuery = "";
+                loadColaboradores("");
+              }
+            });
+         });
     </script>
-{% endblock extra_js %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+</body>
+</html>
