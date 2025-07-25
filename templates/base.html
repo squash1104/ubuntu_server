@@ -1,0 +1,98 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SisVot - Sistema de Fidelização{% endblock %}</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+
+    <style>
+
+    .select2-container {
+        width: 100% !important;
+    }
+    .navbar-dark .navbar-text {
+        color: #ffffff !important;
+    }
+    .toast-container .alert {
+            max-width: 350px;
+            word-wrap: break-word;
+    }
+
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'dashboard' %}">SisVot - Sistema de Fidelização de Votos!</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto align-items-center">
+                {% if user.is_authenticated %}
+                    <li class="nav-item"><span class="navbar-text mx-3">Olá, {{ user.username }}</span></li>
+                    {% if user.is_superuser %}
+                    <li class="nav-item me-2"><a href="{% url 'admin:index' %}" class="btn btn-outline-warning btn-sm">Admin</a></li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <form action="{% url 'logout' %}" method="post" class="d-flex">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-danger btn-sm">Sair</button>
+                        </form>
+                    </li>
+                {% else %}
+                    <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Entrar</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+
+    <main class="container my-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100">
+        {% if messages %}
+            {% for message in messages %}
+                {# Agora só precisamos de usar message.tags diretamente #}
+                <div class="alert {{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const alertElements = document.querySelectorAll('.toast-container .alert.alert-dismissible');
+            alertElements.forEach(function(alertElement) {
+                // Ativa o componente de Alerta do Bootstrap, o que faz o botão 'x' funcionar
+                const alertInstance = new bootstrap.Alert(alertElement);
+
+                // Cria o temporizador para fechar a notificação sozinha
+                setTimeout(() => {
+                    if (alertElement) { // Verifica se o elemento ainda existe antes de fechar
+                        alertInstance.close();
+                    }
+                }, 4000); // 5 segundos
+            });
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+
+</body>
+</html>

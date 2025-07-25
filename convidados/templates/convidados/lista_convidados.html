@@ -1,227 +1,144 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Convidados</title>
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Lista de Convidados{% endblock %}
+
+{% block extra_css %}
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4; color: #333; }
-        h1 { color: #2c3e50; margin-bottom: 20px; }
-        .nav-links a {
-            display: inline-block;
-            padding: 8px 15px;
-            margin-right: 10px;
-            background-color: #007bff;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background-color 0.3s ease;
-        }
-        .nav-links a:hover {
-            background-color: #0056b3;
+        .table > tbody > tr.meta-abaixo > td,
+        .table-hover > tbody > tr.meta-abaixo:hover > td {
+            background-color: #ffcccc;
         }
 
-        /* Estilos para a tabela */
-        table {
+        .table > tbody > tr.meta-atingida > td,
+        .table-hover > tbody > tr.meta-atingida:hover > td {
+            background-color: #ccffcc;
+        }
+
+        .table > tbody > tr.meta-superada > td,
+        .table-hover > tbody > tr.meta-superada:hover > td {
+            background-color: #e0ccff;
+        }
+
+        th a { text-decoration: none; color: inherit; }
+
+        .btn-warning {
+            color: #ffffff !important;
+        }
+
+        th a { text-decoration: none; color: inherit; }
+
+        /* 1. Escurece o fundo do cabeçalho da tabela */
+        .table-light {
+            --bs-table-bg: #e9ecef; /* Um cinza um pouco mais escuro que o padrão */
+            --bs-table-border-color: #dee2e6;
+        }
+
+        /* 2. Escurece o fundo do texto "Buscar:" */
+        .input-group-text {
+            background-color: #e9ecef; /* O mesmo cinza do cabeçalho para consistência */
+            border-color: #ced4da;
+            font-weight: 500;
+            color: #495057;
+        }
+        /* 1. Define um container para a tabela com uma altura máxima */
+
+        .table-scroll-container {
+            max-height: 600px; /* Defina a altura máxima que a tabela pode ter */
+            overflow-y: auto;  /* Adiciona a barra de rolagem vertical quando necessário */
+            border: 1px solid #dee2e6; /* Borda subtil à volta da área de rolagem */
+            border-top-left-radius: 0.375rem;
+            border-top-right-radius: 0.375rem;
+            border-bottom-left-radius: 0;
+        }
+
+        /* 2. Técnica para manter o cabeçalho da tabela fixo */
+        .table-scroll-container thead th {
+            position: sticky; /* Faz o cabeçalho "colar" no topo */
+            top: 0;
+            z-index: 2; /* Garante que o cabeçalho fique por cima do conteúdo que rola */
+        }
+
+        /* 1. Força a tabela a ocupar 100% da largura do seu container de rolagem */
+        .table-scroll-container .table {
             width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            background-color: #ffffff;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 12px 15px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-            font-weight: bold;
-            color: #333;
-            cursor: pointer;
-            position: relative;
-            padding-right: 25px;
-        }
-        th a {
-            text-decoration: none;
-            color: #333;
-            display: block;
-        }
-        th a:hover {
-            color: #007bff;
-        }
-        th .sort-arrow {
-            position: absolute;
-            right: 8px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 0.8em;
-        }
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        tr:hover {
-            background-color: #f1f1f1;
-        }
-        .acoes {
-            white-space: nowrap;
-        }
-        .acoes a {
-            margin-right: 8px;
-            text-decoration: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-size: 0.9em;
-            transition: background-color 0.3s ease, color 0.3s ease;
-        }
-        /* Estilo para o botão de Editar */
-        .acoes a.edit-btn {
-            background-color: #ffc107;
-            color: #212529;
-        }
-        .acoes a.edit-btn:hover {
-            background-color: #e0a800;
-            color: white;
-        }
-        /* Estilo para o formulário de exclusão */
-        .acoes .delete-form {
-            display: inline-block;
-            margin-left: 8px;
-        }
-        .acoes .delete-form button {
-            background-color: #dc3545; /* Vermelho para excluir */
-            color: white;
-            padding: 6px 12px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.9em;
-            transition: background-color 0.3s ease;
-        }
-        .acoes .delete-form button:hover {
-            background-color: #c82333;
+            height: 100%;
         }
 
-        /* Estilos para as mensagens do Django */
-        .messages {
-            list-style-type: none;
-            padding: 10px 20px;
-            margin-bottom: 20px;
-            border-radius: 5px;
+        .summary-bar {
+            background-color: #f8f9fa; /* Um cinza claro, consistente com o cabeçalho da tabela */
+            border: 1px solid #dee2e6;
+            border-top: none; /* Remove a borda inferior para se fundir com a tabela */
+            padding: 0.75rem 1rem;
+            border-bottom-left-radius: 0.375rem;
+            border-bottom-right-radius: 0.375rem;
+            font-weight: 500;
         }
-        .messages .success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .messages .error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        .messages .warning {
-            background-color: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeeba;
-        }
+
     </style>
-</head>
-<body>
-    <h1>Lista de Convidados</h1>
-    <div class="nav-links">
-        <a href="{% url 'convidados:cadastrar_convidado' %}">Cadastrar Novo Convidado</a>
-        <a href="{% url 'dashboard' %}">Página Inicial</a>
+
+{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="card-title h3 mb-0">Convidados</h1>
+            <a href="{% url 'convidados:cadastrar_convidado' %}" class="btn btn-primary">Novo Convidado</a>
+        </div>
+
+        <form id="search-form" method="get" class="mb-4">
+            <div class="input-group">
+                <span class="input-group-text">Buscar:</span>
+                <input type="text" id="id_search" class="form-control" name="q" value="{{ termo_busca }}" placeholder="Pesquise por nome, telefone, cidade, bairro ou colaborador...">
+            </div>
+        </form>
+
+        <hr>
+
+        <div id="convidados-table-container">
+            {% include 'convidados/convidados_table_fragment.html' %}
+        </div>
     </div>
-    <br>
+</div>
 
-    {# Bloco para exibir mensagens do Django #}
-    {% if messages %}
-        <ul class="messages">
-            {% for message in messages %}
-                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
+{% endblock %}
 
-    {% if convidados %}
-        <table>
-            <thead>
-                <tr>
-                    <th>Seq.</th>
-                    <th>
-                        <a href="{% url 'convidados:lista_convidados' %}?ordenar_por=nome&direcao={% if ordenar_por == 'nome' and direcao == 'asc' %}desc{% else %}asc{% endif %}">
-                            Nome do Convidado
-                            {% if ordenar_por == 'nome' %}
-                                <span class="sort-arrow">{% if direcao == 'asc' %}&#9650;{% else %}&#9660;{% endif %}</span>
-                            {% endif %}
-                        </a>
-                    </th>
-                    <th>
-                        <a href="{% url 'convidados:lista_convidados' %}?ordenar_por=telefone&direcao={% if ordenar_por == 'telefone' and direcao == 'asc' %}desc{% else %}asc{% endif %}">
-                            Telefone
-                            {% if ordenar_por == 'telefone' %}
-                                <span class="sort-arrow">{% if direcao == 'asc' %}&#9650;{% else %}&#9660;{% endif %}</span>
-                            {% endif %}
-                        </a>
-                    </th>
-                    <th>
-                        <a href="{% url 'convidados:lista_convidados' %}?ordenar_por=cidade&direcao={% if ordenar_por == 'cidade' and direcao == 'asc' %}desc{% else %}asc{% endif %}">
-                            Cidade
-                            {% if ordenar_por == 'cidade' %}
-                                <span class="sort-arrow">{% if direcao == 'asc' %}&#9650;{% else %}&#9660;{% endif %}</span>
-                            {% endif %}
-                        </a>
-                    </th>
-                    <th>
-                        <a href="{% url 'convidados:lista_convidados' %}?ordenar_por=bairro&direcao={% if ordenar_por == 'bairro' and direcao == 'asc' %}desc{% else %}asc{% endif %}">
-                            Bairro
-                            {% if ordenar_por == 'bairro' %}
-                                <span class="sort-arrow">{% if direcao == 'asc' %}&#9650;{% else %}&#9660;{% endif %}</span>
-                            {% endif %}
-                        </a>
-                    </th>
-                    <th>
-                        <a href="{% url 'convidados:lista_convidados' %}?ordenar_por=colaborador&direcao={% if ordenar_por == 'colaborador' and direcao == 'asc' %}desc{% else %}asc{% endif %}">
-                            Colaborador
-                            {% if ordenar_por == 'colaborador' %}
-                                <span class="sort-arrow">{% if direcao == 'asc' %}&#9650;{% else %}&#9660;{% endif %}</span>
-                            {% endif %}
-                        </a>
-                    </th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for convidado in convidados %}
-                <tr>
-                    <td>{{ forloop.counter }}</td>
-                    <td>{{ convidado.nome }}</td>
-                    <td>{{ convidado.telefone }}</td>
-                    <td>{{ convidado.cidade }}</td> {# COLUNA CIDADE #}
-                    <td>{{ convidado.bairro }}</td> {# COLUNA BAIRRO #}
-                    <td>
-                        {% if convidado.colaborador %}
-                            <a href="{% url 'convidados:colaborador_convidados' convidado.colaborador.id %}">{{ convidado.colaborador.nome }}</a>
-                        {% else %}
-                            N/A
-                        {% endif %}
-                    </td>
-                    <td class="acoes">
-                        <a href="{% url 'convidados:editar_convidado' convidado.id %}" class="edit-btn">Editar</a>
-                        {# Formulário de exclusão individual #}
-                        <form action="{% url 'convidados:excluir_convidado' convidado.id %}" method="post" class="delete-form" onsubmit="return confirm('Tem certeza que deseja excluir o convidado {{ convidado.nome }}?');">
-                            {% csrf_token %}
-                            <button type="submit">Excluir</button>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>Nenhum convidado cadastrado ainda. <a href="{% url 'convidados:cadastrar_convidado' %}">Cadastre um agora!</a></p>
-    {% endif %}
-</body>
-</html>
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('id_search');
+    const tableContainer = document.getElementById('convidados-table-container');
+    const summaryContainer = document.getElementById('summary-bar-container');
+    let typingTimer;
+
+    function updateContent(url) {
+        tableContainer.style.opacity = '0.5';
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                tableContainer.innerHTML = data.table_html;
+                summaryContainer.innerHTML = data.summary_html;
+                tableContainer.style.opacity = '1';
+            })
+            .catch(error => console.error('Erro na busca AJAX:', error));
+    }
+
+    // Evento para a ORDENAÇÃO POR COLUNA (ao clicar nos links do cabeçalho)
+    resultsContainer.addEventListener('click', function(event) {
+        const targetLink = event.target.closest('th a');
+        if (targetLink) {
+            event.preventDefault();
+            updateTable(targetLink.href);
+        }
+    });
+
+    searchInput.addEventListener('keyup', () => {
+        clearTimeout(typingTimer);
+        const query = searchInput.value;
+        const url = `{% url 'convidados:lista_convidados' %}?q=${encodeURIComponent(query)}&is_ajax=true`;
+        typingTimer = setTimeout(() => updateContent(url), 400);
+    });
+});
+</script>
+{% endblock %}

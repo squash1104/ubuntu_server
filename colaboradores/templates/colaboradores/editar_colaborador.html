@@ -114,19 +114,10 @@
 <body>
     <h1>Editar Colaborador: {{ colaborador.nome }}</h1>
     <div class="nav-links">
-        <a href="{% url 'colaboradores:lista_colaboradores' %}">Voltar para a Lista de Colaboradores</a>
+        <a href="{% url 'colaboradores:lista_colaboradores' %}">Voltar</a>
         <a href="{% url 'dashboard' %}">Página Inicial</a>
     </div>
     <br>
-
-    {# Bloco para exibir mensagens do Django (sucesso, erro, etc.) #}
-    {% if messages %}
-        <ul class="messages">
-            {% for message in messages %}
-                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
 
     <form method="post">
         {% csrf_token %}
@@ -158,7 +149,7 @@
         {% endfor %}
 
         <div class="btn-group">
-            <button type="submit" class="btn-primary">Salvar Alterações</button>
+            <button type="submit" class="btn-primary">Salvar</button>
             <a href="{% url 'colaboradores:lista_colaboradores' %}" class="btn-secondary">Cancelar</a>
         </div>
     </form>

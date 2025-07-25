@@ -1,19 +1,24 @@
 from django.db import models
-from colaboradores.models import Colaborador
 from geografia.models import Cidade, Bairro
+from colaboradores.models import Colaborador
 
 class Convidado(models.Model):
-    nome = models.CharField(max_length=255)
-    telefone = models.CharField(max_length=20)
-    email = models.EmailField(max_length=255, blank=True, null=True)
-    cidade = models.ForeignKey(Cidade, on_delete=models.SET_NULL, null=True)
-    bairro = models.ForeignKey(Bairro, on_delete=models.SET_NULL, null=True)
-    colaborador = models.ForeignKey(Colaborador, on_delete=models.CASCADE, related_name='convidados')
+    # O Django criará automaticamente um campo 'id' como chave primária (PK)
+    nome = models.CharField(max_length=100) # Coluna no DB será 'nome'
+    telefone = models.CharField(max_length=20, blank=True, null=True) # Coluna no DB será 'telefone'
 
-class Meta:
-    verbose_name = "Convidado"
-    verbose_name_plural = "Convidados"
-    ordering = ['nome']
+    # ForeignKeys para Cidade, Bairro e Colaborador. O Django criará 'cidade_id', 'bairro_id', 'colaborador_id' no DB.
+    cidade = models.ForeignKey(Cidade, on_delete=models.SET_NULL, null=True, blank=True)
+    bairro = models.ForeignKey(Bairro, on_delete=models.SET_NULL, null=True, blank=True)
+    colaborador = models.ForeignKey(Colaborador, on_delete=models.SET_NULL, null=True, blank=True, related_name='convidados')
+
+    data_cadastro = models.DateTimeField(auto_now_add=True, editable=False)
+
+    class Meta:
+        db_table = 'convidados' # A tabela no DB será 'convidados'
+        verbose_name = "Convidado"
+        verbose_name_plural = "Convidados"
+        ordering = ['nome']
 
     def __str__(self):
         return self.nome

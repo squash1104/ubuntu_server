@@ -4,67 +4,58 @@ from .forms import ColaboradorForm
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from convidados.models import Convidado
-from django.db.models import Count
-from django.db.models import Q
+from django.db.models import Q, Count, Sum
 
 @login_required
 def lista_colaboradores(request):
-    colaboradores = Colaborador.objects.all()
+    termo_busca = request.GET.get('q', '')
+    ordenar_por_param = request.GET.get('ordenar_por', 'nome')
+    direcao = request.GET.get('direcao', 'asc')
 
-    # --- Lógica de Busca por Texto (novo) ---
-    query = request.GET.get('q')
-    if query:
-        # Filtra por nome, contato, cidade ou bairro (case-insensitive contains)
-        colaboradores = colaboradores.filter(
-            Q(nome__icontains=query) |
-            Q(contato__icontains=query) |
-            Q(cidade__icontains=query) |
-            Q(bairro__icontains=query)
+    ordenar_por_query = ordenar_por_param
+    if direcao == 'desc':
+        ordenar_por_query = f'-{ordenar_por_param}'
+
+    colaboradores_qs = Colaborador.objects.select_related('cidade', 'bairro')
+
+    if termo_busca:
+        colaboradores_qs = colaboradores_qs.filter(
+            Q(nome__icontains=termo_busca) |
+            Q(telefone__icontains=termo_busca) |
+            Q(cidade__nome_cidade__icontains=termo_busca) |
+            Q(bairro__nome_bairro__icontains=termo_busca)
         )
-    # --- Fim da Lógica de Busca por Texto ---
 
-    # --- Lógica de Ordenação ---
-    # Pega os parâmetros 'ordenar_por' e 'direcao' da URL (GET request)
-    ordenar_por = request.GET.get('ordenar_por', 'nome') # Padrão: ordenar por nome
-    direcao = request.GET.get('direcao', 'asc')         # Padrão: ascendente
+    colaboradores_final = colaboradores_qs.annotate(
+        num_convidados=Count('convidados', distinct=True)
+    ).order_by(ordenar_por_query)
 
-    # Mapeia os nomes das colunas do template para os nomes dos campos do modelo
-    campos_ordenaveis = {
-        'nome': 'nome',
-        'contato': 'contato',
-        'cidade': 'cidade',
-        'bairro': 'bairro',
-        'num_convidados': 'num_convidados', # Permite ordenar pela contagem de convidados
-    }
+    total_colaboradores_filtrados = colaboradores_final.count()
+    soma_convidados = colaboradores_final.aggregate(
+        total=Sum('num_convidados')
+    )
+    total_convidados_filtrados = soma_convidados['total'] or 0
 
-    colaboradores = colaboradores.annotate(num_convidados=Count('convidados'))
-
-    # Verifica se o campo de ordenação é válido
-    if ordenar_por in campos_ordenaveis:
-        # Se a direção é descendente, adiciona um '-' ao nome do campo
-        prefixo = '-' if direcao == 'desc' else ''
-        # Aplica a ordenação
-        colaboradores = colaboradores.order_by(f'{prefixo}{campos_ordenaveis[ordenar_por]}')
-    # --- Fim da Lógica de Ordenação ---
-
-    
     context = {
-        'colaboradores': colaboradores,
-        'ordenar_por': ordenar_por, # Passa o campo de ordenação atual para o template
-        'direcao': direcao,         # Passa a direção de ordenação atual para o template
-        'query': query if query else '',
+        'colaboradores': colaboradores_final,
+        'termo_busca': termo_busca,
+        'ordenar_por': ordenar_por_param,
+        'direcao': direcao,
+        'total_colaboradores_filtrados': total_colaboradores_filtrados,
+        'total_convidados_filtrados': total_convidados_filtrados,
     }
-    # --- LÓGICA DE RESPOSTA AJAX ---
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        # Se for uma requisição AJAX, renderiza apenas o fragmento da tabela
-        return render(request, 'colaboradores/colaboradores_table_fragment.html', context)
-    # --- FIM DA LÓGICA DE RESPOSTA AJAX ---
 
-    # Para requisições normais (não AJAX), renderiza a página completa
-    return render(request, 'colaboradores/lista_colaboradores.html', context)
+    # 7. Responde de forma inteligente (AJAX ou requisição normal)
+    if request.GET.get('is_ajax') == 'true':
+        # Se for AJAX, retorna APENAS o fragmento da tabela
+        return render(request, 'colaboradores/colaboradores_table_fragment.html', context)
+    else:
+        # Se for uma requisição normal, retorna a página completa
+        return render(request, 'colaboradores/lista_colaboradores.html', context)
+
 
 @login_required
-def cadastrar_colaborador(request):
+def adicionar_colaborador(request):
     if request.method == 'POST':
         form = ColaboradorForm(request.POST)
         if form.is_valid():
@@ -74,7 +65,7 @@ def cadastrar_colaborador(request):
             return redirect('colaboradores:lista_colaboradores')
     else:
         form = ColaboradorForm()
-    return render(request, 'colaboradores/cadastrar_colaborador.html', {'form': form})
+    return render(request, 'colaboradores/adicionar_colaborador.html', {'form': form})
 
 @login_required
 def editar_colaborador(request, colaborador_id):

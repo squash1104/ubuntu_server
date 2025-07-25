@@ -12,7 +12,6 @@ def home(request):
 
 @login_required # Este decorador garante que apenas usuários logados acessem esta view
 def dashboard(request):
-    
     nome_usuario_logado = request.user.username # Nome padrão para teste
     colaborador_obj = None
 
@@ -41,3 +40,7 @@ def dashboard(request):
 @login_required # Protege a view do mapa
 def mapa_apoiadores(request):
     return render(request, 'mapa_apoiadores.html')
+
+# função teste para correção, excluir depois
+def teste_notificacao(request):
+    return render(request, 'teste_notificacao.html')

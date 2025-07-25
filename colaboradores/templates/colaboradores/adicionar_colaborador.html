@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Cadastrar Novo Colaborador{% endblock %}
+
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h3 class="card-title mb-0">Cadastrar Novo Colaborador</h3>
+            </div>
+            <div class="card-body">
+                 <form method="post">
+                     {% csrf_token %}
+                     {% for field in form %}
+                         <div class="mb-3">
+                             {{ field.label_tag }}
+                             {{ field }}
+                             {% if field.help_text %}
+                                 <small class="form-text text-muted">{{ field.help_text }}</small>
+                             {% endif %}
+                             {% for error in field.errors %}
+                                 <div class="invalid-feedback d-block">
+                                     {{ error }}
+                                 </div>
+                             {% endfor %}
+                         </div>
+                     {% endfor %}
+
+                     <div class="mt-4 border-top pt-3">
+                         <button type="submit" class="btn btn-success">Salvar Colaborador</button>
+                         <a href="{% url 'colaboradores:lista_colaboradores' %}" class="btn btn-secondary">Cancelar</a>
+                     </div>
+                 </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script src="{% static 'js/jquery.mask.min.js' %}"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("Script de adicionar_colaborador carregado.");
+
+    // --- APLICA A MÁSCARA DE TELEFONE ---
+    // O Django renderiza o campo 'telefone' com o id 'id_telefone'
+    $('#id_telefone').mask('(00) 00000-0000');
+
+    // --- INICIALIZAÇÃO DO SELECT2 ---
+    $('.select2').select2({
+        placeholder: "Selecione uma opção",
+        allowClear: true,
+        width: '100%'
+    });
+
+    // --- LÓGICA DO DROPDOWN DINÂMICO ---
+    const cidadeSelect = $('#id_cidade');
+    const bairroSelect = $('#id_bairro');
+
+    cidadeSelect.on('change', function() {
+        const cidadeId = this.value;
+        bairroSelect.empty().append('<option value="">Carregando...</option>').trigger('change');
+
+        if (cidadeId) {
+            fetch(`/geografia/get-bairros/?cidade_id=${cidadeId}`)
+                .then(response => response.json())
+                .then(data => {
+                    bairroSelect.empty().append('<option value="">Selecione um bairro</option>');
+                    data.forEach(function(bairro) {
+                        const option = new Option(bairro.nome, bairro.id, false, false);
+                        bairroSelect.append(option);
+                    });
+                    bairroSelect.trigger('change');
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar bairros:', error);
+                });
+        } else {
+            bairroSelect.empty().append('<option value="">Primeiro, escolha uma cidade</option>').trigger('change');
+        }
+    });
+
+    // Dispara o evento 'change' se a página carregar com uma cidade já selecionada (útil para edição)
+    if (cidadeSelect.val()) {
+        cidadeSelect.trigger('change');
+    }
+});
+</script>
+{% endblock %}

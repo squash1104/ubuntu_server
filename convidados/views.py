@@ -11,44 +11,52 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
 @login_required
 def lista_convidados(request):
-    convidados = Convidado.objects.all()
-
-    query = request.GET.get('q')
-    if query:
-        convidados = convidados.filter(
-            Q(nome__icontains=query) |
-            Q(telefone__icontains=query) |
-            Q(cidade__icontains=query) |
-            Q(bairro__icontains=query) |
-            Q(colaborador__nome__icontains=query)
-        ).distinct()
-
-    ordenar_por = request.GET.get('ordenar_por', 'nome')
+    termo_busca = request.GET.get('q', '')
+    ordenar_por_param = request.GET.get('ordenar_por', 'nome')
     direcao = request.GET.get('direcao', 'asc')
 
-    campos_ordenaveis = {
-        'nome': 'nome',
-        'telefone': 'telefone',
-        'cidade': 'cidade',
-        'bairro': 'bairro',
-        'colaborador': 'colaborador__nome',
-    }
+    ordenar_por_query = ordenar_por_param
+    if direcao == 'desc':
+        ordenar_por_query = f'-{ordenar_por_param}'
 
-    if ordenar_por in campos_ordenaveis:
-        prefixo = '-' if direcao == 'desc' else ''
-        convidados = convidados.order_by(f'{prefixo}{campos_ordenaveis[ordenar_por]}')
+    # Começa com a QuerySet base, otimizada com select_related para as ForeignKeys
+    convidados_qs = Convidado.objects.select_related('colaborador', 'cidade', 'bairro')
+
+    # Aplica o filtro se um termo de busca foi enviado
+    if termo_busca:
+        convidados_qs = convidados_qs.filter(
+            Q(nome__icontains=termo_busca) |
+            Q(telefone__icontains=termo_busca) |
+            Q(cidade__nome_cidade__icontains=termo_busca) |
+            Q(bairro__nome_bairro__icontains=termo_busca) |
+            Q(colaborador__nome__icontains=termo_busca)
+        )
+
+    # Aplica a ordenação
+    convidados_final = convidados_qs.order_by(ordenar_por_query)
+
+    # Calcula os totais da lista já filtrada
+    total_convidados_filtrados = convidados_final.count()
 
     context = {
-        'convidados': convidados,
-        'ordenar_por': ordenar_por,
+        'convidados': convidados_final,
+        'termo_busca': termo_busca,
+        'ordenar_por': ordenar_por_param,
         'direcao': direcao,
-        'query': query if query else '',
+        'total_convidados_filtrados': total_convidados_filtrados,
     }
 
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.GET.get('is_ajax') == 'true':
-         return render(request, 'convidados/convidados_table_fragment.html', context)
+    # Responde de forma inteligente (AJAX ou requisição normal)
+    if request.GET.get('is_ajax') == 'true':
+        table_html = render_to_string('convidados/partials/convidados_table_fragment.html', context, request=request)
+        summary_html = render_to_string('convidados/partials/totais_fragment.html', context, request=request)
 
-    return render(request, 'convidados/lista_todos_convidados.html', context)
+        return JsonResponse({
+            'table_html': table_html,
+            'summary_html': summary_html,
+        })
+    else:
+        return render(request, 'convidados/lista_convidados.html', context)
 
 @login_required
 def colaborador_convidados(request, pk):
