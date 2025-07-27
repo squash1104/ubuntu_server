@@ -86,7 +86,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-center">
                     {% if user.is_authenticated %}
-                        <li class="nav-item"><span class="navbar-text mx-3">Olá, {{ user.username }}</span></li>
+                        <li class="nav-item"><span class="navbar-text mx-3">Olá, {{ user.get_full_name }}</span></li>
                         {% if user.is_superuser %}
                         <li class="nav-item me-2"><a href="{% url 'admin:index' %}" class="btn btn-outline-warning btn-sm">Admin</a></li>
                         {% endif %}
@@ -113,7 +113,7 @@
     {# SAUDAÇÃO DO UTILIZADOR (AGORA NO TOPO) #}
     {% if user.is_authenticated %}
         <div class="mb-3">
-            <span class="navbar-text fs-5">Olá, {{ user.username }}</span>
+            <span class="navbar-text fs-5">Olá, {{ user.get_full_name }}</span>
         </div>
         <hr class="mt-0"> {# Linha divisória logo abaixo da saudação #}
     {% endif %}
