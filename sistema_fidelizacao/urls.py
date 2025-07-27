@@ -21,7 +21,6 @@ from django.contrib.auth import views as auth_views # Importe as views de autent
 from django.http import HttpResponse
 from django.conf import settings
 from django.conf.urls.static import static
-from .views import teste_notificacao
 
 def health_check_view(request):
     return HttpResponse("OK", status=200)
@@ -43,7 +42,8 @@ urlpatterns = [
 
     path('health/', health_check_view),
 
-    path('teste/', teste_notificacao, name='teste_notificacao'),
+    path('sobre/', views.sobre, name='sobre'),
+
 ]
 
 if settings.DEBUG:

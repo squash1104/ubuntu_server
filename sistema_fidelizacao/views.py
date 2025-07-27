@@ -15,25 +15,43 @@ def dashboard(request):
     nome_usuario_logado = request.user.username # Nome padrão para teste
     colaborador_obj = None
 
-    # Tentativa de encontrar um Colaborador baseado no nome de usuário logado
-    # Isso é uma simplificação. O ideal seria ter um OneToOneField no modelo Colaborador
-    # que linka diretamente para o modelo User do Django.
     try:
         colaborador_obj = Colaborador.objects.get(nome__iexact=request.user.username)
 
     except Colaborador.DoesNotExist:
 
         pass
-    
+
+    # Calcula total de convidados e colaboradores cadastrados para nossos cards
     total_colaboradores = Colaborador.objects.count()
     total_convidados = Convidado.objects.count()
+
+    colaboradores_com_contagem = Colaborador.objects.annotate(
+        num_convidados=Count('convidados')
+    )
+
+    # Define as nossas metas
+    meta = 15
+
+    # Calcula quantos colaboradores estão em cada categoria de meta para grafico rosca
+    abaixo_da_meta = colaboradores_com_contagem.filter(num_convidados__lt=meta).count()
+    na_meta = colaboradores_com_contagem.filter(num_convidados=meta).count()
+    meta_superada = colaboradores_com_contagem.filter(num_convidados__gt=meta).count()
+
+    # Calcula nosso top 10 para grafico
+    top_5_colaboradores = Colaborador.objects.annotate(
+        num_convidados=Count('convidados')
+    ).order_by('-num_convidados')[:5]
 
     context = {
         'nome_colaborador': nome_usuario_logado,
         'colaborador_obj': colaborador_obj, # Passamos o objeto para acesso a outros dados
         'total_colaboradores': total_colaboradores, # <-- Adiciona esta contagem ao contexto
-        'total_convidados': total_convidados,      
-
+        'total_convidados': total_convidados,
+        'dados_abaixo_meta': abaixo_da_meta,
+        'dados_na_meta': na_meta,
+        'dados_meta_superada': meta_superada,
+        'top_5_colaboradores': top_5_colaboradores,
  }
     return render(request, 'dashboard.html', context)
 
@@ -41,6 +59,11 @@ def dashboard(request):
 def mapa_apoiadores(request):
     return render(request, 'mapa_apoiadores.html')
 
-# função teste para correção, excluir depois
-def teste_notificacao(request):
-    return render(request, 'teste_notificacao.html')
+
+
+def sobre(request):
+    # Futuramente, podemos passar a versão do app dinamicamente aqui
+    context = {
+        'versao_app': '1.0.0'
+    }
+    return render(request, 'sobre.html', context)

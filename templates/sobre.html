@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}SisAps - Sobre o Sistema{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-header bg-dark text-white">
+        <h1 class="h3 mb-0">Sobre o SisAps - Sistema de Fidelização de Apoiadores</h1>
+    </div>
+    <div class="card-body">
+        
+        <div class="mb-4">
+            <h4 class="border-bottom pb-2 mb-3">Versão do Aplicativo</h4>
+            <p><strong>Versão atual:</strong> {{ versao_app }}</p>
+            <p>Esta aplicação foi desenvolvida para a gestão e fidelização de apoiadores da campanha do Deputado Estadual Max Russi em Mato Grosso.</p>
+        </div>
+
+        <div class="mb-4">
+            <h4 class="border-bottom pb-2 mb-3">Contato e Suporte Técnico</h4>
+            <p>Para dúvidas, sugestões ou problemas técnicos, por favor, entre em contato através dos seguintes canais:</p>
+            <ul>
+                <li><strong>Email:</strong> <a href="mailto:seuemail@exemplo.com">lucianolrv@gmail.com</a></li>
+                <li><strong>Telefone / WhatsApp:</strong> (65) 99961-6000</li>
+            </ul>
+        </div>
+
+        <div>
+            <h4 class="border-bottom pb-2 mb-3">Política de Privacidade e Uso de Dados</h4>
+            <p>Compromisso com a Segurança: Todos os dados cadastrados neste sistema, incluindo informações de colaboradores e convidados, são armazenados de forma segura e são de uso exclusivo da campanha. As informações não serão partilhadas com terceiros.</p>
+            <p>Uso dos Dados: As informações recolhidas são utilizadas unicamente para fins de organização, comunicação e mobilização relacionados às atividades da campanha.</p>
+            <p>Responsabilidade: O acesso ao sistema é restrito a utilizadores autorizados. Cada utilizador é responsável pela confidencialidade da sua senha e pelo uso adequado das informações a que tem acesso.</p>
+        </div>
+
+    </div>
+
+<div class="card-footer text-center text-muted">
+        <small>&copy; {% now "Y" %} Luciano Marchi de Souza. Todos os direitos reservados.</small>
+    </div>
+</div>
+
+{% endblock %}

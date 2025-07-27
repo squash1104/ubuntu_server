@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}SisAps - Início{% endblock %}
+{% block title %}SisAps - Dashboard{% endblock %}
 
 {% block extra_css %}
     {# Colocamos todo o CSS específico desta página aqui #}
@@ -129,23 +129,67 @@
     <div class="card-body">
         <div class="header">
             <h1 class="main-title">Dashboard</h1>
-            <div class="user-info-group">
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-md-6">
+                <div class="stat-card h-100">
+                    <h3>Total de Colaboradores</h3>
+                    <p>{{ total_colaboradores }}</p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="stat-card h-100">
+                    <h3>Total de Convidados</h3>
+                    <p>{{ total_convidados }}</p>
+                </div>
             </div>
         </div>
 
-        <div class="stats-cards">
-            <div class="stat-card">
-                <h3>Total de Colaboradores</h3>
-                <p>{{ total_colaboradores }}</p>
+        <div class="row g-4 mb-4">
+        <div class="col-lg-7">
+                <div class="card">
+                    <div class="card-body text-center d-flex flex-column justify-content-center align-items-center">
+                        <h5 class="card-title mb-3">Desempenho por Meta</h5>
+                        <div style="position: relative; max-width: 280px; margin: auto;">
+                        <canvas id="metasChart"></canvas>
+                    </div>
+                </div>
             </div>
-            <div class="stat-card">
-                <h3>Total de Convidados</h3>
-                <p>{{ total_convidados }}</p>
+        </div>
+            <div class="col-lg-5">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">🏆 Top 5 Colaboradores</h5>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">#</th>
+                                        <th scope="col">Nome</th>
+                                        <th scope="col" class="text-end">Convidados</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for colaborador in top_5_colaboradores %}
+                                    <tr>
+                                        <th scope="row">{{ forloop.counter }}</th>
+                                        <td>{{ colaborador.nome }}</td>
+                                        <td class="text-end fw-bold">{{ colaborador.num_convidados }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
+
         </div>
 
         <hr class="my-4">
 
+        <h3 class="mb-3">Ações Rápidas</h3>
         <div class="quick-actions">
             <a href="{% url 'colaboradores:lista_colaboradores' %}" class="action-btn purple">
                 <span>&#128188;</span>
@@ -173,6 +217,46 @@
 {% endblock %}
 
 {% block extra_js %}
-    {# Se precisar de algum JavaScript específico para o dashboard, ele viria aqui #}
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('metasChart').getContext('2d');
+    const abaixoMeta = {{ dados_abaixo_meta }};
+    const naMeta = {{ dados_na_meta }};
+    const metaSuperada = {{ dados_meta_superada }};
+
+    const metasChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: [ 'Abaixo da Meta', 'Na Meta', 'Meta Superada' ],
+            datasets: [{
+                label: 'Colaboradores',
+                data: [abaixoMeta, naMeta, metaSuperada],
+                backgroundColor: [ '#dc3545', '#28a745', '#6f42c1' ],
+                borderColor: '#ffffff',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'top' },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.label || '';
+                            const value = context.raw;
+                            const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                            const percentage = total > 0 ? ((value / total) * 100).toFixed(1) + '%' : '0%';
+                            return ` ${label}: ${value} (${percentage})`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+
     <script src="{% static 'js/main.js' %}"></script>
+
 {% endblock %}
