@@ -82,40 +82,38 @@ def colaborador_convidados(request, pk):
 
 @login_required
 def cadastrar_convidado(request, colaborador_id=None): # <--- Garanta que aceita colaborador_id=None
-    colaborador_selecionado = None
+    colaborador = None
     if colaborador_id:
-        colaborador_selecionado = get_object_or_404(Colaborador, pk=colaborador_id)
+        colaborador = get_object_or_404(Colaborador, pk=colaborador_id)
 
     if request.method == 'POST':
         form = ConvidadoForm(request.POST)
         if form.is_valid():
-            convidado = form.save(commit=False)
-            if colaborador_selecionado:
-                convidado.colaborador = colaborador_selecionado
-            convidado.save()
+            convidado = form.save()
             messages.success(request, f'Convidado "{convidado.nome}" cadastrado com sucesso!')
+            if colaborador:
+                form = ConvidadoForm(initial={'colaborador': colaborador})
 
-            # --- LÓGICA DE REDIRECIONAMENTO AGORA CORRETA ---
-            # Redireciona para a mesma página de cadastro para o mesmo colaborador, se aplicável.
-            # Se o convidado foi cadastrado a partir de uma página de colaborador, volta para o mesmo formulário.
-            if colaborador_selecionado:
-                return redirect('convidados:cadastrar_convidado_para_colaborador', colaborador_id=colaborador_selecionado.id)
+                context = {
+                    'form': form,
+                    'colaborador': colaborador,
+                }
+                return render(request,'convidados/cadastrar_convidado.html', context)
             else:
-                # Se não foi cadastrado para um colaborador específico (veio do dashboard, por exemplo),
-                # redireciona para a lista geral de convidados.
+                # Caso contrário, volta para a lista geral
                 return redirect('convidados:lista_convidados')
-            # --- FIM DA LÓGICA DE REDIRECIONAMENTO ---
-        else:
-            messages.error(request, 'Erro ao cadastrar convidado. Verifique os dados.')
     else:
-        if colaborador_selecionado:
-            form = ConvidadoForm(initial={'colaborador': colaborador_selecionado})
+        # Se for o primeiro acesso (GET) e viemos de um colaborador,
+        # já preenche o campo 'colaborador' no formulário
+        if colaborador:
+            form = ConvidadoForm(initial={'colaborador': colaborador})
         else:
             form = ConvidadoForm()
 
     context = {
         'form': form,
-        'colaborador_selecionado': colaborador_selecionado
+        # Envia o colaborador (ou None) para o template saber de onde viemos
+        'colaborador': colaborador,
     }
     return render(request, 'convidados/cadastrar_convidado.html', context)
 

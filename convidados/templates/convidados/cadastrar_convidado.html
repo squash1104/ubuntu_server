@@ -8,7 +8,15 @@
     <div class="col-md-8">
         <div class="card shadow-sm">
             <div class="card-header bg-primary text-white">
-                <h3 class="card-title mb-0">Cadastrar Novo Convidado</h3>
+                <h3 class="card-title mb-0">
+                    {% if colaborador %}
+                   {# Se a view enviou um colaborador, mostra o título dinâmico #}
+                        Adicionar Novo Convidado para: <span class="text-warning fw-bold">{{ colaborador.nome }}</span>
+                    {% else %}
+                   {# Caso contrário, mostra o título padrão #}
+                        Adicionar Novo Convidado
+                    {% endif %}
+                </h3>
             </div>
             <div class="card-body">
                 <form method="post">
@@ -16,20 +24,30 @@
 
                     {# Renderiza o formulário campo por campo, com os rótulos em cima #}
                     {% for field in form %}
-                        <div class="mb-3">
-                            {{ field.label_tag }}
+                        {% if field.is_hidden %}
                             {{ field }}
-                            {% for error in field.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {{ error }}
-                                </div>
-                            {% endfor %}
-                        </div>
+                        {% else %}
+                            <div class="mb-3">
+                                {{ field.label_tag }}
+                                {{ field }}
+                                {% for error in field.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ error }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
                     {% endfor %}
 
                     <div class="mt-4 border-top pt-3">
                         <button type="submit" class="btn btn-success">Salvar</button>
-                        <a href="{% url 'convidados:lista_convidados' %}" class="btn btn-secondary">Cancelar</a>
+                        {% if colaborador %}
+                            {# Se a variável 'colaborador' existir, o link volta para a página dele #}
+                            <a href="{% url 'convidados:colaborador_convidados' pk=colaborador.id %}" class="btn btn-secondary">Cancelar</a>
+                        {% else %}
+                            {# Caso contrário, o link volta para a lista geral #}
+                            <a href="{% url 'convidados:lista_convidados' %}" class="btn btn-secondary">Cancelar</a>
+                        {% endif %}
                     </div>
                 </form>
             </div>

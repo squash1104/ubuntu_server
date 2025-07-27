@@ -23,12 +23,19 @@ class ConvidadoForm(forms.ModelForm):
         # 1. Adicione a classe 'select2' a todos os dropdowns que você quer estilizar
         self.fields['cidade'].widget.attrs.update({'class': 'select2'})
         self.fields['bairro'].widget.attrs.update({'class': 'select2'})
-        self.fields['colaborador'].widget.attrs.update({'class': 'select2'})
+
+        if 'colaborador' in self.initial:
+            colaborador_inicial = self.initial.get('colaborador')
+            # Se sim, esconde o campo e mantém o valor
+            self.fields['colaborador'].widget = forms.HiddenInput()
+        else:
+            # Se não, o campo aparece normalmente como um dropdown
+            self.fields['colaborador'].widget.attrs.update({'class': 'select2'})
+            self.fields['colaborador'].empty_label = "Selecione um colaborador"
 
         # 2. Altere o texto padrão se desejar
         self.fields['cidade'].empty_label = "Selecione uma cidade"
         self.fields['bairro'].empty_label = "Primeiro, escolha uma cidade"
-        self.fields['colaborador'].empty_label = "Selecione um colaborador"
 
         # 3. Defina o dropdown dependente (bairro) para começar vazio
         self.fields['bairro'].queryset = Bairro.objects.none()
