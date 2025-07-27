@@ -19,10 +19,8 @@ def lista_convidados(request):
     if direcao == 'desc':
         ordenar_por_query = f'-{ordenar_por_param}'
 
-    # Começa com a QuerySet base, otimizada com select_related para as ForeignKeys
     convidados_qs = Convidado.objects.select_related('colaborador', 'cidade', 'bairro')
 
-    # Aplica o filtro se um termo de busca foi enviado
     if termo_busca:
         convidados_qs = convidados_qs.filter(
             Q(nome__icontains=termo_busca) |
@@ -32,10 +30,7 @@ def lista_convidados(request):
             Q(colaborador__nome__icontains=termo_busca)
         )
 
-    # Aplica a ordenação
     convidados_final = convidados_qs.order_by(ordenar_por_query)
-
-    # Calcula os totais da lista já filtrada
     total_convidados_filtrados = convidados_final.count()
 
     context = {
@@ -46,15 +41,8 @@ def lista_convidados(request):
         'total_convidados_filtrados': total_convidados_filtrados,
     }
 
-    # Responde de forma inteligente (AJAX ou requisição normal)
     if request.GET.get('is_ajax') == 'true':
-        table_html = render_to_string('convidados/partials/convidados_table_fragment.html', context, request=request)
-        summary_html = render_to_string('convidados/partials/totais_fragment.html', context, request=request)
-
-        return JsonResponse({
-            'table_html': table_html,
-            'summary_html': summary_html,
-        })
+        return render(request, 'convidados/convidados_table_fragment.html', context)
     else:
         return render(request, 'convidados/lista_convidados.html', context)
 
@@ -140,30 +128,45 @@ def editar_convidado(request, pk):
         form = ConvidadoForm(request.POST, instance=convidado)
         if form.is_valid():
             form.save()
-            messages.warning(request, 'Convidado editado com sucesso!')
-            # Após salvar, redireciona para a lista de convidados do colaborador, se houver um colaborador associado
+            messages.warning(request, f'Convidado "{convidado.nome}" editado com sucesso!')
             if colaborador_origem_id:
                 return redirect('convidados:colaborador_convidados', pk=colaborador_origem_id)
             else:
-                return redirect('convidados:lista_todos_convidados')
-        else:
-            form = ConvidadoForm(instance=convidado)
-    return render(request, 'convidados/editar_convidado.html', {'form': form, 'convidado': convidado})
+                return redirect('convidados:lista_convidados')
+    else:
+        form = ConvidadoForm(instance=convidado)
+
+    # **THE CORRECTION IS HERE**
+    # This `context` and `return render` block must be outside the `else` block
+    # so that it is executed for both GET and invalid POST requests.
+    context = {
+        'form': form,
+        'convidado': convidado,
+    }
+    return render(request, 'convidados/editar_convidado.html', context)
 
 @login_required
-def excluir_convidado(request, pk): # <-- A função espera 'pk'
+def excluir_convidado(request, pk):
     convidado = get_object_or_404(Convidado, pk=pk)
+
     if request.method == 'POST':
-        try:
-            convidado_nome = convidado.nome
-            convidado.delete()
-            messages.error(request, f'Convidado "{convidado_nome}" excluído com sucesso!')
+        # Pega a URL de redirecionamento que o formulário enviou
+        redirect_url = request.POST.get('redirect_url', None)
+
+        # Guarda o nome do convidado antes de o apagar
+        nome_convidado = convidado.nome
+
+        # Apaga o convidado do banco de dados
+        convidado.delete()
+
+        messages.success(request, f'Convidado "{nome_convidado}" excluído com sucesso!')
+
+        # Se a URL de redirecionamento foi enviada, usa-a.
+        # Caso contrário, usa uma URL padrão (fallback de segurança).
+        if redirect_url:
+            return redirect(redirect_url)
+        else:
             return redirect('convidados:lista_convidados')
-        except ProtectedError:
-            messages.error(request, 'Colaborador não pode ser excluído porque possui associações. Por favor, remova as associações primeiro.')
-            # Renderiza o template de confirmação novamente com o contexto de erro
-            return render(request, 'convidados/confirmar_exclusao_convidado.html', {'convidado': convidado}) # Se passar contexto, precisa do template
-        except Exception as e:
-            messages.error(request, f'Ocorreu um erro inesperado ao excluir o convidado: {e}')
-            return render(request, 'convidados/confirmar_exclusao_convidado.html', {'convidado': convidado})
-    return render(request, 'convidados/confirmar_exclusao_convidado.html', {'convidado': convidado})
+
+    # Se a requisição não for POST, simplesmente redireciona para a lista geral.
+    return redirect('convidados:lista_convidados')

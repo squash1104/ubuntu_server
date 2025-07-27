@@ -17,6 +17,9 @@ class ConvidadoForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self.fields['nome'].widget.attrs.update({'class': 'form-control'})
+        self.fields['telefone'].widget.attrs.update({'class': 'form-control'})
+
         # 1. Adicione a classe 'select2' a todos os dropdowns que você quer estilizar
         self.fields['cidade'].widget.attrs.update({'class': 'select2'})
         self.fields['bairro'].widget.attrs.update({'class': 'select2'})
@@ -30,7 +33,6 @@ class ConvidadoForm(forms.ModelForm):
         # 3. Defina o dropdown dependente (bairro) para começar vazio
         self.fields['bairro'].queryset = Bairro.objects.none()
 
-        # 4. Lógica para carregar os bairros se o formulário já tiver uma cidade
         # (importante para as telas de edição)
         if 'cidade' in self.data:
             try:

@@ -1,39 +1,80 @@
+{% if convidados %}
 <div class="table-scroll-container">
     <table class="table table-hover align-middle">
         <thead class="table-light">
             <tr>
-                <th scope="col">Nome</th>
-                <th scope="col">Telefone</th>
-                <th scope="col">Cidade</th>
-                <th scope="col">Bairro</th>
-                <th scope="col">Convidado por</th>
-                <th scope="col" class="text-center">Ações</th>
+				<th scope="col">Seq.</th>
+                <th scope="col">
+					    <a href="?ordenar_por=nome&direcao={% if ordenar_por == 'nome' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if termo_busca %}&q={{ termo_busca }}{% endif %}&is_ajax=true">
+                        Nome
+                        {% if ordenar_por == 'nome' %}<span class="sort-arrow">{% if direcao == 'asc' %}&#9650;{% else %}&#9660;{% endif %}</span>{% endif %}
+                    </a>
+                </th>
+                <th scope="col">
+					<a href="?ordenar_por=telefone&direcao={% if ordenar_por == 'telefone' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if termo_busca %}&q={{ termo_busca }}{% endif %}&is_ajax=true">
+						Telefone
+						{% if ordenar_por == 'telefone' %}<span class="sort-arrow">{% if direcao == 'asc' %}&#9650;{% else %}&#9660;{% endif %}</span>{% endif %}
+					</a>
+				</th>
+                <th scope="col">
+                    <a href="?ordenar_por=cidade__nome_cidade&direcao={% if ordenar_por == 'cidade__nome_cidade' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if termo_busca %}&q={{ termo_busca }}{% endif %}&is_ajax=true">
+                        Cidade
+                        {% if ordenar_por == 'cidade__nome_cidade' %}<span class="sort-arrow">{% if direcao == 'asc' %}&#9650;{% else %}&#9660;{% endif %}</span>{% endif %}
+                    </a>
+                </th>
+                <th scope="col">
+                    <a href="?ordenar_por=bairro__nome_bairro&direcao={% if ordenar_por == 'bairro__nome_bairro' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if termo_busca %}&q={{ termo_busca }}{% endif %}&is_ajax=true">
+                        Bairro
+                        {% if ordenar_por == 'bairro__nome_bairro' %}<span class="sort-arrow">{% if direcao == 'asc' %}&#9650;{% else %}&#9660;{% endif %}</span>{% endif %}
+                    </a>
+                </th>
+                <th scope="col">
+                    <a href="?ordenar_por=colaborador__nome&direcao={% if ordenar_por == 'colaborador__nome' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if termo_busca %}&q={{ termo_busca }}{% endif %}&is_ajax=true">
+                        Convidado por
+                        {% if ordenar_por == 'colaborador__nome' %}<span class="sort-arrow">{% if direcao == 'asc' %}&#9650;{% else %}&#9660;{% endif %}</span>{% endif %}
+                    </a>
+                </th>
+                <th scope="col" class="coluna-acoes">Ações</th>
             </tr>
         </thead>
         <tbody>
             {% for convidado in convidados %}
             <tr>
+                <td>{{ forloop.counter }}</td>
                 <td><strong>{{ convidado.nome }}</strong></td>
                 <td>{{ convidado.telefone|default:"-" }}</td>
                 <td>{{ convidado.cidade.nome_cidade|default:"-" }}</td>
                 <td>{{ convidado.bairro.nome_bairro|default:"-" }}</td>
                 <td>{{ convidado.colaborador.nome|default:"-" }}</td>
-                <td class="text-end">
-                    <div class="d-flex justify-content-end gap-2">
-                        <a href="{% url 'convidados:editar_convidado' convidado.id %}" class="btn btn-sm btn-warning">Editar</a>
-                        <form action="{% url 'convidados:excluir_convidado' convidado.id %}" method="post" class="d-inline" onsubmit="return confirm('Tem certeza que deseja excluir o convidado {{ convidado.nome }}?');">
+
+                <td class="coluna-acoes">
+                    <div class="d-flex justify-content-center gap-2">
+                        <a href="{% url 'convidados:editar_convidado' pk=convidado.pk %}" class="btn btn-sm btn-warning" data-bs-toggle="tooltip" title="Editar Convidado">
+                            <i class="bi bi-pencil-square"></i>
+                        </a>
+
+                        <form action="{% url 'convidados:excluir_convidado' pk=convidado.pk %}" method="post" class="d-inline" onsubmit="return confirm('Tem certeza que deseja excluir o convidado {{ convidado.nome }}?');">
                             {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-danger">Excluir</button>
+                            <input type="hidden" name="redirect_url" value="{{ request.path }}">
+                            <button type="submit" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" title="Excluir Convidado">
+                                <i class="bi bi-trash-fill"></i>
+                            </button>
                         </form>
                     </div>
                 </td>
             </tr>
             {% endfor %}
         </tbody>
-    </table>
+        </table>
+    {% else %}
 </div>
+{% endif %}
+
+</div>
+
 <div class="summary-bar d-flex justify-content-between">
     <span>
         Total: {{ total_convidados_filtrados }} convidado(s) encontrado(s).
     </span>
+
 </div>

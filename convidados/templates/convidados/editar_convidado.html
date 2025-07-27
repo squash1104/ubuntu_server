@@ -1,186 +1,96 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editar Convidado: {{ convidado.nome }}</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4; color: #333; }
-        h1 { color: #2c3e50; margin-bottom: 20px; }
-        .nav-links a {
-            display: inline-block;
-            padding: 8px 15px;
-            margin-right: 10px;
-            background-color: #007bff;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background-color 0.3s ease;
-        }
-        .nav-links a:hover {
-            background-color: #0056b3;
-        }
-        form {
-            background-color: #ffffff;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            max-width: 600px;
-            margin-top: 20px;
-        }
-        form p {
-            margin-bottom: 15px;
-        }
-        form label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        form input[type="text"],
-        form input[type="email"],
-        form select,
-        form textarea {
-            width: calc(100% - 22px);
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        .btn-group {
-            margin-top: 20px;
-        }
-        .btn-group button, .btn-group a {
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1em;
-            text-decoration: none;
-            display: inline-block;
-            margin-right: 10px;
-        }
-        .btn-primary {
-            background-color: #28a745; /* Verde para salvar */
-            color: white;
-        }
-        .btn-primary:hover {
-            background-color: #218838;
-        }
-        .btn-secondary {
-            background-color: #6c757d; /* Cinza para cancelar */
-            color: white;
-        }
-        .btn-secondary:hover {
-            background-color: #5a6268;
-        }
-        .errorlist {
-            color: red;
-            list-style-type: none;
-            padding: 0;
-            margin: -10px 0 10px 0;
-            font-size: 0.9em;
-        }
-        .helptext {
-            font-size: 0.8em;
-            color: #666;
-            margin-top: 5px;
-            display: block;
-        }
-        /* Estilos para as mensagens do Django */
-        .messages {
-            list-style-type: none;
-            padding: 10px 20px;
-            margin-bottom: 20px;
-            border-radius: 5px;
-        }
-        .messages .success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .messages .error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        .messages .warning {
-            background-color: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeeba;
-        }
-    </style>
-</head>
-<body>
-    <h1>Editar Convidado: {{ convidado.nome }}</h1>
-    <div class="nav-links">
-        <a href="{% url 'convidados:lista_convidados' %}">Voltar</a>
-        {% if convidado.colaborador %}
-            <a href="{% url 'convidados:colaborador_convidados' convidado.colaborador.id %}">Convidados de {{ convidado.colaborador.nome }}</a>
-        {% endif %}
-        <a href="{% url 'dashboard' %}">Página Inicial</a>
-    </div>
-    <br>
 
-    {# Bloco para exibir mensagens do Django #}
-    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1080;">
-        {% if messages %}
-                    {# <ul class="messages"> #}
-            {% for message in messages %}
-                    {# <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li> #}
-                <div class="alert {{ message.tags }} alert-dismissible fade show w-auto" role="alert" style="pointer-events: auto; max-width: 400px;">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            {% endfor %}
-        {% endif %}
-    </div>
+{% block title %}SisAps - Editar {{ convidado.nome }}{% endblock %}
 
-    <form method="post">
-        {% csrf_token %}
-        {# Exibir erros gerais do formulário #}
-        {% if form.non_field_errors %}
-            <ul class="errorlist">
-                {% for error in form.non_field_errors %}
-                    <li>{{ error }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h3 class="card-title mb-0">Editar Convidado: {{ convidado.nome }}</h3>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
 
-        {# Iterar sobre os campos para exibir erros específicos de cada campo #}
-        {% for field in form %}
-            <p>
-                {{ field.label_tag }}<br>
-                {{ field }}
-                {% if field.help_text %}
-                    <span class="helptext">{{ field.help_text }}</span>
-                {% endif %}
-                {% if field.errors %}
-                    <ul class="errorlist">
-                        {% for error in field.errors %}
-                            <li>{{ error }}</li>
-                        {% endfor %}
-                    </ul>
-                {% endif %}
-            </p>
-        {% endfor %}
+                    {# Renderiza o formulário campo por campo, com os estilos do Bootstrap #}
+                    {% for field in form %}
+                        <div class="mb-3">
+                            {{ field.label_tag }}
+                            {{ field }}
+                            {% for error in field.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
 
-        <div class="btn-group">
-            <button type="submit" class="btn-primary">Salvar Alterações</button>
-            {% if convidado.colaborador %}
-                <a href="{% url 'convidados:colaborador_convidados' convidado.colaborador.id %}" class="btn-secondary">Cancelar</a>
-            {% else %}
-                <a href="{% url 'convidados:lista_convidados' %}" class="btn-secondary">Cancelar</a>
-            {% endif %}
+                    <div class="mt-4 border-top pt-3">
+                        <button type="submit" class="btn btn-success">Salvar Alterações</button>
+                        {# O link de cancelar agora é dinâmico! #}
+                        {% if request.GET.colaborador_origem_id %}
+                            <a href="{% url 'convidados:colaborador_convidados' pk=request.GET.colaborador_origem_id %}" class="btn btn-secondary">Cancelar</a>
+                        {% else %}
+                            <a href="{% url 'convidados:lista_convidados' %}" class="btn btn-secondary">Cancelar</a>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
         </div>
-    </form>
+    </div>
+</div>
+{% endblock %}
 
-    <script src="{% static 'js/jquery.min.js' %}"></script>
-    <script src="{% static 'js/jquery.mask.min.js' %}"></script>
-    <script src="{% static 'js/main.js' %}"></script>
+{% block extra_js %}
+<script src="{% static 'js/jquery.mask.min.js' %}"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-</body>
-</html>
+<script>
+// Este script é crucial para as páginas de edição
+document.addEventListener('DOMContentLoaded', function() {
+    // Aplica a máscara de telefone
+    $('#id_telefone').mask('(00) 00000-0000');
+
+    // Inicializa o Select2
+    $('.select2').select2({
+        placeholder: "Selecione uma opção",
+        allowClear: true,
+        width: '100%'
+    });
+
+    // Lógica do dropdown dinâmico
+    const cidadeSelect = $('#id_cidade');
+    const bairroSelect = $('#id_bairro');
+
+    cidadeSelect.on('change', function() {
+        const cidadeId = this.value;
+        bairroSelect.empty().append('<option value="">Carregando...</option>').trigger('change');
+
+        if (cidadeId) {
+            fetch(`/geografia/get-bairros/?cidade_id=${cidadeId}`)
+                .then(response => response.json())
+                .then(data => {
+                    bairroSelect.empty().append('<option value="">Selecione um bairro</option>');
+                    // Mantém o valor que já estava selecionado, se houver
+                    const selectedBairro = '{{ form.bairro.value }}';
+
+                    data.forEach(function(bairro) {
+                        const isSelected = bairro.id.toString() === selectedBairro;
+                        const option = new Option(bairro.nome, bairro.id, false, isSelected);
+                        bairroSelect.append(option);
+                    });
+                    bairroSelect.trigger('change');
+                })
+        } else {
+            bairroSelect.empty().append('<option value="">Primeiro, escolha uma cidade</option>').trigger('change');
+        }
+    });
+
+    // Dispara o evento 'change' na cidade assim que a página carrega
+    if (cidadeSelect.val()) {
+        cidadeSelect.trigger('change');
+    }
+});
+</script>
+{% endblock %}

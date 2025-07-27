@@ -1,8 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Cadastrar Novo Colaborador{% endblock %}
-
+{% block title %}SisAps - Novo Colaborador{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
@@ -30,7 +29,7 @@
                      {% endfor %}
 
                      <div class="mt-4 border-top pt-3">
-                         <button type="submit" class="btn btn-success">Salvar Colaborador</button>
+                         <button type="submit" class="btn btn-success">Salvar</button>
                          <a href="{% url 'colaboradores:lista_colaboradores' %}" class="btn btn-secondary">Cancelar</a>
                      </div>
                  </form>
