@@ -40,36 +40,43 @@
 
         <tbody>
             {% for colaborador in colaboradores %}
-                <tr class="
-                    {% if colaborador.num_convidados < 15 %}meta-abaixo
-                    {% elif colaborador.num_convidados == 15 %}meta-atingida
-                    {% else %}meta-superada{% endif %}">
-                    <td>{{ forloop.counter }}</td>
-                    <td><strong>{{ colaborador.nome }}</strong></td>
-                    <td>{{ colaborador.telefone|default:"-" }}</td>
-                    <td>{{ colaborador.cidade.nome_cidade|default:"-" }}</td>
-                    <td>{{ colaborador.bairro.nome_bairro|default:"-" }}</td>
-                    <td class="text-center fw-bold">{{ colaborador.num_convidados }}</td>
-                    <td class="coluna-acoes">
-                        <div class="d-flex justify-content-end gap-2">
-                            <a href="{% url 'convidados:colaborador_convidados' colaborador.id %}" class="btn btn-sm btn-info" data-bs-toggle="tooltip" title="Ver Convidados">
-                                <i class="bi bi-people-fill"></i>
-                            </a>
+                {% with num_convidados=colaborador.num_convidados %}
+                    <tr class="
+                        {% if num_convidados < 15 %}
+                            table-danger
+                        {% elif num_convidados == 15 %}
+                            table-success
+                        {% else %}
+                            table-primary
+                        {% endif %}
+                    ">
+                        <td>{{ forloop.counter }}</td>
+                        <td><strong>{{ colaborador.nome }}</strong></td>
+                        <td>{{ colaborador.telefone|default:"-" }}</td>
+                        <td>{{ colaborador.cidade.nome_cidade|default:"-" }}</td>
+                        <td>{{ colaborador.bairro.nome_bairro|default:"-" }}</td>
+                        <td class="text-center fw-bold">{{ num_convidados}}</td>
+                        <td class="coluna-acoes">
+                            <div class="d-flex justify-content-end gap-2">
+                                <a href="{% url 'convidados:colaborador_convidados' colaborador.id %}" class="btn btn-sm btn-info" data-bs-toggle="tooltip" title="Ver Convidados">
+                                    <i class="bi bi-people-fill"></i>
+                                </a>
 
-                            <a href="{% url 'colaboradores:editar_colaborador' colaborador.id %}" class="btn btn-sm btn-warning" data-bs-toggle="tooltip" title="Editar Colaborador">
-                                <i class="bi bi-pencil-square"></i>
-                            </a>
+                                <a href="{% url 'colaboradores:editar_colaborador' colaborador.id %}" class="btn btn-sm btn-warning" data-bs-toggle="tooltip" title="Editar Colaborador">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
 
-                            <form action="{% url 'colaboradores:excluir_colaborador' colaborador.id %}" method="post" class="d-inline" onsubmit="return confirm('Tem certeza que deseja excluir o colaborador {{ colaborador.nome }}?');">
-                                {% csrf_token %}
-                                <input type="hidden" name="redirect_url" value="{{ request.path }}">
-                                <button type="submit" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" title="Excluir Colaborador">
-                                    <i class="bi bi-trash-fill"></i>
-                                </button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
+                                <form action="{% url 'colaboradores:excluir_colaborador' colaborador.id %}" method="post" class="d-inline" onsubmit="return confirm('Tem certeza que deseja excluir o colaborador {{ colaborador.nome }}?');">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="redirect_url" value="{{ request.path }}">
+                                    <button type="submit" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" title="Excluir Colaborador">
+                                        <i class="bi bi-trash-fill"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                {% endwith %}
             {% endfor %}
         </tbody>
     </table>

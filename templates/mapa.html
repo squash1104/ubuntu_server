@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}Mapa de Apoiadores{% endblock %}
+
+{% block extra_css %}
+    <style>
+        /* Garante que o mapa ocupe a altura disponível dentro do card */
+        .map-container {
+            height: 70vh; /* Ocupa 70% da altura da tela visível */
+            border-radius: 0.375rem;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-header">
+        <h1 class="h3 mb-0">🔥 Mapa de Calor de Apoiadores</h1>
+    </div>
+    <div class="card-body">
+        <p class="card-text text-muted">Este mapa mostra a concentração de colaboradores e convidados registados no sistema, com base na cidade. As áreas mais "quentes" (vermelhas) indicam uma maior concentração de apoio.</p>
+        
+        <div id="heatmap" class="map-container"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    
+    const heatData = JSON.parse('{{ heat_data|default:"[]"|safe }}');
+    const heatmapElement = document.getElementById('heatmap');
+
+    if (heatmapElement && heatData.length > 0) {
+        const map = L.map('heatmap').setView([-12.5, -55.5], 6); // Centrado em MT
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        L.heatLayer(heatData, {
+            radius: 25,
+            blur: 15,
+            maxZoom: 10,
+        }).addTo(map);
+    } else if (heatmapElement) {
+        heatmapElement.innerHTML = '<div class="alert alert-warning">Não há dados de geolocalização suficientes para exibir o mapa.</div>';
+    }
+});
+</script>
+{% endblock %}
