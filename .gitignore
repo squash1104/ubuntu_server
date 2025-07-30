@@ -1,33 +1,29 @@
-# Python
+# Ambientes Virtuais
+.venv/
+venv/
+env/
+
+# Ficheiros de Cache do Python
 __pycache__/
 *.pyc
-*.pyo
-*.pyd
-.Python
-env/
-venv/
-pip-log.txt
-pip-delete-this-virtualenv.txt
-.tox/
-.coverage
-.mypy_cache/
-.pytest_cache/
-*.egg-info/
-.ipynb_checkpoints/
 
-# Django
-db.sqlite3
-media/
-static/
-
-# Environment variables
-.env
-
-# IDEs
+# Ficheiros de Cache e Configuração de Editores
+.cache/
 .idea/
-*.sublime-project
-*.sublime-workspace
+.vscode/
 
-# OS generated files
+# Ficheiros de Base de Dados local (se usar)
+*.sqlite3
+db.sqlite3
+
+# Ficheiros de Mídia e Estáticos coletados
+/media/
+/staticfiles/
+
+# Logs e outros ficheiros temporários
+*.log
+local_settings.py
+
+# Ficheiros de dependências do sistema operativo
 .DS_Store
 Thumbs.db
