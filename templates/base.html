@@ -208,7 +208,19 @@ body {
                     <li class="nav-item"><a class="nav-link active" href="{% url 'dashboard' %}"><i class="bi bi-house-door-fill me-2"></i>Dashboard</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'colaboradores:lista_colaboradores' %}"><i class="bi bi-briefcase-fill me-2"></i>Colaboradores</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'convidados:lista_convidados' %}"><i class="bi bi-people-fill me-2"></i>Convidados</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#"><i class="bi bi-file-earmark-bar-graph-fill me-2"></i>Relatórios</a></li>
+                    <li class="nav-item dropdown"> {# O item principal do menu #}
+    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-file-earmark-bar-graph-fill me-2"></i>Relatórios {# Ícone de gráfico #}
+    </a>
+    <ul class="dropdown-menu dropdown-menu-dark"> {# O contêiner para os itens do dropdown #}
+        <li><a class="dropdown-item" href="{% url 'convidados:guest_report_form' %}">Relatório de Convidados</a></li>
+        <li><a class="dropdown-item" href="{% url 'colaboradores:relatorio_colaboradores_form' %}">Relatório de Colaboradores</a></li> {# <--- NOVO LINK AQUI! #}
+        {# Você pode adicionar outros links de relatório aqui, conforme forem criados #}
+        {# <li><hr class="dropdown-divider"></li> #} {# Divisor opcional #}
+        {# <li><a class="dropdown-item" href="#">Ver Todos os Relatórios</a></li> #} {# Exemplo de um link mais genérico #}
+    </ul>
+</li>
+    </ul>
                     <li class="nav-item"><a class="nav-link" href="{% url 'mapa_apoiadores' %}"><i class="bi bi-map-fill me-2"></i>Mapa</a></li>
                     <li class="nav-item"><a class="nav-link" href="#"><i class="bi bi-calendar-event-fill me-2"></i>Eventos</a></li>
 

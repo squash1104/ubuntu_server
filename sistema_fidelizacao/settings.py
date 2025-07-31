@@ -27,8 +27,16 @@ SECRET_KEY = 'django-insecure-ld%33t$+_#cw)_ssw(++i^9s*xc57@jssh(m!8w@wm65@jwm(=
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['sistema.fidelizamax.app.br', '127.0.0.1', 'localhost', '192.168.18.158']
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://sistema.fidelizamax.app.br',
+    # Adicione 'http://localhost:8000' ou o socket se você testar localmente
+    # 'http://127.0.0.1:8000',
+]
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# Ou 'django.core.mail.backends.filebased.EmailBackend' com EMAIL_FILE_PATH = '/tmp/app-messages'
 
 # Application definition
 
@@ -132,12 +140,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [
      os.path.join(BASE_DIR, 'static'), # Aponta para a pasta 'static' que criamos na raiz do projeto
 ]
 
-# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -147,6 +156,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = '/login/'
 
 LOGIN_REDIRECT_URL = 'home'
+
+LOGOUT_REDIRECT_URL = '/accounts/login/'
 
 # === CONFIGURAÇÃO CONTENT SECURITY POLICY (CSP) PARA django-csp >= 4.0 ===
 # Certifique-se de que todas as configurações antigas CSP_xxx_SRC foram removidas ou comentadas.
@@ -167,3 +178,23 @@ CSP_REPORT_ONLY = False
 # E *APENAS* EM DESENVOLVIMENTO:
 # CSP_SCRIPT_SRC += ("'unsafe-eval'",) # Se precisar para alguns scripts que usam eval
 # CSP_STYLE_SRC += ("'unsafe-inline'",) # Já incluído acima
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend' # Ou outro backend (console para teste)
+EMAIL_HOST = 'smtp.gmail.com' # Ex: smtp.gmail.com, smtp.mailgun.org
+EMAIL_PORT = 587 # Porta comum para TLS
+EMAIL_USE_TLS = True # Use True para TLS (segurança)
+# EMAIL_USE_SSL = False # Se usar SSL (porta 465), defina como True e EMAIL_USE_TLS como False
+EMAIL_HOST_USER = 'lucianolrv@gmail.com' # Seu endereço de e-mail
+EMAIL_HOST_PASSWORD = 'PaiMae1826!@' # Sua senha de e-mail (ou app password)
+DEFAULT_FROM_EMAIL = 'lucianolrv@gmail.com' # E-mail que aparecerá como remetente
+SERVER_EMAIL = 'lucianolrv@gmail.com' # E-mail para erros de servidor
+
+# Configuração para o e-mail de reset de senha
+# Nome do site que aparece no e-mail (opcional)
+SITE_NAME = "SisAps - Fidelização de Apoiadores"
+# Domínio completo que aparecerá no link de reset de senha
+# É CRÍTICO que este seja o seu domínio de produção, ex:
+# https://sistema.fidelizamax.app.br
+# Use "SITE_ID = 1" e o objeto Site do Django para gerenciar isso dinamicamente se tiver vários domínios.
+# Ou defina na mão se for um único domínio fixo:
+DOMAIN_NAME = 'sistema.fidelizamax.app.br'

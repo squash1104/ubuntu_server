@@ -6,6 +6,14 @@ from django.contrib import messages
 from django.db.models import Count
 import json
 import logging
+from django.utils import timezone
+import csv # Para CSV
+from openpyxl import Workbook # Para Excel
+from openpyxl.styles import Font
+from xhtml2pdf import pisa
+from io import BytesIO
+from django.template.loader import get_template
+
 
 CIDADE_PARA_MESORREGIAO = {
     # NORTE

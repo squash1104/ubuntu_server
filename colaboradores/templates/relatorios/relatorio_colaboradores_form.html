@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório de Colaboradores - Fideliza Max</title>
+    <link rel="stylesheet" href="/static/css/base.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Seu CSS personalizado aqui (igual ao de convidados, mas adapte se precisar) */
+        body { font-family: sans-serif; margin: 20px; background-color: #f8f9fa; color: #333; }
+        .container-relatorio {
+            max-width: 960px; /* Aumentei um pouco */
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #007bff;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .filter-form-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            background-color: #f2f2f2;
+        }
+        .filter-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+        .filter-item {
+            flex: 1;
+            min-width: 200px;
+        }
+        .filter-item label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        .filter-item input[type="date"], .filter-item input[type="number"], .filter-item select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+        .button-group button {
+            padding: 10px 20px;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        .btn-primary { background-color: #007bff; }
+        .btn-primary:hover { background-color: #0056b3; }
+        .btn-success { background-color: #28a745; }
+        .btn-success:hover { background-color: #218838; }
+        .btn-danger { background-color: #dc3545; }
+        .btn-danger:hover { background-color: #c82333; }
+
+        h2 {
+            color: #007bff;
+            margin-top: 40px;
+            margin-bottom: 20px;
+        }
+        .table-responsive {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            font-size: 0.9em; /* Fonte menor para a tabela */
+        }
+        th, td {
+            border: 1px solid #dee2e6;
+            padding: 12px;
+            text-align: left;
+            vertical-align: middle;
+        }
+        th {
+            background-color: #e9ecef;
+            font-weight: bold;
+            color: #495057;
+        }
+        tbody tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        tbody tr:hover {
+            background-color: #e2e6ea;
+        }
+        .no-data {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-relatorio">
+        <h1>Relatório de Colaboradores</h1>
+
+        <div class="filter-form-section">
+            <form method="get" action="{% url 'colaboradores:relatorio_colaboradores' %}">
+                {% csrf_token %}
+                <div class="filter-row">
+                    <div class="filter-item">
+                        <label for="{{ form.data_cadastro_inicio.id_for_label }}">Cadastro a partir de:</label>
+                        {{ form.data_cadastro_inicio }}
+                    </div>
+                    <div class="filter-item">
+                        <label for="{{ form.data_cadastro_fim.id_for_label }}">Cadastro até:</label>
+                        {{ form.data_cadastro_fim }}
+                    </div>
+                    <div class="filter-item">
+                        <label for="{{ form.min_convidados.id_for_label }}">Mínimo de Convidados:</label>
+                        {{ form.min_convidados }}
+                    </div>
+                    <div class="filter-item">
+                        <label for="{{ form.ordem_colaboradores.id_for_label }}">Ordenar por:</label>
+                        {{ form.ordem_colaboradores }}
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" class="btn btn-primary">Aplicar Filtro (Pré-visualizar)</button>
+                    <button type="submit" name="export_excel" class="btn btn-success">Gerar Excel</button>
+                    <button type="submit" name="export_pdf" class="btn btn-danger">Gerar PDF</button>
+                </div>
+            </form>
+        </div>
+
+        <h2>Pré-visualização dos Dados</h2>
+        <div class="table-responsive">
+            {% if colaboradores %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nome</th> {# <--- REMOVIDO ID #}
+                        <th>Email</th>
+                        <th>Telefone</th>
+                        <th>Data Cadastro</th>
+                        <th>Qtd Convidados</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for colaborador in colaboradores %}
+                    <tr>
+                        <td>{{ colaborador.nome }}</td>
+                        <td>{{ colaborador.email }}</td>
+                        <td>{{ colaborador.telefone }}</td>
+                        <td>{{ colaborador.data_cadastro|date:"d/m/Y H:i" }}</td>
+                        <td>{{ colaborador.num_convidados }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="no-data">Nenhum colaborador encontrado com os filtros aplicados.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

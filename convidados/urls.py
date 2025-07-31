@@ -11,4 +11,6 @@ urlpatterns = [
     path('editar/<int:pk>/', editar_convidado, name='editar_convidado'),
     path('excluir/<int:pk>/', excluir_convidado, name='excluir_convidado'),
     path('<int:pk>/', views.colaborador_convidados, name='colaborador_convidados'),
+    path('relatorios/convidados/', views.relatorio_convidados_view, name='guest_report_form'),
+    path('get_bairros_ajax/', views.get_bairros_ajax, name='get_bairros_ajax'),
 ]
