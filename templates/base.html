@@ -20,7 +20,6 @@
 
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
 <link rel="stylesheet" href="{% static 'css/custom.css' %}">
 
 
@@ -57,7 +56,7 @@ word-wrap: break-word;
 }
 @media (min-width: 768px) {
     #offcanvasNavbar {
-         width: 200px; /* Pode ajustar este valor fixo como preferir */
+         width: 250px; /* Pode ajustar este valor fixo como preferir */
     }
 }
 
@@ -141,7 +140,7 @@ text-align: left;
 }
 
 body {
-    background: linear-gradient(to right, #cccccc, #dddddd);
+    {#background: linear-gradient(to right, #cccccc, #dddddd);#}
     min-height: 100vh;
     background-repeat: no-repeat;
     background-attachment: fixed;
@@ -220,21 +219,25 @@ body {
         {# <li><a class="dropdown-item" href="#">Ver Todos os Relatórios</a></li> #} {# Exemplo de um link mais genérico #}
     </ul>
 </li>
-    </ul>
+
                     <li class="nav-item"><a class="nav-link" href="{% url 'mapa_apoiadores' %}"><i class="bi bi-map-fill me-2"></i>Mapa</a></li>
                     <li class="nav-item"><a class="nav-link" href="#"><i class="bi bi-calendar-event-fill me-2"></i>Eventos</a></li>
+                </ul>
 
                     {# AÇÕES DO UTILIZADOR (NO FINAL DO MENU, ALINHADO À ESQUERDA) #}
                     {% if user.is_authenticated %}
                         {% if user.is_superuser %}
-                        <li class="nav-item">
+                            <ul class="navbar-nav">
+                            <li class="nav-item">
                             {# Agora é um nav-link, não um btn #}
                             <a href="{% url 'admin:index' %}" class="nav-link d-flex align-items-center">
                                 <i class="bi bi-shield-lock-fill me-2"></i>
                                 <span>Admin</span>
                             </a>
                         </li>
+                            </ul>
                         {% endif %}
+                        <ul class="navbar-nav">
                         <li class="nav-item">
                             <form action="{% url 'logout' %}" method="post">
                                 {% csrf_token %}
@@ -245,9 +248,11 @@ body {
                                 </button>
                             </form>
                         </li>
+                        </ul>
                     {% endif %}
                     <hr>
                     {# LINK 'SOBRE' (NO FINAL DE TUDO) #}
+                 <ul class="navbar-nav">
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'sobre' %}"><i class="bi bi-info-circle-fill me-2"></i>Sobre</a>
                     </li>

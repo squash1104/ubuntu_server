@@ -72,18 +72,24 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'sistema_fidelizacao.urls'
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [os.path.join(BASE_DIR, 'templates')],
-        'APP_DIRS': True,
+        # 'APP_DIRS': True, #
         'OPTIONS': {
             'context_processors': [
-		'django.template.context_processors.debug',
+		        'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            'loaders': [
+                'django.template.loaders.filesystem.Loader', # Busca nos diretórios listados em DIRS
+                'django.template.loaders.app_directories.Loader',
+            ]
         },
     },
 ]
@@ -185,9 +191,9 @@ EMAIL_PORT = 587 # Porta comum para TLS
 EMAIL_USE_TLS = True # Use True para TLS (segurança)
 # EMAIL_USE_SSL = False # Se usar SSL (porta 465), defina como True e EMAIL_USE_TLS como False
 EMAIL_HOST_USER = 'lucianolrv@gmail.com' # Seu endereço de e-mail
-EMAIL_HOST_PASSWORD = 'PaiMae1826!@' # Sua senha de e-mail (ou app password)
-DEFAULT_FROM_EMAIL = 'lucianolrv@gmail.com' # E-mail que aparecerá como remetente
-SERVER_EMAIL = 'lucianolrv@gmail.com' # E-mail para erros de servidor
+EMAIL_HOST_PASSWORD = 'fdww ubmc vjqm xdos'
+DEFAULT_FROM_EMAIL = 'suporte@fidelizamax.app.br' # E-mail que aparecerá como remetente
+SERVER_EMAIL = 'suporte@fidelizamax.app.br' # E-mail para erros de servidor
 
 # Configuração para o e-mail de reset de senha
 # Nome do site que aparece no e-mail (opcional)
