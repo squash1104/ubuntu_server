@@ -164,7 +164,7 @@ body {
 
 </head>
 
-<body>
+<body class="light-theme">
 
 
 
@@ -182,7 +182,7 @@ body {
                 {% endif %}
 
                 <button id="theme-toggler" class="btn btn-outline-light btn-sm" type="button" title="Mudar tema">
-                    <i id="theme-icon" class="bi"></i>
+                    <i id="theme-icon" class="bi bi-moon-stars-fill"></i>
                 </button>
             </div>
         </div>
@@ -296,22 +296,35 @@ body {
 
 
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const themeToggler = document.getElementById('theme-toggler');
+        const themeIcon = document.getElementById('theme-icon');
+        const body = document.body;
 
-document.addEventListener('DOMContentLoaded', function() {
-
-    const themeToggler = document.getElementById('theme-toggler');
-            const themeIcon = document.getElementById('theme-icon');
-            function setTheme(theme) {
+        function setTheme(theme) {
                 document.documentElement.setAttribute('data-bs-theme', theme);
                 localStorage.setItem('theme', theme);
-                themeIcon.className = theme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-stars-fill';
+                if (theme === 'dark') {
+                    body.classList.add('dark-theme');
+                    body.classList.remove('light-theme');
+                    themeIcon.className = 'bi bi-sun-fill'; // Ícone de sol para alternar para claro
+                } else {
+                    body.classList.remove('dark-theme');
+                    body.classList.add('light-theme');
+                    themeIcon.className = 'bi bi-moon-stars-fill'; // Ícone de lua para alternar para escuro
+                }
             }
+        // Define o tema inicial baseado no localStorage ou padrão 'light'
             let currentTheme = localStorage.getItem('theme') || 'light';
             setTheme(currentTheme);
+
+            // Adiciona listener para o clique no botão
             themeToggler.addEventListener('click', () => {
-                currentTheme = document.documentElement.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
+                // Alterna o tema
+                currentTheme = body.classList.contains('light-theme') ? 'dark' : 'light';
                 setTheme(currentTheme);
             });
+
 
 // Ativa as notificações
 

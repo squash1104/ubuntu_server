@@ -25,11 +25,10 @@
 /*    filter: brightness(0) invert(1);*/
 /*}*/
 
-body {
-    /*background: linear-gradient(to right, #cccccc, #dddddd);*/
-    min-height: 100vh;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
+body.dark-theme {
+    background-color: #2c2c2c; /* Certifique-se de que esta é a cor desejada para o tema escuro */
+    /* Remova ou comente qualquer linha 'background: linear-gradient(...);' aqui */
+    color: #f0f0f0; /* Cor do texto no tema escuro */
 }
 
 /* Opcional, mas recomendado: Remove margens padrão que os navegadores adicionam */
@@ -189,7 +188,7 @@ textarea:focus,
             background-color: #f4f4f4;
             margin: 0;
             padding-top: 70px; /* Espaço para a navbar fixa */
-            /*background: linear-gradient(to right, #cccccc, #dddddd);*/
+            background: linear-gradient(to right, #cccccc, #dddddd);
             background-repeat: no-repeat;
             background-attachment: fixed;
             box-sizing: border-box; /* Garante que padding-top não estoure a altura */
