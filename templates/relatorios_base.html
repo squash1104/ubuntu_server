@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}SisAps - Relatórios{% endblock %}
+
+{% block extra_css %}
+
+    <style>
+        /* --- Estilos específicos para impressão --- */
+@media print {
+    /* Força o navegador a imprimir cores de fundo e texto */
+    html, body {
+        -webkit-print-color-adjust: exact; /* Para Chrome, Safari, etc. */
+        print-color-adjust: exact;         /* Padrão W3C */
+    }
+
+    /* Garante que as cores das linhas da tabela sejam impressas */
+    .table-preview-section tbody tr.bg-danger {
+        background-color: #dc3545 !important;
+        color: white !important;
+    }
+    .table-preview-section tbody tr.bg-success {
+        background-color: #28a745 !important;
+        color: white !important;
+    }
+    .table-preview-section tbody tr.bg-info {
+        background-color: #17a2b8 !important;
+        color: white !important;
+    }
+
+    /* Oculta os botões e outros elementos que não devem ser impressos */
+    .filter-form-section, .button-group, .report-header .nav-links {
+        display: none !important;
+    }
+}
+        /* Estilos do formulário de filtro */
+    .filter-form-section {
+        margin-bottom: 30px;
+        padding: 20px;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        background-color: #f2f2f2;
+    }
+
+    /* Container Flexbox para organizar os itens em colunas */
+    .filter-grid {
+        display: flex;
+        flex-wrap: wrap; /* Permite que os itens quebrem para a próxima linha */
+        gap: 20px; /* Espaço entre os itens */
+        margin-bottom: 15px;
+    }
+
+    /* Cada campo do filtro é um item */
+    .filter-item {
+        flex: 1 1 200px; /* Faz com que cada item ocupe pelo menos 200px e cresça/encolha */
+        display: flex;
+        flex-direction: column;
+    }
+
+    .filter-item label {
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #555;
+    }
+
+    .filter-item select, .filter-item input[type="text"], .filter-item input[type="date"] {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 20px;
+    }
+    .button-group button {
+        padding: 10px 20px;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s ease;
+    }
+
+    /* --- Novos Estilos para a Tabela de Pré-visualização --- */
+    .table-preview-section {
+        margin-top: 30px;
+        margin-bottom: 30px;
+        padding: 20px;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        background-color: #fff;
+    }
+
+    .table-responsive {
+        width: 100%;
+        overflow-x: auto; /* Garante que a tabela possa rolar em telas pequenas */
+    }
+
+    .table-preview-section table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: Arial, sans-serif;
+    }
+
+    .table-preview-section thead th {
+        background-color: #007bff;
+        color: #ffffff;
+        padding: 12px;
+        text-align: left;
+    }
+
+    .table-preview-section tbody tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+
+    .table-preview-section tbody tr:hover {
+        background-color: #e9ecef;
+    }
+
+    .table-preview-section td {
+        padding: 12px;
+        border: 1px solid #dee2e6;
+    }
+
+    .no-data {
+        text-align: center;
+        padding: 20px;
+        color: #6c757d;
+        font-style: italic;
+    }
+
+    /* Estilos do cabeçalho de navegação */
+    .report-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 20px;
+        margin-bottom: 20px;
+        background-color: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+    }
+
+    .report-header h2 {
+        margin: 0;
+        font-size: 1.5rem;
+        color: #343a40;
+    }
+
+    .report-header .nav-links {
+        display: flex;
+        gap: 15px;
+    }
+
+    .report-header .nav-link {
+        text-decoration: none;
+        color: #007bff;
+        font-weight: bold;
+        transition: color 0.3s ease;
+    }
+
+    .report-header .nav-link:hover {
+        color: #0056b3;
+    }
+
+    body.dark-theme {
+            background: linear-gradient(to right, #333, #555);
+            color: #f0f0f0;
+        }
+    body.dark-theme .list-group-item {
+    background-color: #343a40; /* Cor de fundo dos itens */
+    border-color: #495057; /* Borda sutil */
+    color: #f8f9fa; /* Cor do texto */
+}
+
+body.dark-theme .list-group-item.active {
+    background-color: #0d6efd; /* Cor do item ativo (azul vibrante) */
+    border-color: #0d6efd;
+    color: #fff;
+}
+body.dark-theme .filter-form-section,
+body.dark-theme .table-preview-section,
+body.dark-theme .report-header {
+    background-color: #1e1e1e;
+    border-color: #444;
+}
+
+
+
+    </style>
+
+
+{% endblock %}
+
+{% block extra_js %}{% endblock %}
+
+{% block content %}
+
+            {% block relatorio_content %}
+                {% endblock %}
+
+{% endblock %}

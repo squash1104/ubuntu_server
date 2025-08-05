@@ -30,16 +30,20 @@ class RelatorioConvidadosForm(forms.Form):
         widget=forms.Select(attrs={'class': 'form-control'})  # Adicione 'select2' se você usa essa lib
     )
 
-    ORDEM_ALFABETICA_CHOICES = [
+    ORDENAR_POR_CHOICES = [
         ('', 'Não Ordenar'),
         ('nome_asc', 'Nome (A-Z)'),
         ('nome_desc', 'Nome (Z-A)'),
+        ('cidade_asc', 'Cidade (A-Z)'),
+        ('cidade_desc', 'Cidade (Z-A)'),
+        ('bairro_asc', 'Bairro (A-Z)'),
+        ('bairro_desc', 'Bairro (Z-A)'),
+        ('data_cidade_nome_asc', 'Data Cadastro, Cidade, Nome (A-Z)'),
     ]
-    ordem_alfabetica = forms.ChoiceField(
-        label="Ordenar por Nome",
-        choices=ORDEM_ALFABETICA_CHOICES,
+    ordem = forms.ChoiceField(
+        choices=ORDENAR_POR_CHOICES,
         required=False,
-        widget=forms.Select(attrs={'class': 'form-control'})
+        label='Ordenar por',
     )
 
     def __init__(self, *args, **kwargs):

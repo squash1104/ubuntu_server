@@ -1,6 +1,68 @@
 from django import forms
 from .models import Colaborador
-from geografia.models import Bairro
+from geografia.models import Cidade, Bairro
+
+
+class RelatorioColaboradoresForm(forms.Form):
+    data_inicio = forms.DateField(
+        label="Data de Início",
+        required=False,  # O campo não é obrigatório
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+    )
+    data_fim = forms.DateField(
+        label="Data de Fim",
+        required=False,  # O campo não é obrigatório
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+    )
+    cidade = forms.ModelChoiceField(
+        queryset=Cidade.objects.all().order_by('nome_cidade'),  # Busca todas as cidades
+        label="Cidade",
+        required=False,
+        empty_label="Todas as Cidades",  # Opção para não filtrar por cidade
+        widget=forms.Select(attrs={'class': 'form-control'})  # Adicione 'select2' se você usa essa lib
+    )
+
+    bairro = forms.ModelChoiceField(
+        queryset=Bairro.objects.none(),  # Começa vazio, será preenchido via JS
+        label="Bairro",
+        required=False,
+        empty_label="Todos os Bairros",  # Opção para não filtrar por bairro
+        widget=forms.Select(attrs={'class': 'form-control'})  # Adicione 'select2' se você usa essa lib
+    )
+
+    ORDENAR_POR_CHOICES = [
+        ('', 'Não Ordenar'),
+        ('nome_asc', 'Nome (A-Z)'),
+        ('nome_desc', 'Nome (Z-A)'),
+        ('cidade_asc', 'Cidade (A-Z)'),
+        ('cidade_desc', 'Cidade (Z-A)'),
+        ('bairro_asc', 'Bairro (A-Z)'),
+        ('bairro_desc', 'Bairro (Z-A)'),
+    ]
+    ordem = forms.ChoiceField(
+        choices=ORDENAR_POR_CHOICES,
+        required=False,
+        label='Ordenar por',
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Lógica para preencher o dropdown de bairros dinamicamente
+        # Se uma cidade foi selecionada (e o formulário foi submetido)
+        if 'cidade' in self.data:
+            try:
+                cidade_id = int(self.data.get('cidade'))
+                # Filtra os bairros pela cidade selecionada
+                self.fields['bairro'].queryset = Bairro.objects.filter(cidade_id=cidade_id).order_by('nome_bairro')
+            except (ValueError, TypeError):
+                # Se houver erro na conversão do ID da cidade, não filtra os bairros
+                pass
+        elif self.initial.get('cidade'):
+            # Se o formulário está sendo inicializado com uma cidade (ex: em edição)
+            cidade_id = self.initial.get('cidade')
+            self.fields['bairro'].queryset = Bairro.objects.filter(cidade_id=cidade_id).order_by('nome_bairro')
+
 
 class ColaboradorForm(forms.ModelForm):
     class Meta:
@@ -36,50 +98,3 @@ class ColaboradorForm(forms.ModelForm):
                 pass  # Ignora erros se o valor não for um número
         elif self.instance.pk and self.instance.cidade:
             self.fields['bairro'].queryset = self.instance.cidade.bairro_set.order_by('nome_bairro')
-
-
-
-class RelatorioColaboradoresForm(forms.Form):
-    """
-    Formulário para filtrar dados de relatório de colaboradores.
-    """
-    # Filtros de Data para o cadastro do colaborador
-    data_cadastro_inicio = forms.DateField(
-        label="Cadastro a partir de",
-        required=False,
-        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
-    )
-    data_cadastro_fim = forms.DateField(
-        label="Cadastro até",
-        required=False,
-        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
-    )
-
-    # Filtro: Quantidade Mínima de Convidados
-    min_convidados = forms.IntegerField(
-        label="Mínimo de Convidados",
-        required=False,
-        min_value=0, # Garante que o número não seja negativo
-        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Ex: 10'}) # Adicionado placeholder
-    )
-
-    # Opções de Ordenação para os colaboradores
-    ORDEM_COLABORADORES_CHOICES = [ # Renomeei para evitar conflito com ORDEM_ALFABETICA_CHOICES de convidados
-        ('', 'Não Ordenar'),
-        ('nome_asc', 'Nome (A-Z)'),
-        ('nome_desc', 'Nome (Z-A)'),
-        ('convidados_desc', 'Mais Convidados (Decrescente)'),
-        ('convidados_asc', 'Menos Convidados (Crescente)'),
-    ]
-    ordem_colaboradores = forms.ChoiceField(
-        label="Ordenar por",
-        choices=ORDEM_COLABORADORES_CHOICES,
-        required=False,
-        widget=forms.Select(attrs={'class': 'form-control'})
-    )
-
-    # Se precisar de lógica dependente (ex: bairro após cidade, se colaborador tiver esses campos),
-    # você adicionaria o método __init__ aqui, similar ao que fizemos para o Convidados.
-    # def __init__(self, *args, **kwargs):
-    #     super().__init__(*args, **kwargs)
-    #     # Lógica para preencher dropdowns dependentes

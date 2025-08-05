@@ -53,7 +53,7 @@ CIDADE_PARA_MESORREGIAO = {
 
 @login_required
 def home(request):
-	return render(request, 'home.html', {'titulo': 'Bem-vindo ao Sistema de Fidelização de Votos!'})
+    return render(request, 'home.html')
 
 @login_required # Este decorador garante que apenas usuários logados acessem esta view
 def dashboard(request):

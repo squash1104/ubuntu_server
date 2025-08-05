@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'geografia',
     'colaboradores',
     'convidados',
+    'django_filters',
 ]
 
 MIDDLEWARE = [

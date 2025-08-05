@@ -1,229 +1,380 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Relatório de Convidados - Fideliza Max</title>
-    <link rel="stylesheet" href="/static/css/base.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        /* Seu CSS personalizado aqui */
-        body { font-family: sans-serif; margin: 20px; background-color: #f8f9fa; color: #333; }
-        .container-relatorio {
-            max-width: 960px; /* Aumentei um pouco para melhor visualização dos filtros */
-            margin: 20px auto;
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #007bff;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .filter-form-section { /* Nova classe para a seção de formulário */
-            margin-bottom: 30px;
-            padding: 20px;
-            border: 1px solid #e9ecef;
-            border-radius: 8px;
-            background-color: #f2f2f2;
-        }
-        .filter-row { /* Para organizar os filtros em linhas/colunas */
-            display: flex;
-            flex-wrap: wrap; /* Permite quebrar em telas menores */
-            gap: 20px; /* Espaço entre os itens de filtro */
-            margin-bottom: 15px;
-        }
-        .filter-item {
-            flex: 1; /* Faz os itens tentarem ocupar o mesmo espaço */
-            min-width: 200px; /* Largura mínima para cada filtro */
-        }
-        .filter-item label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: #555;
-        }
-        .filter-item input[type="date"], .filter-item select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ced4da;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        .button-group {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end; /* Alinha os botões à direita */
-            margin-top: 20px;
-        }
-        .button-group button {
-            padding: 10px 20px;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s ease;
-        }
-        /* Cores dos botões Bootstrap */
-        .btn-primary { background-color: #007bff; }
-        .btn-primary:hover { background-color: #0056b3; }
-        .btn-success { background-color: #28a745; }
-        .btn-success:hover { background-color: #218838; }
-        .btn-danger { background-color: #dc3545; }
-        .btn-danger:hover { background-color: #c82333; }
+{% extends "relatorios_base.html" %}
+{% load static %}
 
-        h2 {
-            color: #007bff;
-            margin-top: 40px;
-            margin-bottom: 20px;
-        }
-        .table-responsive { /* Para garantir que a tabela seja responsiva */
-            overflow-x: auto;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            font-size: 0.9em; /* Fonte menor para a tabela */
-        }
-        th, td {
-            border: 1px solid #dee2e6;
-            padding: 12px;
-            text-align: left;
-            vertical-align: middle;
-        }
-        th {
-            background-color: #e9ecef;
-            font-weight: bold;
-            color: #495057;
-        }
-        tbody tr:nth-child(even) {
-            background-color: #f8f9fa;
-        }
-        tbody tr:hover {
-            background-color: #e2e6ea;
-        }
-        .no-data {
-            text-align: center;
-            padding: 20px;
-            color: #6c757d;
-        }
+    {% block extra_css %}
+    <style>
+        /* Estilos do formulário de filtro */
+    .filter-form-section {
+        margin-bottom: 30px;
+        padding: 20px;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        background-color: #f2f2f2;
+    }
+
+    /* Container Flexbox para organizar os itens em colunas */
+    .filter-grid {
+        display: flex;
+        flex-wrap: wrap; /* Permite que os itens quebrem para a próxima linha */
+        gap: 20px; /* Espaço entre os itens */
+        margin-bottom: 15px;
+    }
+
+    /* Cada campo do filtro é um item */
+    .filter-item {
+        flex: 1 1 200px; /* Faz com que cada item ocupe pelo menos 200px e cresça/encolha */
+        display: flex;
+        flex-direction: column;
+    }
+
+    .filter-item label {
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #555;
+    }
+
+    .filter-item select, .filter-item input[type="text"], .filter-item input[type="date"] {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 20px;
+        flex-wrap: wrap;
+    }
+    .button-group button {
+        padding: 10px 20px;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s ease;
+    }
+
+    /* --- Novos Estilos para a Tabela de Pré-visualização --- */
+    .table-preview-section {
+        margin-top: 30px;
+        margin-bottom: 30px;
+        padding: 20px;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        background-color: #fff;
+    }
+
+    .table-responsive {
+        width: 100%;
+        overflow-x: auto; /* Garante que a tabela possa rolar em telas pequenas */
+    }
+
+    .table-preview-section table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: Arial, sans-serif;
+    }
+
+    .table-preview-section thead th {
+        background-color: #adb5bd;
+        color: #ffffff;
+        padding: 12px;
+        text-align: left;
+    }
+
+    .table-preview-section tbody tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+
+    .table-preview-section tbody tr:hover {
+        background-color: #e9ecef;
+    }
+
+    .table-preview-section td {
+        padding: 12px;
+        border: 1px solid #dee2e6;
+    }
+
+    .no-data {
+        text-align: center;
+        padding: 20px;
+        color: #6c757d;
+        font-style: italic;
+    }
+
+    /* Estilos do cabeçalho de navegação */
+    .report-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 20px;
+        margin-bottom: 20px;
+        background-color: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+    }
+
+    .report-header h2 {
+        margin: 0;
+        font-size: 1.5rem;
+        color: #343a40;
+    }
+
+    .report-header .nav-links {
+        display: flex;
+        gap: 15px;
+    }
+
+    .report-header .nav-link {
+        text-decoration: none;
+        color: #007bff;
+        font-weight: bold;
+        transition: color 0.3s ease;
+    }
+
+    .report-header .nav-link:hover {
+        color: #0056b3;
+    }
+
+    /* Estilos específicos para telas pequenas (smartphones, por exemplo) */
+@media (max-width: 768px) {
+    .button-group {
+        flex-direction: column; /* Empilha os botões verticalmente */
+        justify-content: flex-start; /* Alinha os botões à esquerda */
+    }
+    .button-group button {
+        width: 100%; /* Faz com que os botões preencham toda a largura */
+        margin-bottom: 10px; /* Adiciona um pequeno espaço entre eles */
+    }
+}
+        body.dark-theme {
+    background-color: #121212;
+    color: #e0e0e0;
+}
+body.dark-theme .filter-form-section,
+body.dark-theme .table-preview-section,
+body.dark-theme .report-header {
+    background-color: #1e1e1e;
+    border-color: #444;
+}
+body.dark-theme .filter-item label {
+    color: #ccc;
+}
+body.dark-theme .filter-item select,
+body.dark-theme .filter-item input[type="text"],
+body.dark-theme .filter-item input[type="date"] {
+    background-color: #2a2a2a;
+    border-color: #444;
+    color: #e0e0e0;
+}
+body.dark-theme .table-preview-section table {
+    color: #e0e0e0;
+}
+body.dark-theme .table-preview-section thead th {
+    background-color: #343a40;
+    border-color: #444;
+}
+body.dark-theme .table-preview-section tbody tr:nth-child(even) {
+    background-color: #2a2a2a;
+}
+body.dark-theme .table-preview-section tbody tr:hover {
+    background-color: #333;
+}
+body.dark-theme .table-preview-section td {
+    border-color: #444;
+}
+body.dark-theme .no-data {
+    color: #888;
+}
+body.dark-theme .report-header h2 {
+    color: white;
+}
+body.dark-theme .report-header .nav-link {
+    color: #66b5ff;
+}
+
     </style>
-</head>
-<body>
-    <div class="container-relatorio">
-        <h1>Relatório de Convidados</h1>
+
+{% endblock %}
+
+{% block relatorio_content %}
+    <div class="report-header">
+    <h2>Relatório de Convidados</h2>
+
+</div>
 
         <div class="filter-form-section">
-            <form method="get" action="{% url 'convidados:guest_report_form' %}">
-                {% csrf_token %}
-                <div class="filter-row">
-                    <div class="filter-item">
-                        <label for="{{ form.data_inicio.id_for_label }}">Data de Início:</label>
-                        {{ form.data_inicio }}
-                    </div>
-                    <div class="filter-item">
-                        <label for="{{ form.data_fim.id_for_label }}">Data de Fim:</label>
-                        {{ form.data_fim }}
-                    </div>
-                    <div class="filter-item">
-                        <label for="{{ form.cidade.id_for_label }}">Cidade:</label>
-                        {{ form.cidade }}
-                    </div>
-                    <div class="filter-item">
-                        <label for="{{ form.bairro.id_for_label }}">Bairro:</label>
-                        {{ form.bairro }}
-                    </div>
-                    <div class="filter-item">
-                        <label for="{{ form.ordem_alfabetica.id_for_label }}">Ordenar por Nome:</label>
-                        {{ form.ordem_alfabetica }}
-                    </div>
+    <form method="get" action="" id="main-filter-form">
+        <div class="filter-grid">
+            <div class="filter-item">
+                    <label for="id_nome">Nome</label>
+                    {{ filter.form.nome }}
                 </div>
-
-                <div class="button-group">
-                    <button type="submit" class="btn btn-primary">Aplicar Filtro (Pré-visualizar)</button>
-                    <button type="submit" name="export_excel" class="btn btn-success">Gerar Excel</button>
-                    <button type="submit" name="export_pdf" class="btn btn-danger">Gerar PDF</button>
+                <div class="filter-item">
+                    <label for="id_cidade">Cidade</label>
+                    {{ filter.form.cidade }}
                 </div>
-            </form>
+                <div class="filter-item">
+                    <label for="id_bairro">Bairro</label>
+                    {{ filter.form.bairro }}
+                </div>
+                <div class="filter-item">
+                    <label for="id_data_inicio">Data de Cadastro (início)</label>
+                    {{ filter.form.data_cadastro__gte }}
+                </div>
+                <div class="filter-item">
+                    <label for="id_data_fim">Data de Cadastro (fim)</label>
+                    {{ filter.form.data_cadastro__lte }}
+                </div>
+                <div class="filter-item">
+                    <label for="id_ordering">Ordenar por</label>
+                    {{ filter.form.ordering }}
+                </div>
         </div>
 
-        <h2>Pré-visualização dos Dados</h2>
-        <div class="table-responsive">
+        <div class="filter-item" style="flex: 1 1 100%;">
+            <label>Colunas a exibir:</label>
+            <div>
+                <label><input type="checkbox" name="columns" value="nome" {% if 'nome' in selected_columns %}checked{% endif %}> Nome</label>
+                <label><input type="checkbox" name="columns" value="telefone" {% if 'telefone' in selected_columns %}checked{% endif %}> Telefone</label>
+                <label><input type="checkbox" name="columns" value="cidade" {% if 'cidade' in selected_columns %}checked{% endif %}> Cidade</label>
+                <label><input type="checkbox" name="columns" value="bairro" {% if 'bairro' in selected_columns %}checked{% endif %}> Bairro</label>
+                <label><input type="checkbox" name="columns" value="convidado_por" {% if 'convidado_por' in selected_columns %}checked{% endif %}> Convidado por</label>
+                <label><input type="checkbox" name="columns" value="data_cadastro" {% if 'data_cadastro' in selected_columns %}checked{% endif %}> Data Cadastro</label>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button type="submit" class="btn btn-primary">Aplicar Filtro (Pré-visualizar)</button>
+            <button type="button" onclick="window.location.href='{% url 'convidados:guest_report_form' %}'" class="btn btn-secondary">Limpar Filtros</button>
+            <button type="submit" name="export_excel" class="btn btn-success">Gerar Excel</button>
+            <button type="submit" name="export_pdf" class="btn btn-danger">Gerar PDF</button>
+            <button type="submit" name="export_print" class="btn btn-info">Imprimir</button>
+        </div>
+    </form>
+</div>
+
+        <div class="table-preview-section">
             {% if convidados %}
-            <table>
-                <thead>
-                    <tr>
-                        <th>Nome</th>
-                        <th>Email</th>
-                        <th>Telefone</th>
-                        <th>Cidade</th>
-                        <th>Bairro</th>
-                        <th>Data Cadastro</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for convidado in convidados %}
-                    <tr>
-                        <td>{{ convidado.nome }}</td>
-                        <td>{{ convidado.email }}</td>
-                        <td>{{ convidado.telefone }}</td>
-                        <td>{{ convidado.cidade.nome_cidade }}</td>
-                        <td>{{ convidado.bairro.nome_bairro }}</td>
-                        <td>{{ convidado.data_cadastro|date:"d/m/Y H:i" }}</td>
-                    </tr>
+            <p>Total de convidados encontrados: <strong>{{ convidados|length }}</strong></p>
+        {% endif %}
+    <div class="table-responsive">
+        {% if convidados %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Seq.</th>
+                    {% for column in selected_columns %}
+                    <th>
+                        {% if column == 'nome' %}Nome{% endif %}
+                        {% if column == 'telefone' %}Telefone{% endif %}
+                        {% if column == 'cidade' %}Cidade{% endif %}
+                        {% if column == 'bairro' %}Bairro{% endif %}
+                        {% if column == 'convidado_por' %}Convidado por{% endif %}
+                        {% if column == 'data_cadastro' %}Data Cadastro{% endif %}
+                    </th>
                     {% endfor %}
-                </tbody>
-            </table>
-            {% else %}
-            <p class="no-data">Nenhum convidado encontrado com os filtros aplicados.</p>
-            {% endif %}
-        </div>
+                </tr>
+            </thead>
+            <tbody>
+                {% for convidado in convidados %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    {% for column in selected_columns %}
+                    <td>
+                        {% if column == 'nome' %}{{ convidado.nome }}{% endif %}
+                        {% if column == 'telefone' %}{{ convidado.telefone }}{% endif %}
+                        {% if column == 'cidade' %}{{ convidado.cidade|default:"" }}{% endif %}
+                        {% if column == 'bairro' %}{{ convidado.bairro|default:"" }}{% endif %}
+                        {% if column == 'convidado_por' %}{{ convidado.colaborador.nome|default:"" }}{% endif %}
+                        {% if column == 'data_cadastro' %}{{ convidado.data_cadastro|date:"d/m/Y H:i" }}{% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% empty %}
+                <tr><td colspan="{{ selected_columns|length }}">Nenhum convidado encontrado com os filtros aplicados.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="no-data">Nenhum convidado encontrado com os filtros aplicados.</p>
+        {% endif %}
     </div>
+</div>
+{% endblock %}
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Lógica AJAX para carregar bairros (mantida do seu código)
+        var cidadeSelect = $('#id_cidade');
+        var bairroSelect = $('#id_bairro');
 
-    <script>
-        $(document).ready(function() {
-            var cidadeSelect = $('#id_cidade');
-            var bairroSelect = $('#id_bairro');
-
-            function loadBairros(cidadeId) {
-                if (cidadeId) {
-                    $.ajax({
-                        url: "{% url 'convidados:get_bairros_ajax' %}",
-                        data: {
-                            'cidade_id': cidadeId
-                        },
-                        dataType: 'json',
-                        success: function (data) {
-                            bairroSelect.empty();
-                            bairroSelect.append($('<option value="">Todos os Bairros</option>'));
-                            $.each(data, function (key, value) {
-                                bairroSelect.append($('<option></option>').val(value.id).text(value.nome_bairro));
-                            });
-                        }
-                    });
-                } else {
-                    bairroSelect.empty();
-                    bairroSelect.append($('<option value="">Todos os Bairros</option>'));
-                }
+        function loadBairros(cidadeId) {
+            if (cidadeId) {
+                $.ajax({
+                    url: "{% url 'convidados:get_bairros_ajax' %}",
+                    data: {
+                        'cidade_id': cidadeId
+                    },
+                    dataType: 'json',
+                    success: function (data) {
+                        bairroSelect.empty();
+                        bairroSelect.append($('<option value="">Todos os Bairros</option>'));
+                        $.each(data, function (key, value) {
+                            bairroSelect.append($('<option></option>').val(value.id).text(value.nome_bairro));
+                        });
+                    }
+                });
+            } else {
+                bairroSelect.empty();
+                bairroSelect.append($('<option value="">Todos os Bairros</option>'));
             }
+        }
 
-            if (cidadeSelect.val()) {
-                loadBairros(cidadeSelect.val());
-            }
+        if (cidadeSelect.val()) {
+            loadBairros(cidadeSelect.val());
+        }
 
-            cidadeSelect.change(function () {
-                var cidadeId = $(this).val();
-                loadBairros(cidadeId);
-            });
+        cidadeSelect.change(function () {
+            var cidadeId = $(this).val();
+            loadBairros(cidadeId);
         });
-    </script>
-</body>
-</html>
+
+        // NOVO SCRIPT para lidar com os botões de exportação
+        $('.export-btn').on('click', function() {
+            const buttonName = $(this).attr('name');
+            const mainForm = $('#main-filter-form');
+
+            const formData = mainForm.serializeArray();
+            let selectedColumns = [];
+
+            // Adiciona apenas as colunas selecionadas
+            $('input[name="columns"]:checked').each(function() {
+                selectedColumns.push($(this).val());
+            });
+
+            // Constrói a URL manualmente para garantir a formatação correta
+            let urlParams = [];
+
+            $.each(formData, function(i, field){
+                if (field.name !== 'columns') {
+                    urlParams.push(`${field.name}=${field.value}`);
+                }
+            });
+
+            selectedColumns.forEach(column => {
+                urlParams.push(`columns=${column}`);
+            });
+
+            urlParams.push(`${buttonName}=1`);
+
+            window.location.href = `?${urlParams.join('&')}`;
+        });
+    });
+</script>
+{% endblock %}

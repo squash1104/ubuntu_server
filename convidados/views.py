@@ -14,6 +14,8 @@ from openpyxl.styles import Font, Alignment
 from xhtml2pdf import pisa
 from .forms import RelatorioConvidadosForm
 from geografia.models import Cidade, Bairro
+from .filters import ConvidadoFilter
+from .utils import exportar_convidados_excel, exportar_convidados_pdf, imprimir_relatorio
 
 @login_required
 def lista_convidados(request):
@@ -77,12 +79,29 @@ def colaborador_convidados(request, pk):
         convidados_do_colaborador = convidados_do_colaborador.order_by(f'{prefixo}{campos_ordenaveis[ordenar_por]}')
     # --- Fim da Lógica de Ordenação ---
 
+    meta = 15
+    meta_status = ""
+    porcentagem_meta = 0
+
+    if meta > 0:
+        porcentagem_meta = (total_convidados / meta) * 100
+
+    if total_convidados == meta:
+        meta_status = "sucesso"
+    elif total_convidados <= 14:
+        meta_status = "andamento"
+    elif total_convidados > meta:
+        meta_status = "superada"
+
     context = {
         'colaborador': colaborador,
         'convidados': convidados_do_colaborador,
         'total_convidados': convidados_do_colaborador.count(),
         'ordenar_por': ordenar_por, # Passa o campo de ordenação atual para o template
         'direcao': direcao,         # Passa a direção de ordenação atual para o template
+        'meta': meta,
+        'meta_status': meta_status,
+        'porcentagem_meta': porcentagem_meta,
     }
     return render(request, 'convidados/colaborador_convidados.html', context)
 
@@ -177,47 +196,27 @@ def excluir_convidado(request, pk):
 
 
 def relatorio_convidados_view(request):
-    form = RelatorioConvidadosForm(request.GET or None)
-    convidados = Convidado.objects.all() # Queryset inicial, será filtrado
+    f = ConvidadoFilter(request.GET, queryset=Convidado.objects.all())
 
-    if form.is_valid():
-        data_inicio = form.cleaned_data.get('data_inicio')
-        data_fim = form.cleaned_data.get('data_fim')
-        cidade = form.cleaned_data.get('cidade') # Novo filtro
-        bairro = form.cleaned_data.get('bairro') # Novo filtro
-        ordem_alfabetica = form.cleaned_data.get('ordem_alfabetica') # Novo filtro
+    selected_columns = request.GET.getlist('columns')
 
-        if data_inicio:
-            convidados = convidados.filter(data_cadastro__gte=data_inicio)
-        if data_fim:
-            convidados = convidados.filter(data_cadastro__lte=data_fim + timezone.timedelta(days=1)) # Inclui o dia todo
+    if 'export_excel' in request.GET:
+        print("Colunas para Excel:", selected_columns)  # <-- Adicione esta linha
+        return exportar_convidados_excel(f.qs, selected_columns)
+    elif 'export_pdf' in request.GET:
+        print("Colunas para PDF:", selected_columns)  # <-- Adicione esta linha
+        return exportar_convidados_pdf(f.qs, selected_columns)
+    elif 'export_print' in request.GET:
+        print("Colunas para Impressão:", selected_columns)  # <-- Adicione esta linha
+        return imprimir_relatorio(f.qs, selected_columns)
 
-        if cidade:
-            convidados = convidados.filter(cidade=cidade)
-        if bairro:
-            convidados = convidados.filter(bairro=bairro)
+    context = {
+        'filter': f,
+        'convidados': f.qs,
+        'selected_columns': selected_columns,
+    }
+    return render(request, 'report/guest_report_form.html', context)
 
-        # Aplica a ordenação
-        if ordem_alfabetica == 'nome_asc':
-            convidados = convidados.order_by('nome')
-        elif ordem_alfabetica == 'nome_desc':
-            convidados = convidados.order_by('-nome')
-        else:
-            convidados = convidados.order_by('data_cadastro') # Ordenação padrão se nenhum critério for escolhido
-
-        # Verifica qual botão foi clicado (via nome do parâmetro no GET)
-        if 'export_excel' in request.GET:
-            return exportar_convidados_excel(convidados)
-        elif 'export_pdf' in request.GET:
-            return exportar_convidados_pdf(convidados)
-
-    return render(request, 'report/guest_report_form.html', {'form': form, 'convidados': convidados})
-
-
-# Mantenha as funções exportar_convidados_excel e exportar_convidados_pdf como estão,
-# elas já receberão o queryset 'convidados' filtrado.
-
-# NOVO: View para retornar bairros via AJAX
 def get_bairros_ajax(request):
     cidade_id = request.GET.get('cidade_id')
     bairros = []
@@ -225,59 +224,3 @@ def get_bairros_ajax(request):
         bairros_qs = Bairro.objects.filter(cidade_id=cidade_id).order_by('nome_bairro')
         bairros = [{'id': bairro.id, 'nome_bairro': bairro.nome_bairro} for bairro in bairros_qs]
     return JsonResponse(bairros, safe=False)
-
-
-def exportar_convidados_excel(convidados_queryset):
-    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response['Content-Disposition'] = 'attachment; filename="relatorio_convidados.xlsx"'
-
-    workbook = Workbook()
-    sheet = workbook.active
-    sheet.title = "Convidados"
-
-    # Cabeçalhos: Removido 'ID' e 'Status'
-    columns = ['Nome', 'Email', 'Telefone', 'Data Cadastro', 'Cidade', 'Bairro'] # <--- COLUNAS AJUSTADAS
-    sheet.append(columns)
-
-    header_font = Font(bold=True)
-    for cell in sheet[1]:
-        cell.font = header_font
-        cell.alignment = Alignment(horizontal='center')
-
-    # Dados: Removido 'ID' e 'Status'
-    for convidado in convidados_queryset:
-        data_cadastro_str = convidado.data_cadastro.strftime('%Y-%m-%d %H:%M:%S') if convidado.data_cadastro else ''
-
-        sheet.append([
-            convidado.nome,
-            convidado.email,
-            convidado.telefone,
-            data_cadastro_str,
-            str(convidado.cidade) if convidado.cidade else '', # Converte para string se for objeto
-            str(convidado.bairro) if convidado.bairro else ''  # Converte para string se for objeto
-        ])
-
-    workbook.save(response)
-    return response
-
-def exportar_convidados_pdf(convidados_queryset):
-    # O caminho do template continua o mesmo, a remoção das colunas será feita no HTML
-    template_path = 'convidados/relatorios/relatorio_convidados_pdf.html' # ou 'report/guest_report_form.html' se usar o mesmo
-
-    context = {
-        'convidados': convidados_queryset,
-        'data_geracao': timezone.now()
-    }
-
-    template = get_template(template_path)
-    html = template.render(context)
-
-    result_file = BytesIO()
-    pisa_status = pisa.CreatePDF(html, dest=result_file)
-
-    if pisa_status.err:
-        return HttpResponse('Erro ao gerar PDF: <pre>%s</pre>' % html, status=400)
-
-    response = HttpResponse(result_file.getvalue(), content_type='application/pdf')
-    response['Content-Disposition'] = 'inline; filename="relatorio_convidados.pdf"'
-    return response

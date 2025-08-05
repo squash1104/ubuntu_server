@@ -9,4 +9,5 @@ urlpatterns = [
     path('editar/<int:colaborador_id>/', views.editar_colaborador, name='editar_colaborador'),
     path('excluir/<int:colaborador_id>/', views.excluir_colaborador, name='excluir_colaborador'),
     path('relatorios/colaboradores/', views.relatorio_colaboradores_view, name='relatorio_colaboradores_form'),
+    path('get_bairros_ajax/', views.get_bairros_ajax, name='get_bairros_ajax'),
 ]

@@ -21,34 +21,23 @@
             background-color: #e0ccff;
         }
 
+        body.dark-theme .table-light {
+             background-color: #4a4a4a;
+        }
+
         /* Estilos específicos para os cards de informação desta página */
         .info-card {
-            background-color: #ffffff;
             border-radius: 8px;
             padding: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
         }
-        .total-convidados-card {
-            background-color: #e0f7fa;
-            border-left: 5px solid #00bcd4;
-            text-align: center;
-            height: 100%; /* Faz com que o card ocupe a altura da coluna */
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
+        .infor-card {
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
         }
-        .total-convidados-card h5 {
-            margin-bottom: 5px;
-            color: #6c757d;
-            font-size: 1rem;
-            font-weight: 600;
+        .bg-info {
+            background-color: #b28fff !important;
         }
-        .total-convidados-card .number {
-            font-size: 2.5em;
-            font-weight: bold;
-            color: #007bff;
-            margin: 5px 0;
-        }
+
         /* --- CSS PARA A TABELA COM ROLAGEM --- */
 
         th a { text-decoration: none; color: inherit; }
@@ -57,11 +46,6 @@
             color: #ffffff !important;
         }
 
-        /* 1. Escurece o fundo do cabeçalho da tabela */
-        .table-light {
-            --bs-table-bg: #e9ecef; /* Um cinza um pouco mais escuro que o padrão */
-            --bs-table-border-color: #dee2e6;
-        }
 
         .table-scroll-container {
             max-height: 500px; /* Defina a altura máxima que a tabela pode ter */
@@ -91,7 +75,7 @@
 
         <div class="row g-4 mb-4">
             <div class="col-lg-8">
-                <div class="info-card h-100">
+                <div class="card info-card h-100">
                     <h5 class="mb-3">Informações do Colaborador</h5>
                     <p class="mb-1"><strong>Nome:</strong> {{ colaborador.nome }}</p>
                     <p class="mb-1"><strong>Telefone:</strong> {{ colaborador.telefone|default:"-" }}</p>
@@ -100,10 +84,39 @@
                 </div>
             </div>
             <div class="col-lg-4">
-                <div class="info-card total-convidados-card">
-                    <h5>Convidados Fidelizados</h5>
-                    <p class="number">{{ total_convidados }}</p>
-                    <h5>Total</h5>
+                <div class="card infor-card text-center my-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Total de Convidados:</h5>
+                        <h2 class="card-text">{{ total_convidados }}</h2>
+
+                        <span class="badge rounded-pill
+                            {% if total_convidados < meta %}bg-danger{% endif %}
+                            {% if total_convidados == meta %}bg-success{% endif %}
+                            {% if total_convidados > meta %}bg-info{% endif %}">
+
+                            {% if total_convidados < meta %}
+                                Meta Pendente
+                            {% elif total_convidados == meta %}
+                                Meta Atingida!
+                            {% elif total_convidados > meta %}
+                                Meta Superada!
+                            {% endif %}
+                        </span>
+
+                        <div class="progress mt-3" style="height: 25px;">
+                            <div class="progress-bar
+                                {% if meta_status == 'superada' %}bg-info{% endif %}
+                                {% if meta_status == 'sucesso' %}bg-success{% endif %}
+                                {% if meta_status == 'andamento' %}bg-warning{% endif %}
+
+                            " role="progressbar" style="width: {{ porcentagem_meta }}%;"
+                                aria-valuenow="{{ total_convidados }}"
+                                aria-valuemin="0"
+                                aria-valuemax="{{ meta }}">
+                                {{ porcentagem_meta|floatformat:0 }}%
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -116,9 +129,10 @@
         <hr>
 
         {% include 'convidados/colab_conv_table_fragment.html' %}
-
     </div>
 </div>
+
+
 {% endblock %}
 
 

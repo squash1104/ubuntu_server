@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from convidados.models import Convidado
 from django.db.models import Q, Count, Sum
-from django.http import HttpResponse # Adicione JsonResponse se for ter AJAX para cidade/bairro
+from django.http import HttpResponse, JsonResponse
 from django.template.loader import get_template
 from django.utils import timezone
 from io import BytesIO
@@ -14,6 +14,10 @@ from .forms import RelatorioColaboradoresForm
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment
 from xhtml2pdf import pisa
+from .filters import ColaboradorFilter
+from .utils import exportar_colaboradores_excel, exportar_colaboradores_pdf, imprimir_relatorio_colaboradores
+from geografia.models import Cidade, Bairro
+
 
 @login_required
 def lista_colaboradores(request):
@@ -128,99 +132,34 @@ def excluir_colaborador(request, colaborador_id):
 
 
 def relatorio_colaboradores_view(request):
-    form = RelatorioColaboradoresForm(request.GET or None)
+    # Anota a contagem de convidados para cada colaborador
+    queryset = Colaborador.objects.annotate(total_convidados=Count('convidados'))
 
-    # Anotar a contagem de convidados para cada colaborador
-    # Assumimos que no seu modelo Convidado, há um ForeignKey para Colaborador,
-    # e que o related_name padrão ou explícito permite 'colaborador.convidado_set.all()'
-    # ou se você definiu related_name='convidado', apenas 'convidado' funciona.
-    # Vou usar 'convidado' aqui, mas ajuste se seu related_name for diferente.
-    colaborador = Colaborador.objects.annotate(
-        num_convidados=models.Count('convidado')
-    )
+    f = ColaboradorFilter(request.GET, queryset=queryset)
 
-    if form.is_valid():
-        data_cadastro_inicio = form.cleaned_data.get('data_cadastro_inicio')
-        data_cadastro_fim = form.cleaned_data.get('data_cadastro_fim')
-        min_convidados = form.cleaned_data.get('min_convidados')
-        ordem_colaboradores = form.cleaned_data.get('ordem_colaboradores')
+    selected_columns = request.GET.getlist('columns')
+    if not selected_columns:
+        selected_columns = ['nome', 'telefone', 'cidade', 'bairro', 'total_convidados', 'data_cadastro']  # Colunas padrão
 
-        if data_cadastro_inicio:
-            colaboradores = colaboradores.filter(data_cadastro__gte=data_cadastro_inicio)
-        if data_cadastro_fim:
-            colaboradores = colaboradores.filter(data_cadastro__lte=data_cadastro_fim + timezone.timedelta(days=1))
+    if 'export_excel' in request.GET:
+        return exportar_colaboradores_excel(f.qs, selected_columns)
+    elif 'export_pdf' in request.GET:
+        return exportar_colaboradores_pdf(f.qs, selected_columns)
+    elif 'export_print' in request.GET:
+        return imprimir_relatorio_colaboradores(f.qs, selected_columns)
 
-        if min_convidados is not None:  # Verifica se o valor foi fornecido (pode ser 0)
-            colaboradores = colaboradores.filter(num_convidados__gte=min_convidados)
-
-        # Aplica a ordenação
-        if ordem_colaboradores == 'nome_asc':
-            colaboradores = colaboradores.order_by('nome')
-        elif ordem_colaboradores == 'nome_desc':
-            colaboradores = colaboradores.order_by('-nome')
-        elif ordem_colaboradores == 'convidados_desc':
-            colaboradores = colaboradores.order_by('-num_convidados', 'nome')  # Ordena por mais convidados, depois nome
-        elif ordem_colaboradores == 'convidados_asc':
-            colaboradores = colaboradores.order_by('num_convidados', 'nome')  # Ordena por menos convidados, depois nome
-        else:
-            colaboradores = colaboradores.order_by('data_cadastro')  # Ordenação padrão
-
-        # Verifica qual botão foi clicado (via nome do parâmetro no GET)
-        if 'export_excel' in request.GET:
-            return exportar_colaboradores_excel(colaboradores)
-        elif 'export_pdf' in request.GET:
-            return exportar_colaboradores_pdf(colaboradores)
-
-    return render(request, 'colaboradores/relatorios/relatorio_colaboradores_form.html',
-                  {'form': form, 'colaboradores': colaboradores})
+    context = {
+        'filter': f,
+        'colaboradores': f.qs,
+        'selected_columns': selected_columns,
+    }
+    return render(request, 'relatorios/relatorio_colaboradores_form.html', context)
 
 
-def exportar_colaboradores_excel(colaboradores_queryset):
-    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response['Content-Disposition'] = 'attachment; filename="relatorio_colaboradores.xlsx"'
-
-    workbook = Workbook()
-    sheet = workbook.active
-    sheet.title = "Colaboradores"
-
-    # Cabeçalhos: Removido 'ID'
-    columns = ['Nome', 'Email', 'Telefone', 'Data Cadastro', 'Qtd Convidados'] # <--- COLUNAS AJUSTADAS
-    sheet.append(columns)
-
-    header_font = Font(bold=True)
-    for cell in sheet[1]:
-        cell.font = header_font
-        cell.alignment = Alignment(horizontal='center')
-
-    # Dados: Removido 'ID'
-    for colaborador in colaboradores_queryset:
-        data_cadastro_str = colaborador.data_cadastro.strftime('%Y-%m-%d %H:%M:%S') if colaborador.data_cadastro else ''
-
-        sheet.append([
-            colaborador.nome,
-            colaborador.email,
-            colaborador.telefone,
-            data_cadastro_str,
-            colaborador.num_convidados
-        ])
-
-    workbook.save(response)
-    return response
-
-def exportar_colaboradores_pdf(colaboradores_queryset):
-    # O caminho do template continua o mesmo, a remoção da coluna será feita no HTML
-    template_path = 'colaboradores/relatorios/relatorio_colaboradores_pdf.html'
-    context = {'colaboradores': colaboradores_queryset, 'data_geracao': timezone.now()}
-
-    template = get_template(template_path)
-    html = template.render(context)
-
-    result_file = BytesIO()
-    pisa_status = pisa.CreatePDF(html, dest=result_file)
-
-    if pisa_status.err:
-        return HttpResponse('Erro ao gerar PDF: <pre>%s</pre>' % html, status=400)
-
-    response = HttpResponse(result_file.getvalue(), content_type='application/pdf')
-    response['Content-Disposition'] = 'inline; filename="relatorio_colaboradores.pdf"'
-    return response
+def get_bairros_ajax(request):
+    cidade_id = request.GET.get('cidade_id')
+    bairros = []
+    if cidade_id:
+        bairros_qs = Bairro.objects.filter(cidade_id=cidade_id).order_by('nome_bairro')
+        bairros = [{'id': bairro.id, 'nome_bairro': bairro.nome_bairro} for bairro in bairros_qs]
+    return JsonResponse(bairros, safe=False)

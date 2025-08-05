@@ -19,27 +19,18 @@
 /*    --bs-alert-border-color: #b02a37;*/
 /*}*/
 
-/*!* Ensure the 'x' button is visible on dark backgrounds *!*/
-/*.toast-container .alert-success .btn-close,*/
-/*.toast-container .alert-danger .btn-close {*/
-/*    filter: brightness(0) invert(1);*/
-/*}*/
 
-body.dark-theme {
-    background-color: #2c2c2c; /* Certifique-se de que esta é a cor desejada para o tema escuro */
-    /* Remova ou comente qualquer linha 'background: linear-gradient(...);' aqui */
-    color: #f0f0f0; /* Cor do texto no tema escuro */
-}
 
-/* Opcional, mas recomendado: Remove margens padrão que os navegadores adicionam */
+
+
+
+ /*Opcional, mas recomendado: Remove margens padrão que os navegadores adicionam */
 html, body {
   margin: 0;
   padding: 0;
 }
 
-/*
- * Estilo base para os campos de formulário
- */
+/* Estilo base para os campos de formulário */
 input[type="text"],
 input[type="email"],
 input[type="password"],
@@ -185,10 +176,8 @@ textarea:focus,
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background-color: #f4f4f4;
             margin: 0;
             padding-top: 70px; /* Espaço para a navbar fixa */
-            background: linear-gradient(to right, #cccccc, #dddddd);
             background-repeat: no-repeat;
             background-attachment: fixed;
             box-sizing: border-box; /* Garante que padding-top não estoure a altura */
@@ -278,6 +267,37 @@ textarea:focus,
         body.dark-theme .login-container a {
             color: #88c0d0;
         }
+        body.light-theme {
+            background: linear-gradient(to right, #F5F5F5, #FFFFFF);
+            color: #333; /* Cor do texto padrão */
+        }
+        body.light-theme .login-container {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            color: #333;
+        }
+        body.light-theme .login-container h2 {
+            color: #333;
+        }
+        body.light-theme .login-container input {
+            background-color: #ffffff;
+            color: #333;
+            border-color: #ddd;
+        }
+        body.light-theme .login-container input:focus {
+            border-color: #0d6efd;
+        }
+        body.light-theme .login-container button {
+            background-color: #007bff;
+        }
+        body.light-theme .login-container button:hover {
+            background-color: #0056b3;
+        }
+        body.light-theme .login-container a {
+            color: #007bff;
+        }
+
+
         /* Estilos dos ícones do botão de tema */
     #theme-icon.bi-sun-fill {
         font-size: 1.5rem; /* Garante que o ícone tenha tamanho */
@@ -305,3 +325,159 @@ textarea:focus,
     body.dark-theme #theme-icon.bi-moon-stars-fill {
         display: none; /* ESCONDE a lua no tema escuro */
     }
+
+
+    /* Estilos para os Botões de Navegação da HOME Personalizados */
+.custom-nav-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    text-decoration: none;
+    color: #fff;
+    padding: 2.5rem 1rem; /* Espaçamento interno grande */
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    font-weight: bold;
+    font-size: 1.1rem;
+    height: 100%; /* Garante que os botões tenham a mesma altura na mesma linha */
+    text-align: center;
+
+    /* Transições para o efeito de hover */
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+/* Efeito de hover: subir e ter uma sombra mais pronunciada */
+.custom-nav-btn:hover {
+    transform: translateY(-5px); /* Move o botão 5px para cima */
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+    color: #fff; /* Garante que a cor do texto não mude no hover */
+}
+
+/* Classes para as cores de fundo */
+.dashboard-bg {
+    background-color: #007bff; /* Azul */
+}
+
+.colaboradores-bg {
+    background-color: #28a745; /* Verde */
+}
+
+.convidados-bg {
+    background-color: #ffc107; /* Amarelo */
+}
+
+.relatorios-bg {
+    background-color: #dc3545; /* Vermelho */
+}
+
+.mapa-bg {
+    background-color: #17a2b8; /* Ciano */
+}
+
+.agenda-bg {
+    background-color: #6610f2; /* Roxo */
+}
+
+/* Opcional: Efeito de hover para as cores de fundo */
+.dashboard-bg:hover {
+    background-color: #0056b3;
+}
+
+.colaboradores-bg:hover {
+    background-color: #1e7e34;
+}
+
+.convidados-bg:hover {
+    background-color: #d39e00;
+}
+
+.relatorios-bg:hover {
+    background-color: #b02a37;
+}
+
+.mapa-bg:hover {
+    background-color: #138496;
+}
+
+.agenda-bg:hover {
+    background-color: #520dcf;
+}
+
+/*Estilos Dark-Theme para Table*/
+
+body.dark-theme .table {
+    color: #2b3035;
+    --bs-table-hover-bg: #495057; /* Cor do hover para o tema escuro */
+}
+body.dark-theme .table-light {
+    background-color: #2b3035; /* Fundo do cabeçalho em cinza escuro */
+    border-color: #495057;
+    color: #f8f9fa;
+}
+body.dark-theme .table-scroll-container {
+    border-color: #495057;
+}
+
+body.dark-theme .input-group-text {
+    background-color: #2b3035;
+}
+body.dark-theme .form-control {
+    background-color: #2b3035; /* Fundo do campo de busca */
+    border-color: #5a5a5a;
+    color: #f0f0f0; /* Texto do campo de busca */
+}
+
+body.dark-theme .summary-bar {
+    background-color: #2b3035;
+    border-color: #495057;
+    color: #f8f9fa;
+}
+
+/* Cores das linhas para o tema escuro */
+body.dark-theme .table-danger {
+    --bs-table-bg: #842029; /* Vermelho escuro e vibrante */
+    --bs-table-hover-bg: #9c2732;
+}
+
+body.dark-theme .table-success {
+    --bs-table-bg: #146c43; /* Verde escuro e vibrante */
+    --bs-table-hover-bg: #1d8250;
+}
+
+body.dark-theme .table-primary {
+    --bs-table-bg: #0d6efd; /* Azul vibrante */
+    --bs-table-hover-bg: #1b7efd;
+}
+
+/* Cores dos botões no tema escuro */
+    body.dark-theme .btn-info {
+        background-color: #31a2b8;
+        border-color: #31a2b8;
+        color: #fff;
+    }
+    body.dark-theme .btn-danger {
+        background-color: #dc3545;
+        border-color: #dc3545;
+        color: #fff;
+    }
+    body.dark-theme .btn-warning {
+        background-color: #ffc107;
+        border-color: #ffc107;
+        color: #212529 !important; /* Força a cor do texto para ser escura */
+    }
+
+
+
+    /* Estilos para o tema escuro */
+body.dark-theme .list-group-item {
+    background-color: #343a40; /* Cor de fundo dos itens */
+    border-color: #495057; /* Borda sutil */
+    color: #f8f9fa; /* Cor do texto */
+}
+
+body.dark-theme .list-group-item.active {
+    background-color: #0d6efd; /* Cor do item ativo (azul vibrante) */
+    border-color: #0d6efd;
+    color: #fff;
+}

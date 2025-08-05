@@ -28,7 +28,8 @@ def health_check_view(request):
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.dashboard, name='home'),
+    path('', views.home, name='index'),
+    path('home/', views.home, name='home'),
     path('dashboard/', views.dashboard, name='dashboard'),
   
     path('login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
