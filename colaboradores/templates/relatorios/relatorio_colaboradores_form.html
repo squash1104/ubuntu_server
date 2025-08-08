@@ -274,7 +274,11 @@ body.dark-theme .report-header .nav-link {
 
 {% block relatorio_content %}
     <div class="report-header">
-        <h2>Relatório de Colaboradores</h2>
+        <h1>Relatório de Colaboradores</h1>
+        <div class="report-buttons">
+            <button class="btn btn-primary" onclick="window.location.href='{% url 'home' %}'">Página Inicial</button>
+            <button class="btn btn-primary" onclick="window.location.href='{% url 'convidados:guest_report_form' %}'">Relatório de Convidados</button>
+        </div>
     </div>
 
     <div class="filter-form-section">

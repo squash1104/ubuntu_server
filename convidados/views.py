@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Convidado
+from .models import Convidado, Colaborador
 from colaboradores.models import Colaborador
 from .forms import ConvidadoForm
 from django.contrib.auth.decorators import login_required
@@ -16,6 +16,9 @@ from .forms import RelatorioConvidadosForm
 from geografia.models import Cidade, Bairro
 from .filters import ConvidadoFilter
 from .utils import exportar_convidados_excel, exportar_convidados_pdf, imprimir_relatorio
+from django.views.decorators.http import require_http_methods
+import re
+
 
 @login_required
 def lista_convidados(request):
@@ -105,8 +108,9 @@ def colaborador_convidados(request, pk):
     }
     return render(request, 'convidados/colaborador_convidados.html', context)
 
+
 @login_required
-def cadastrar_convidado(request, colaborador_id=None): # <--- Garanta que aceita colaborador_id=None
+def cadastrar_convidado(request, colaborador_id=None):
     colaborador = None
     if colaborador_id:
         colaborador = get_object_or_404(Colaborador, pk=colaborador_id)
@@ -114,22 +118,24 @@ def cadastrar_convidado(request, colaborador_id=None): # <--- Garanta que aceita
     if request.method == 'POST':
         form = ConvidadoForm(request.POST)
         if form.is_valid():
-            convidado = form.save()
-            messages.success(request, f'Convidado "{convidado.nome}" cadastrado com sucesso!')
-            if colaborador:
-                form = ConvidadoForm(initial={'colaborador': colaborador})
+            convidado = form.save(commit=False)
+            convidado.cadastrado_por = request.user
+            convidado.save()
 
-                context = {
-                    'form': form,
-                    'colaborador': colaborador,
-                }
-                return render(request,'convidados/cadastrar_convidado.html', context)
+            convidado_nome = convidado.nome
+
+            # Verificamos o atributo de aviso APÓS o salvamento
+            if getattr(form, 'phone_is_duplicate', False):
+                messages.warning(request,
+                                 f'AVISO: O telefone "{convidado.telefone}" já está cadastrado em outro convidado. Convidado "{convidado_nome}" salvo com sucesso!')
             else:
-                # Caso contrário, volta para a lista geral
+                messages.success(request, f'Convidado "{convidado_nome}" salvo com sucesso!')
+
+            if colaborador:
+                return redirect('convidados:colaborador_convidados', pk=colaborador_id)
+            else:
                 return redirect('convidados:lista_convidados')
     else:
-        # Se for o primeiro acesso (GET) e viemos de um colaborador,
-        # já preenche o campo 'colaborador' no formulário
         if colaborador:
             form = ConvidadoForm(initial={'colaborador': colaborador})
         else:
@@ -137,36 +143,37 @@ def cadastrar_convidado(request, colaborador_id=None): # <--- Garanta que aceita
 
     context = {
         'form': form,
-        # Envia o colaborador (ou None) para o template saber de onde viemos
         'colaborador': colaborador,
     }
     return render(request, 'convidados/cadastrar_convidado.html', context)
 
+
 @login_required
 def editar_convidado(request, pk):
     convidado = get_object_or_404(Convidado, pk=pk)
-    colaborador_origem_id = request.GET.get('colaborador_origem_id')
-
     if request.method == 'POST':
         form = ConvidadoForm(request.POST, instance=convidado)
         if form.is_valid():
             form.save()
-            messages.warning(request, f'Convidado "{convidado.nome}" editado com sucesso!')
-            if colaborador_origem_id:
-                return redirect('convidados:colaborador_convidados', pk=colaborador_origem_id)
+            messages.success(request, f'Convidado "{convidado.nome}" atualizado com sucesso!')
+
+            # --- MODIFICAÇÃO PRINCIPAL AQUI ---
+            # Pega a URL de retorno do formulário, se ela existir.
+            next_url = request.POST.get('next', None)
+            if next_url:
+                # Redireciona para a URL completa fornecida pelo formulário
+                return redirect(next_url)
             else:
+                # Se não houver, volta para a lista geral como fallback
                 return redirect('convidados:lista_convidados')
+            # ----------------------------------
     else:
         form = ConvidadoForm(instance=convidado)
 
-    # **THE CORRECTION IS HERE**
-    # This `context` and `return render` block must be outside the `else` block
-    # so that it is executed for both GET and invalid POST requests.
-    context = {
-        'form': form,
-        'convidado': convidado,
-    }
-    return render(request, 'convidados/editar_convidado.html', context)
+    # Adiciona a URL de retorno para o contexto, se ela existir
+    next_url_get = request.GET.get('next', None)
+    return render(request, 'convidados/cadastrar_convidado.html',
+                  {'form': form, 'convidado': convidado, 'next': next_url_get})
 
 @login_required
 def excluir_convidado(request, pk):
@@ -224,3 +231,37 @@ def get_bairros_ajax(request):
         bairros_qs = Bairro.objects.filter(cidade_id=cidade_id).order_by('nome_bairro')
         bairros = [{'id': bairro.id, 'nome_bairro': bairro.nome_bairro} for bairro in bairros_qs]
     return JsonResponse(bairros, safe=False)
+
+
+@require_http_methods(["GET"])
+def check_telefone_exists(request):
+    telefone = request.GET.get('telefone', None)
+    convidado_id = request.GET.get('pk', None)
+
+    if telefone:
+        # Lógica para limpar a formatação do telefone
+        telefone_limpo = re.sub(r'[\(\)\-\s]', '', telefone)
+
+        # Checa se o telefone limpo existe no banco de dados
+        queryset = Convidado.objects.filter(telefone=telefone_limpo)
+        if convidado_id:
+            queryset = queryset.exclude(pk=convidado_id)
+
+        exists = queryset.exists()
+        return JsonResponse({'exists': exists})
+    return JsonResponse({'exists': False})
+
+
+@require_http_methods(["GET"])
+def check_nome_exists(request):
+    nome = request.GET.get('nome', None)
+    convidado_id = request.GET.get('pk', None)
+
+    if nome:
+        queryset = Convidado.objects.filter(nome__iexact=nome)
+        if convidado_id:
+            queryset = queryset.exclude(pk=convidado_id)
+
+        exists = queryset.exists()
+        return JsonResponse({'exists': exists})
+    return JsonResponse({'exists': False})

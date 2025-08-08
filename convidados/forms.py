@@ -1,6 +1,9 @@
 from django import forms
 from .models import Convidado
+from colaboradores.models import Colaborador
 from geografia.models import Cidade, Bairro
+from django.core.exceptions import ValidationError
+import re
 
 
 class RelatorioConvidadosForm(forms.Form):
@@ -64,54 +67,70 @@ class RelatorioConvidadosForm(forms.Form):
             cidade_id = self.initial.get('cidade')
             self.fields['bairro'].queryset = Bairro.objects.filter(cidade_id=cidade_id).order_by('nome_bairro')
 
+    def clean(self):
+        cleaned_data = super().clean()
+        data_inicio = cleaned_data.get("data_inicio")
+        data_fim = cleaned_data.get("data_fim")
+
+        if data_inicio and data_fim and data_inicio > data_fim:
+            raise ValidationError("A data de início não pode ser posterior à data de fim.")
+
+
 
 class ConvidadoForm(forms.ModelForm):
+    # Campos que usam o Select2
+    cidade = forms.ModelChoiceField(
+        queryset=Cidade.objects.all().order_by('nome_cidade'),
+        label="Cidade",
+        widget=forms.Select(attrs={'class': 'form-control select2', 'data-placeholder': 'Selecione uma cidade'}),
+        required=False
+    )
+    bairro = forms.ModelChoiceField(
+        queryset=Bairro.objects.none(),
+        label="Bairro",
+        widget=forms.Select(attrs={'class': 'form-control select2'}),
+        required=False
+    )
+
     class Meta:
         model = Convidado
-        fields = ['nome', 'telefone', 'cidade', 'bairro', 'colaborador']
+        fields = ['nome', 'telefone', 'colaborador']
+        widgets = {
+            'nome': forms.TextInput(attrs={'class': 'form-control', 'id': 'id_nome'}),
+            'telefone': forms.TextInput(attrs={'class': 'form-control', 'id': 'id_telefone'}),
+            'colaborador': forms.HiddenInput(),
+        }
         labels = {
-            'nome': 'Nome:',
-            'telefone': 'Telefone:',
-            'cidade': 'Cidade:',
-            'bairro': 'Bairro:',
-            'colaborador': 'Convidado por:',
+            'nome': 'Nome Completo',
+            'telefone': 'Telefone',
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['colaborador'].queryset = Colaborador.objects.all()
 
-        self.fields['nome'].widget.attrs.update({'class': 'form-control'})
-        self.fields['telefone'].widget.attrs.update({'class': 'form-control'})
+        if self.instance and self.instance.bairro:
+            self.fields['cidade'].initial = self.instance.bairro.cidade.pk
+            self.fields['bairro'].queryset = Bairro.objects.filter(cidade=self.instance.bairro.cidade).order_by('nome_bairro')
+            self.fields['bairro'].initial = self.instance.bairro.pk
 
-        # 1. Adicione a classe 'select2' a todos os dropdowns que você quer estilizar
-        self.fields['cidade'].widget.attrs.update({'class': 'select2'})
-        self.fields['bairro'].widget.attrs.update({'class': 'select2'})
-
-        if 'colaborador' in self.initial:
-            colaborador_inicial = self.initial.get('colaborador')
-            # Se sim, esconde o campo e mantém o valor
-            self.fields['colaborador'].widget = forms.HiddenInput()
-        else:
-            # Se não, o campo aparece normalmente como um dropdown
-            self.fields['colaborador'].widget.attrs.update({'class': 'select2'})
-            self.fields['colaborador'].empty_label = "Selecione um colaborador"
-
-        # 2. Altere o texto padrão se desejar
-        self.fields['cidade'].empty_label = "Selecione uma cidade"
-        self.fields['bairro'].empty_label = "Primeiro, escolha uma cidade"
-
-        # 3. Defina o dropdown dependente (bairro) para começar vazio
-        self.fields['bairro'].queryset = Bairro.objects.none()
-
-        # (importante para as telas de edição)
-        if 'cidade' in self.data:
-            try:
-                cidade_id = int(self.data.get('cidade'))
-                self.fields['bairro'].queryset = Bairro.objects.filter(cidade_id=cidade_id).order_by('nome_bairro')
-            except (ValueError, TypeError):
-                pass
-        elif self.instance.pk and self.instance.cidade:
-            self.fields['bairro'].queryset = self.instance.cidade.bairro_set.order_by('nome_bairro')
+        self.fields['nome'].required = True
 
 
+    def clean(self):
+        cleaned_data = super().clean()
+        telefone = cleaned_data.get('telefone')
+        instance = self.instance
+        self.phone_is_duplicate = False
 
+        if telefone:
+            # Lógica para verificar duplicidade de telefone
+            query = Convidado.objects.filter(telefone=telefone)
+            if instance and instance.pk:
+                query = query.exclude(pk=instance.pk)
+
+            if query.exists():
+                # Define o atributo de aviso, mas não impede o salvamento
+                self.phone_is_duplicate = True
+
+        return cleaned_data

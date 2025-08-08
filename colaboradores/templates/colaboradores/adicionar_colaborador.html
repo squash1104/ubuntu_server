@@ -17,6 +17,20 @@
                          <div class="mb-3">
                              {{ field.label_tag }}
                              {{ field }}
+
+                             {% if field.id_for_label == 'id_nome' %}
+                                 <div id="nome-aviso" class="alert alert-danger mt-2" style="display: none;">
+                                     Este nome já está cadastrado.
+                                 </div>
+                             {% endif %}
+
+                             {% if field.id_for_label == 'id_telefone' %}
+                                <div id="telefone-aviso" class="alert alert-warning mt-2" style="display: none;">
+                                     AVISO: Este telefone já está cadastrado em outro colaborador.
+                                </div>
+
+                             {% endif %}
+
                              {% if field.help_text %}
                                  <small class="form-text text-muted">{{ field.help_text }}</small>
                              {% endif %}
@@ -47,18 +61,114 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log("Script de adicionar_colaborador carregado.");
 
-    // --- APLICA A MÁSCARA DE TELEFONE ---
-    // O Django renderiza o campo 'telefone' com o id 'id_telefone'
-    $('#id_telefone').mask('(00) 00000-0000');
+    // =========================================================================
+    // VARIÁVEIS E SELETORES
+    // =========================================================================
+    const form = $('#colaborador-form');
+    const btnSalvar = $('#btn-salvar');
 
-    // --- INICIALIZAÇÃO DO SELECT2 ---
+    // Campos e avisos de Nome
+    const nomeInput = $('#id_nome');
+    const nomeAviso = $('#nome-aviso');
+
+    // Campos e avisos de Telefone
+    const telefoneInput = $('#id_telefone');
+    const telefoneAviso = $('#telefone-aviso');
+
+    let typingTimer;
+    const doneTypingInterval = 500; // Tempo em ms para esperar depois de parar de digitar
+
+
+    // =========================================================================
+    // LÓGICA GERAL DE VALIDAÇÃO
+    // =========================================================================
+    // Função que verifica o status do formulário e habilita/desabilita o botão Salvar
+    function checkFormStatus() {
+        if (nomeAviso.is(':visible')) {
+            btnSalvar.prop('disabled', true);
+        } else {
+            btnSalvar.prop('disabled', false);
+        }
+    }
+
+    // =========================================================================
+    // INICIALIZAÇÃO DE MÁSCARAS E SELECT2
+    // =========================================================================
+    // Aplica a máscara de telefone
+    telefoneInput.mask('(00) 00000-0000');
+
+    // Inicializa o Select2 nos dropdowns
     $('.select2').select2({
         placeholder: "Selecione uma opção",
         allowClear: true,
         width: '100%'
     });
 
-    // --- LÓGICA DO DROPDOWN DINÂMICO ---
+
+    // =========================================================================
+    // VALIDAÇÃO EM TEMPO REAL DO NOME
+    // =========================================================================
+    function checkNome() {
+        const nome = nomeInput.val().trim();
+        if (nome.length > 2) {
+            fetch(`{% url 'colaboradores:check_nome_exists' %}?nome=${encodeURIComponent(nome)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.exists) {
+                        nomeAviso.show();
+                        nomeInput.focus();
+                    } else {
+                        nomeAviso.hide();
+                    }
+                    checkFormStatus();
+                })
+                .catch(error => console.error('Erro na verificação do nome:', error));
+        } else {
+            nomeAviso.hide();
+            checkFormStatus();
+        }
+    }
+
+    // Event listeners para o campo de nome
+    nomeInput.on('keyup', function() {
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(checkNome, doneTypingInterval);
+    });
+    nomeInput.on('blur', checkNome);
+
+
+    // =========================================================================
+    // VALIDAÇÃO EM TEMPO REAL DO TELEFONE
+    // =========================================================================
+    function checkTelefone() {
+        const telefone = telefoneInput.val().replace(/\D/g, ''); // Remove a máscara para a verificação
+        if (telefone.length >= 8) {
+            fetch(`{% url 'colaboradores:check_telefone_exists' %}?telefone=${encodeURIComponent(telefone)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.exists) {
+                        telefoneAviso.show();
+                    } else {
+                        telefoneAviso.hide();
+                    }
+                })
+                .catch(error => console.error('Erro na verificação do telefone:', error));
+        } else {
+            telefoneAviso.hide();
+        }
+    }
+
+    // Event listeners para o campo de telefone
+    telefoneInput.on('keyup', function() {
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(checkTelefone, doneTypingInterval);
+    });
+    telefoneInput.on('blur', checkTelefone);
+
+
+    // =========================================================================
+    // LÓGICA EXISTENTE DO DROPDOWN DINÂMICO
+    // =========================================================================
     const cidadeSelect = $('#id_cidade');
     const bairroSelect = $('#id_bairro');
 
@@ -85,10 +195,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Dispara o evento 'change' se a página carregar com uma cidade já selecionada (útil para edição)
     if (cidadeSelect.val()) {
         cidadeSelect.trigger('change');
     }
+
+    // Inicializa a verificação do nome no carregamento da página (útil na edição)
+    checkNome();
 });
 </script>
 {% endblock %}

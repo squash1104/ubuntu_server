@@ -1,37 +1,48 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}SisAps - Editar {{ colaborador.nome }}{% endblock %}
+{% block title %}SisAps - Editar Colaborador{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-8">
         <div class="card shadow-sm">
             <div class="card-header bg-primary text-white">
-                <h3 class="card-title mb-0">Editar Colaborador: {{ colaborador.nome }}</h3>
+                <h3 class="card-title mb-0">
+                    Editar Colaborador: <span class="text-warning fw-bold">{{ colaborador.nome }}</span>
+                </h3>
             </div>
             <div class="card-body">
-                <form method="post">
+                <form method="post" id="colaborador-form">
                     {% csrf_token %}
 
-                    {# Itera sobre cada campo do formulário e renderiza com a estrutura do Bootstrap #}
+                    {# Campo oculto com o ID do colaborador, essencial para a validação #}
+                    <input type="hidden" name="pk" value="{{ colaborador.pk }}">
+
                     {% for field in form %}
                         <div class="mb-3">
                             {{ field.label_tag }}
                             {{ field }}
-                            {% if field.help_text %}
-                                <small class="form-text text-muted">{{ field.help_text }}</small>
-                            {% endif %}
                             {% for error in field.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {{ error }}
-                                </div>
+                                <div class="invalid-feedback d-block">{{ error }}</div>
                             {% endfor %}
+
+                            {% if field.id_for_label == 'id_nome' %}
+                                <div id="nome-aviso" class="alert alert-danger mt-2" style="display: none;">
+                                    Este nome já está cadastrado.
+                                </div>
+                            {% endif %}
+
+                            {% if field.id_for_label == 'id_telefone' %}
+                                <div id="telefone-aviso" class="alert alert-warning mt-2" style="display: none;">
+                                    AVISO: Este telefone já está cadastrado em outro colaborador.
+                                </div>
+                            {% endif %}
                         </div>
                     {% endfor %}
 
                     <div class="mt-4 border-top pt-3">
-                        <button type="submit" class="btn btn-success">Salvar Alterações</button>
+                        <button type="submit" class="btn btn-success" id="btn-salvar">Salvar Alterações</button>
                         <a href="{% url 'colaboradores:lista_colaboradores' %}" class="btn btn-secondary">Cancelar</a>
                     </div>
                 </form>
@@ -43,58 +54,81 @@
 
 {% block extra_js %}
 <script src="{% static 'js/jquery.mask.min.js' %}"></script>
-
 <script>
-// ESTE SCRIPT É EXATAMENTE O MESMO DA PÁGINA DE ADICIONAR
-document.addEventListener('DOMContentLoaded', function() {
-    console.log("Script de editar_colaborador carregado.");
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("Script de edição de colaborador carregado.");
+        const btnSalvar = $('#btn-salvar');
+        const nomeInput = $('#id_nome');
+        const nomeAviso = $('#nome-aviso');
+        const telefoneInput = $('#id_telefone');
+        const telefoneAviso = $('#telefone-aviso');
+        const pkInput = $('input[name="pk"]');
+        let typingTimer;
+        const doneTypingInterval = 500;
 
-    // --- APLICA A MÁSCARA DE TELEFONE ---
-    $('#id_telefone').mask('(00) 00000-0000');
+        function checkFormStatus() {
+            if (nomeAviso.is(':visible')) {
+                btnSalvar.prop('disabled', true);
+            } else {
+                btnSalvar.prop('disabled', false);
+            }
+        }
 
-    // --- INICIALIZAÇÃO DO SELECT2 ---
-    $('.select2').select2({
-        placeholder: "Selecione uma opção",
-        allowClear: true,
-        width: '100%'
-    });
+        telefoneInput.mask('(00) 00000-0000');
+        $('.select2').select2({ placeholder: "Selecione uma opção", allowClear: true, width: '100%' });
 
-    // --- LÓGICA DO DROPDOWN DINÂMICO ---
-    const cidadeSelect = $('#id_cidade');
-    const bairroSelect = $('#id_bairro');
+        function checkNome() {
+            const nome = nomeInput.val().trim();
+            const pk = pkInput.val();
+            if (nome.length > 2) {
+                let url = `{% url 'colaboradores:check_nome_exists' %}?nome=${encodeURIComponent(nome)}`;
+                if (pk) url += `&pk=${pk}`;
+                fetch(url).then(response => response.json()).then(data => {
+                    if (data.exists) { nomeAviso.show(); nomeInput.focus(); }
+                    else { nomeAviso.hide(); }
+                    checkFormStatus();
+                });
+            } else { nomeAviso.hide(); checkFormStatus(); }
+        }
+        nomeInput.on('keyup', function() { clearTimeout(typingTimer); typingTimer = setTimeout(checkNome, doneTypingInterval); });
+        nomeInput.on('blur', checkNome);
 
-    cidadeSelect.on('change', function() {
-        const cidadeId = this.value;
-        bairroSelect.empty().append('<option value="">Carregando...</option>').trigger('change');
+        function checkTelefone() {
+            const telefone = telefoneInput.val().replace(/\D/g, '');
+            const pk = pkInput.val();
+            if (telefone.length >= 8) {
+                let url = `{% url 'colaboradores:check_telefone_exists' %}?telefone=${encodeURIComponent(telefone)}`;
+                if (pk) url += `&pk=${pk}`;
+                fetch(url).then(response => response.json()).then(data => {
+                    if (data.exists) { telefoneAviso.show(); }
+                    else { telefoneAviso.hide(); }
+                });
+            } else { telefoneAviso.hide(); }
+        }
+        telefoneInput.on('keyup', function() { clearTimeout(typingTimer); typingTimer = setTimeout(checkTelefone, doneTypingInterval); });
+        telefoneInput.on('blur', checkTelefone);
 
-        if (cidadeId) {
-            fetch(`/geografia/get-bairros/?cidade_id=${cidadeId}`)
-                .then(response => response.json())
-                .then(data => {
+        // Lógica do dropdown dinâmico
+        const cidadeSelect = $('#id_cidade');
+        const bairroSelect = $('#id_bairro');
+        cidadeSelect.on('change', function() {
+            const cidadeId = this.value;
+            bairroSelect.empty().append('<option value="">Carregando...</option>').trigger('change');
+            if (cidadeId) {
+                fetch(`/geografia/get-bairros/?cidade_id=${cidadeId}`).then(response => response.json()).then(data => {
                     bairroSelect.empty().append('<option value="">Selecione um bairro</option>');
-                    // Mantém o valor que já estava selecionado, se houver
-                    const selectedBairro = '{{ form.bairro.value }}';
-
                     data.forEach(function(bairro) {
-                        const isSelected = bairro.id.toString() === selectedBairro;
-                        const option = new Option(bairro.nome, bairro.id, false, isSelected);
+                        const option = new Option(bairro.nome, bairro.id, false, false);
                         bairroSelect.append(option);
                     });
                     bairroSelect.trigger('change');
-                })
-                .catch(error => {
-                    console.error('Erro ao buscar bairros:', error);
                 });
-        } else {
-            bairroSelect.empty().append('<option value="">Primeiro, escolha uma cidade</option>').trigger('change');
-        }
-    });
+            } else { bairroSelect.empty().append('<option value="">Primeiro, escolha uma cidade</option>').trigger('change'); }
+        });
+        if (cidadeSelect.val()) { cidadeSelect.trigger('change'); }
 
-    // Dispara o evento 'change' na cidade assim que a página carrega
-    // para popular os bairros corretos e selecionar o bairro atual do colaborador.
-    if (cidadeSelect.val()) {
-        cidadeSelect.trigger('change');
-    }
-});
+        checkNome();
+        checkTelefone();
+    });
 </script>
 {% endblock %}

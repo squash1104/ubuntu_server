@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}SisAps - Novo Convidado{% endblock %}
+{% block title %}SisAps - Convidado{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
@@ -9,20 +9,29 @@
         <div class="card shadow-sm">
             <div class="card-header bg-primary text-white">
                 <h3 class="card-title mb-0">
-                    {% if colaborador %}
-                   {# Se a view enviou um colaborador, mostra o título dinâmico #}
+                    {% if convidado %}
+                        Editar Convidado: <span class="text-warning fw-bold">{{ convidado.nome }}</span>
+                    {% elif colaborador %}
                         Adicionar Novo Convidado para: <span class="text-warning fw-bold">{{ colaborador.nome }}</span>
                     {% else %}
-                   {# Caso contrário, mostra o título padrão #}
                         Adicionar Novo Convidado
                     {% endif %}
                 </h3>
             </div>
             <div class="card-body">
-                <form method="post">
+                <form method="post" id="convidado-form" class="mt-3">
                     {% csrf_token %}
 
-                    {# Renderiza o formulário campo por campo, com os rótulos em cima #}
+                    {# Campo oculto para o ID do convidado, essencial para a validação #}
+                    {% if convidado %}
+                        <input type="hidden" name="pk" value="{{ convidado.pk }}">
+                    {% endif %}
+
+                    {# Adiciona um campo oculto para a URL de retorno #}
+                    {% if next %}
+                        <input type="hidden" name="next" value="{{ next }}">
+                    {% endif %}
+
                     {% for field in form %}
                         {% if field.is_hidden %}
                             {{ field }}
@@ -30,22 +39,33 @@
                             <div class="mb-3">
                                 {{ field.label_tag }}
                                 {{ field }}
+
                                 {% for error in field.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {{ error }}
-                                    </div>
+                                    <div class="invalid-feedback d-block">{{ error }}</div>
                                 {% endfor %}
+
+                                {% if field.id_for_label == 'id_nome' %}
+                                    <div id="nome-aviso" class="alert alert-danger mt-2" style="display: none;">
+                                        Este nome já está cadastrado.
+                                    </div>
+                                {% endif %}
+
+                                {% if field.id_for_label == 'id_telefone' %}
+                                    <div id="telefone-aviso" class="alert alert-warning mt-2" style="display: none;">
+                                        AVISO: Este telefone já está cadastrado em outro convidado.
+                                    </div>
+                                {% endif %}
                             </div>
                         {% endif %}
                     {% endfor %}
 
                     <div class="mt-4 border-top pt-3">
-                        <button type="submit" class="btn btn-success">Salvar</button>
-                        {% if colaborador %}
-                            {# Se a variável 'colaborador' existir, o link volta para a página dele #}
-                            <a href="{% url 'convidados:colaborador_convidados' pk=colaborador.id %}" class="btn btn-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-success" id="btn-salvar">Salvar</button>
+                        {% if convidado %}
+                            <a href="{% url 'convidados:colaborador_convidados' pk=convidado.colaborador.pk %}" class="btn btn-secondary">Cancelar</a>
+                        {% elif colaborador %}
+                            <a href="{% url 'convidados:colaborador_convidados' pk=colaborador.pk %}" class="btn btn-secondary">Cancelar</a>
                         {% else %}
-                            {# Caso contrário, o link volta para a lista geral #}
                             <a href="{% url 'convidados:lista_convidados' %}" class="btn btn-secondary">Cancelar</a>
                         {% endif %}
                     </div>
@@ -58,43 +78,100 @@
 
 {% block extra_js %}
 <script src="{% static 'js/jquery.mask.min.js' %}"></script>
-
 <script>
-// Este script é o mesmo que usamos nas páginas de adicionar/editar colaborador
-document.addEventListener('DOMContentLoaded', function() {
-    // Aplica a máscara de telefone
-    $('#id_telefone').mask('(00) 00000-0000');
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("Script de convidado carregado.");
+        const form = $('#convidado-form');
+        const btnSalvar = $('#btn-salvar');
+        const nomeInput = $('#id_nome');
+        const nomeAviso = $('#nome-aviso');
+        const telefoneInput = $('#id_telefone');
+        const telefoneAviso = $('#telefone-aviso');
+        const pkInput = $('input[name="pk"]');
+        let typingTimer;
+        const doneTypingInterval = 500;
 
-    // Inicializa o Select2
-    $('.select2').select2({
-        placeholder: "Selecione uma opção",
-        allowClear: true,
-        width: '100%'
-    });
+        function checkFormStatus() {
+            // Desabilita o botão se o aviso de nome estiver visível
+            if (nomeAviso.is(':visible')) {
+                btnSalvar.prop('disabled', true);
+            } else {
+                btnSalvar.prop('disabled', false);
+            }
+        }
 
-    // Lógica do dropdown dinâmico
-    const cidadeSelect = $('#id_cidade');
-    const bairroSelect = $('#id_bairro');
+        async function checkNome() {
+            const nome = nomeInput.val().trim();
+            const pk = pkInput.val();
+            if (nome.length > 2) {
+                let url = `{% url 'convidados:check_nome_exists_convidado' %}?nome=${encodeURIComponent(nome)}`;
+                if (pk) url += `&pk=${pk}`;
+                try {
+                    const response = await fetch(url);
+                    const data = await response.json();
+                    if (data.exists) { nomeAviso.show(); }
+                    else { nomeAviso.hide(); }
+                    checkFormStatus();
+                } catch (error) {
+                    console.error("Erro na verificação do nome:", error);
+                }
+            } else {
+                nomeAviso.hide();
+                checkFormStatus();
+            }
+        }
 
-    cidadeSelect.on('change', function() {
-        const cidadeId = this.value;
-        bairroSelect.empty().append('<option value="">Carregando...</option>').trigger('change');
+        async function checkTelefone() {
+            const telefone = telefoneInput.val().replace(/\D/g, '');
+            const pk = pkInput.val();
+            if (telefone.length >= 8) {
+                let url = `{% url 'convidados:check_telefone_exists_convidado' %}?telefone=${encodeURIComponent(telefone)}`;
+                if (pk) url += `&pk=${pk}`;
+                try {
+                    const response = await fetch(url);
+                    const data = await response.json();
+                    console.log("Resposta da verificação de telefone:", data);
+                    if (data.exists) { telefoneAviso.show(); }
+                    else { telefoneAviso.hide(); }
+                } catch (error) {
+                    console.error("Erro na verificação do telefone:", error);
+                }
+            } else { telefoneAviso.hide(); }
+        }
 
-        if (cidadeId) {
-            fetch(`/geografia/get-bairros/?cidade_id=${cidadeId}`)
-                .then(response => response.json())
-                .then(data => {
+        telefoneInput.mask('(00) 00000-0000');
+        $('.select2').select2({ placeholder: "Selecione uma opção", allowClear: true, width: '100%' });
+
+        nomeInput.on('keyup', function() { clearTimeout(typingTimer); typingTimer = setTimeout(checkNome, doneTypingInterval); });
+        nomeInput.on('blur', checkNome);
+
+        telefoneInput.on('keyup', function() { clearTimeout(typingTimer); typingTimer = setTimeout(checkTelefone, doneTypingInterval); });
+        telefoneInput.on('blur', checkTelefone);
+
+        const cidadeSelect = $('#id_cidade');
+        const bairroSelect = $('#id_bairro');
+        cidadeSelect.on('change', async function() {
+            const cidadeId = this.value;
+            bairroSelect.empty().append('<option value="">Carregando...</option>').trigger('change');
+            if (cidadeId) {
+                try {
+                    const response = await fetch(`/geografia/get-bairros/?cidade_id=${cidadeId}`);
+                    const data = await response.json();
                     bairroSelect.empty().append('<option value="">Selecione um bairro</option>');
                     data.forEach(function(bairro) {
-                        const option = new Option(bairro.nome, bairro.id, false, false);
+                        const option = new Option(bairro.nome_bairro, bairro.id, false, false);
                         bairroSelect.append(option);
                     });
                     bairroSelect.trigger('change');
-                })
-        } else {
-            bairroSelect.empty().append('<option value="">Primeiro, escolha uma cidade</option>').trigger('change');
-        }
+                } catch (error) {
+                    console.error("Erro ao buscar bairros:", error);
+                }
+            } else { bairroSelect.empty().append('<option value="">Primeiro, escolha uma cidade</option>').trigger('change'); }
+        });
+        if (cidadeSelect.val()) { cidadeSelect.trigger('change'); }
+
+        checkNome();
+        checkTelefone();
     });
-});
 </script>
 {% endblock %}

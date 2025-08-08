@@ -407,7 +407,7 @@ textarea:focus,
 /*Estilos Dark-Theme para Table*/
 
 body.dark-theme .table {
-    color: #2b3035;
+    color: #707070;
     --bs-table-hover-bg: #495057; /* Cor do hover para o tema escuro */
 }
 body.dark-theme .table-light {
@@ -446,8 +446,8 @@ body.dark-theme .table-success {
 }
 
 body.dark-theme .table-primary {
-    --bs-table-bg: #0d6efd; /* Azul vibrante */
-    --bs-table-hover-bg: #1b7efd;
+    --bs-table-bg: #b28fff; /* Roxo */
+    --bs-table-hover-bg: #e0ccff;
 }
 
 /* Cores dos botões no tema escuro */

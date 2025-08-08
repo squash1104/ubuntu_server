@@ -7,6 +7,7 @@ from django.db.models import Count
 import json
 import logging
 from django.utils import timezone
+from django.contrib.sessions.models import Session
 import csv # Para CSV
 from openpyxl import Workbook # Para Excel
 from openpyxl.styles import Font

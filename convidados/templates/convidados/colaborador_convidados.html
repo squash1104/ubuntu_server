@@ -21,6 +21,27 @@
             background-color: #e0ccff;
         }
 
+        body.dark-theme {
+            background: linear-gradient(to right, #333, #555);
+            color: #f0f0f0;
+        }
+
+        .body.dark-theme .table tr.meta-abaixo,
+        .table-hover > tbody > tr.meta-abaixo:hover > td {
+            background-color: #a12312;
+            --bs-table-hover-bg: #ffacccc;
+        }
+
+        .body.dark-theme .table > tbody > tr.meta-atingida > td,
+        .table-hover > tbody > tr.meta-atingida:hover > td {
+            background-color: #ccffcc;
+        }
+
+        .body.dark-theme .table > tbody > tr.meta-superada > td,
+        .table-hover > tbody > tr.meta-superada:hover > td {
+            background-color: #b28fff;
+        }
+
         body.dark-theme .table-light {
              background-color: #4a4a4a;
         }
@@ -81,6 +102,13 @@
                     <p class="mb-1"><strong>Telefone:</strong> {{ colaborador.telefone|default:"-" }}</p>
                     <p class="mb-1"><strong>Cidade:</strong> {{ colaborador.cidade.nome_cidade|default:"-" }}</p>
                     <p class="mb-0"><strong>Bairro:</strong> {{ colaborador.bairro.nome_bairro|default:"-" }}</p>
+
+                    <hr class="my-2"> <p class="mb-1">
+                        <strong>Data de Cadastro:</strong> {{ colaborador.data_cadastro|date:"d/m/Y H:i" }}
+                    </p>
+                    <p class="mb-0">
+                    <strong>Cadastrado Por:</strong> {{ colaborador.cadastrado_por.username|default:"-" }}
+                    </p>
                 </div>
             </div>
             <div class="col-lg-4">
@@ -122,7 +150,7 @@
         </div>
 
         <div class="mb-4">
-            <a href="{% url 'convidados:cadastrar_convidado_para_colaborador' colaborador.id %}" class="btn btn-primary">Novo Convidado</a>
+            <a href="{% url 'convidados:cadastrar_convidado_por_colaborador' colaborador.id %}" class="btn btn-primary">Novo Convidado</a>
             <a href="{% url 'colaboradores:lista_colaboradores' %}" class="btn btn-secondary">Voltar</a>
         </div>
 

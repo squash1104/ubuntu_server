@@ -75,6 +75,25 @@ class ColaboradorForm(forms.ModelForm):
             'bairro': 'Bairro:',
         }
 
+    has_phone_warning = False
+
+    def clean(self):
+        cleaned_data = super().clean()
+        nome = cleaned_data.get('nome')
+        telefone = cleaned_data.get('telefone')
+
+        # 1. VALIDAÇÃO DE NOME ÚNICO (Erro - barra o formulário)
+        if nome:
+            if Colaborador.objects.filter(nome__iexact=nome).exclude(pk=self.instance.pk).exists():
+                self.add_error('nome', forms.ValidationError('', code='nome_existente'))
+
+        # 2. VALIDAÇÃO DE TELEFONE DUPLICADO (Aviso - não barra o formulário)
+        if telefone:
+            if Colaborador.objects.filter(telefone=telefone).exclude(pk=self.instance.pk).exists():
+                self.has_phone_warning = True
+
+        return cleaned_data
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -97,4 +116,4 @@ class ColaboradorForm(forms.ModelForm):
             except (ValueError, TypeError):
                 pass  # Ignora erros se o valor não for um número
         elif self.instance.pk and self.instance.cidade:
-            self.fields['bairro'].queryset = self.instance.cidade.bairro_set.order_by('nome_bairro')
+            self.fields['bairro'].queryset = self.instance.cidade.bairros.order_by('nome_bairro')

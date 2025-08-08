@@ -17,6 +17,7 @@ from xhtml2pdf import pisa
 from .filters import ColaboradorFilter
 from .utils import exportar_colaboradores_excel, exportar_colaboradores_pdf, imprimir_relatorio_colaboradores
 from geografia.models import Cidade, Bairro
+from django.views.decorators.http import require_http_methods
 
 
 @login_required
@@ -72,7 +73,13 @@ def adicionar_colaborador(request):
     if request.method == 'POST':
         form = ColaboradorForm(request.POST)
         if form.is_valid():
-            colaborador = form.save()
+            colaborador = form.save(commit=False)
+            colaborador.cadastrado_por = request.user
+            colaborador.save()
+
+            if form.has_phone_warning:
+                messages.warning(request, f'AVISO: O telefone "{colaborador.telefone}" já está cadastrado em outro colaborador.')
+
             colaborador_nome = colaborador.nome
             messages.success(request, f'Colaborador "{colaborador_nome}" cadastrado com sucesso!')
             return redirect('colaboradores:lista_colaboradores')
@@ -81,26 +88,21 @@ def adicionar_colaborador(request):
     return render(request, 'colaboradores/adicionar_colaborador.html', {'form': form})
 
 @login_required
-def editar_colaborador(request, colaborador_id):
-    colaborador = get_object_or_404(Colaborador, pk=colaborador_id)
+def editar_colaborador(request, pk):
+    colaborador = get_object_or_404(Colaborador, pk=pk)
 
     if request.method == 'POST':
-        # Se a requisição for POST, o formulário foi enviado com dados atualizados
-        # Preenche o formulário com os dados da requisição E a instância do colaborador (para atualização)
         form = ColaboradorForm(request.POST, instance=colaborador)
         if form.is_valid():
-            # Se os dados são válidos, salva as alterações no banco de dados
             form.save()
-            messages.warning(request, 'Colaborador editado com sucesso!')
-            # Redireciona para a lista de colaboradores após a edição bem-sucedida
+            messages.success(request, 'Colaborador editado com sucesso!')
             return redirect('colaboradores:lista_colaboradores')
     else:
-        # Se a requisição for GET, exibe o formulário pré-preenchido com os dados atuais do colaborador
         form = ColaboradorForm(instance=colaborador)
 
     context = {
         'form': form,
-        'colaborador': colaborador, # Passa o objeto colaborador para o template
+        'colaborador': colaborador,
     }
     return render(request, 'colaboradores/editar_colaborador.html', context)
 
@@ -163,3 +165,33 @@ def get_bairros_ajax(request):
         bairros_qs = Bairro.objects.filter(cidade_id=cidade_id).order_by('nome_bairro')
         bairros = [{'id': bairro.id, 'nome_bairro': bairro.nome_bairro} for bairro in bairros_qs]
     return JsonResponse(bairros, safe=False)
+
+
+@require_http_methods(["GET"])
+def check_telefone_exists(request):
+    telefone = request.GET.get('telefone', None)
+    colaborador_id = request.GET.get('pk', None)
+
+    if telefone:
+        queryset = Colaborador.objects.filter(telefone=telefone)
+        if colaborador_id:
+            queryset = queryset.exclude(pk=colaborador_id)
+
+        exists = queryset.exists()
+        return JsonResponse({'exists': exists})
+    return JsonResponse({'exists': False})
+
+
+@require_http_methods(["GET"])
+def check_nome_exists(request):
+    nome = request.GET.get('nome', None)
+    colaborador_id = request.GET.get('pk', None)
+
+    if nome:
+        queryset = Colaborador.objects.filter(nome__iexact=nome)
+        if colaborador_id:
+            queryset = queryset.exclude(pk=colaborador_id)
+
+        exists = queryset.exists()
+        return JsonResponse({'exists': exists})
+    return JsonResponse({'exists': False})

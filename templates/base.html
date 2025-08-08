@@ -148,6 +148,47 @@ body {
     align-items: flex-start;
 }
 
+/* Regras para o container principal do Select2 */
+    body.dark-theme .select2-container--default .select2-selection--single,
+    body.dark-theme .select2-container--default .select2-selection--multiple {
+        background-color: #2b3035 !important;
+        border-color: #5a5a5a !important;
+        color: #f0f0f0 !important;
+    }
+
+    /* Regras para o texto e setas dentro do Select2 */
+    body.dark-theme .select2-container--default .select2-selection__rendered {
+        color: #f0f0f0 !important;
+    }
+
+    body.dark-theme .select2-container--default .select2-selection__arrow b {
+        border-color: #f0f0f0 transparent transparent transparent !important;
+    }
+
+    /* Regras para o dropdown (a lista de opções) */
+    body.dark-theme .select2-dropdown {
+        background-color: #212529 !important;
+        border-color: #5a5a5a !important;
+        color: #f0f0f0 !important;
+    }
+
+    /* Regras para as opções da lista */
+    body.dark-theme .select2-results__option {
+        color: #f0f0f0 !important;
+    }
+
+    /* Regras para a opção selecionada/hover */
+    body.dark-theme .select2-results__option--highlighted {
+        background-color: #495057 !important;
+        color: #ffffff !important;
+    }
+
+    /* Regra para a caixa de pesquisa interna do Select2 */
+    body.dark-theme .select2-search--dropdown .select2-search__field {
+        background-color: #2b3035 !important;
+        color: #f0f0f0 !important;
+        border-color: #5a5a5a !important;
+    }
 
 </style>
 

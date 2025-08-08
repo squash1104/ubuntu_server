@@ -1,5 +1,6 @@
 from django.db import models
 from geografia.models import Cidade, Bairro
+from django.contrib.auth.models import User
 
 class Colaborador(models.Model):
     # O Django criará automaticamente um campo 'id' como chave primária (PK)
@@ -11,6 +12,7 @@ class Colaborador(models.Model):
     bairro = models.ForeignKey(Bairro, on_delete=models.SET_NULL, null=True, blank=True)
 
     data_cadastro = models.DateTimeField(auto_now_add=True, editable=False)
+    cadastrado_por = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta:
         db_table = 'colaboradores' # A tabela no DB será 'colaboradores'
