@@ -2,9 +2,8 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
-from django.http import HttpResponse
 
 from .models import Message
 
@@ -19,54 +18,51 @@ def chat_view(request):
 
 def test_websocket(request):
     """View simples para testar WebSocket"""
-    with open('test_websocket.html', 'r') as f:
+    with open("test_websocket.html") as f:
         content = f.read()
-    return HttpResponse(content, content_type='text/html')
+    return HttpResponse(content, content_type="text/html")
 
 
 def test_websocket_simple(request):
     """View para testar WebSocket com consumer simples"""
-    with open('test_websocket_simple.html', 'r') as f:
+    with open("test_websocket_simple.html") as f:
         content = f.read()
-    return HttpResponse(content, content_type='text/html')
+    return HttpResponse(content, content_type="text/html")
 
 
 def debug_chat(request):
     """View para debugar o chat WebSocket"""
-    with open('debug_chat.html', 'r') as f:
+    with open("debug_chat.html") as f:
         content = f.read()
-    return HttpResponse(content, content_type='text/html')
+    return HttpResponse(content, content_type="text/html")
 
 
 def simple_chat_test(request):
     """View para testar o chat simples"""
-    with open('simple_chat_test.html', 'r') as f:
+    with open("simple_chat_test.html") as f:
         content = f.read()
-    return HttpResponse(content, content_type='text/html')
+    return HttpResponse(content, content_type="text/html")
 
 
 def chat_complete_test(request):
     """View para testar o chat completo"""
-    with open('test_chat_complete.html', 'r') as f:
+    with open("test_chat_complete.html") as f:
         content = f.read()
-    return HttpResponse(content, content_type='text/html')
+    return HttpResponse(content, content_type="text/html")
 
 
 @login_required
 def fetch_messages(request, username):
     try:
         from django.utils import timezone
-        
+
         mensagens = Message.objects.filter(
             sender__username__in=[request.user.username, username],
             recipient__username__in=[request.user.username, username],
         ).order_by("timestamp")
 
         # Marcar mensagens recebidas como lidas
-        mensagens_nao_lidas = mensagens.filter(
-            recipient=request.user,
-            read=False
-        )
+        mensagens_nao_lidas = mensagens.filter(recipient=request.user, read=False)
         mensagens_nao_lidas.update(read=True, read_at=timezone.now())
 
         data = [
@@ -95,14 +91,13 @@ def lista_contatos(request):
 
 
 def contatos_status(request):
-    from .models import Profile
     custom_user = get_user_model()
-    contatos = custom_user.objects.exclude(id=request.user.id).select_related('profile')
+    contatos = custom_user.objects.exclude(id=request.user.id).select_related("profile")
     contatos_data = [
         {
             "username": c.username,
             "full_name": c.get_full_name() or c.username,
-            "online": c.profile.online if hasattr(c, 'profile') else False,
+            "online": c.profile.online if hasattr(c, "profile") else False,
         }
         for c in contatos
     ]
