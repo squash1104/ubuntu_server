@@ -1,16 +1,29 @@
-"""
-ASGI config for sistema_fidelizacao project.
-
-It exposes the ASGI callable as a module-level variable named ``application``.
-
-For more information on this file, see
-https://docs.djangoproject.com/en/5.2/howto/deployment/asgi/
-"""
-
 import os
 
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "sistema_fidelizacao.settings")
+
+import django
+
+django.setup()
+
+from channels.auth import AuthMiddlewareStack
+from channels.routing import ProtocolTypeRouter, URLRouter
 from django.core.asgi import get_asgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'sistema_fidelizacao.settings')
+import chat.routing
+import chat.test_routing
 
-application = get_asgi_application()
+# Get the Django ASGI application first
+django_asgi_app = get_asgi_application()
+
+# Combine both routing patterns
+websocket_patterns = (
+    chat.routing.websocket_urlpatterns + chat.test_routing.websocket_urlpatterns
+)
+
+application = ProtocolTypeRouter(
+    {
+        "http": django_asgi_app,
+        "websocket": AuthMiddlewareStack(URLRouter(websocket_patterns)),
+    }
+)

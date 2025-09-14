@@ -1,61 +1,61 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from .models import Convidado, Colaborador
-from colaboradores.models import Colaborador
-from .forms import ConvidadoForm
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.db.models import Count, Q
-from django.http import HttpResponse, JsonResponse
-from django.template.loader import get_template # Para PDF
-from django.utils import timezone
-from io import BytesIO # Para PDF
-from openpyxl import Workbook
-from openpyxl.styles import Font, Alignment
-from xhtml2pdf import pisa
-from .forms import RelatorioConvidadosForm
-from geografia.models import Cidade, Bairro
-from .filters import ConvidadoFilter
-from .utils import exportar_convidados_excel, exportar_convidados_pdf, imprimir_relatorio
-from django.views.decorators.http import require_http_methods
 import re
+
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.db.models import Q
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_http_methods
+
+from colaboradores.models import Colaborador
+from geografia.models import Bairro
+
+from .filters import ConvidadoFilter
+from .forms import ConvidadoForm
+from .models import Convidado
+from .utils import (
+    exportar_convidados_excel,
+    exportar_convidados_pdf,
+    imprimir_relatorio,
+)
 
 
 @login_required
 def lista_convidados(request):
-    termo_busca = request.GET.get('q', '')
-    ordenar_por_param = request.GET.get('ordenar_por', 'nome')
-    direcao = request.GET.get('direcao', 'asc')
+    termo_busca = request.GET.get("q", "")
+    ordenar_por_param = request.GET.get("ordenar_por", "nome")
+    direcao = request.GET.get("direcao", "asc")
 
     ordenar_por_query = ordenar_por_param
-    if direcao == 'desc':
-        ordenar_por_query = f'-{ordenar_por_param}'
+    if direcao == "desc":
+        ordenar_por_query = f"-{ordenar_por_param}"
 
-    convidados_qs = Convidado.objects.select_related('colaborador', 'cidade', 'bairro')
+    convidados_qs = Convidado.objects.select_related("colaborador", "cidade", "bairro")
 
     if termo_busca:
         convidados_qs = convidados_qs.filter(
-            Q(nome__icontains=termo_busca) |
-            Q(telefone__icontains=termo_busca) |
-            Q(cidade__nome_cidade__icontains=termo_busca) |
-            Q(bairro__nome_bairro__icontains=termo_busca) |
-            Q(colaborador__nome__icontains=termo_busca)
+            Q(nome__icontains=termo_busca)
+            | Q(telefone__icontains=termo_busca)
+            | Q(cidade__nome_cidade__icontains=termo_busca)
+            | Q(bairro__nome_bairro__icontains=termo_busca)
+            | Q(colaborador__nome__icontains=termo_busca)
         )
 
     convidados_final = convidados_qs.order_by(ordenar_por_query)
     total_convidados_filtrados = convidados_final.count()
 
     context = {
-        'convidados': convidados_final,
-        'termo_busca': termo_busca,
-        'ordenar_por': ordenar_por_param,
-        'direcao': direcao,
-        'total_convidados_filtrados': total_convidados_filtrados,
+        "convidados": convidados_final,
+        "termo_busca": termo_busca,
+        "ordenar_por": ordenar_por_param,
+        "direcao": direcao,
+        "total_convidados_filtrados": total_convidados_filtrados,
     }
 
-    if request.GET.get('is_ajax') == 'true':
-        return render(request, 'convidados/convidados_table_fragment.html', context)
-    else:
-        return render(request, 'convidados/lista_convidados.html', context)
+    if request.GET.get("is_ajax") == "true":
+        return render(request, "convidados/convidados_table_fragment.html", context)
+    return render(request, "convidados/lista_convidados.html", context)
+
 
 @login_required
 def colaborador_convidados(request, pk):
@@ -64,22 +64,24 @@ def colaborador_convidados(request, pk):
     total_convidados = convidados_do_colaborador.count()
 
     # --- Lógica de Ordenação (similar à lista geral de convidados) ---
-    ordenar_por = request.GET.get('ordenar_por', 'nome') # Padrão: ordenar por nome
-    direcao = request.GET.get('direcao', 'asc')         # Padrão: ascendente
+    ordenar_por = request.GET.get("ordenar_por", "nome")  # Padrão: ordenar por nome
+    direcao = request.GET.get("direcao", "asc")  # Padrão: ascendente
 
     # Mapeia os nomes das colunas do template para os nomes dos campos do modelo
     campos_ordenaveis = {
-        'nome': 'nome',
-        'telefone': 'telefone',
-        'cidade': 'cidade',
-        'bairro': 'bairro',
-        'colaborador': 'colaborador',
+        "nome": "nome",
+        "telefone": "telefone",
+        "cidade": "cidade",
+        "bairro": "bairro",
+        "colaborador": "colaborador",
     }
 
     # Verifica se o campo de ordenação é válido e aplica a ordenação
     if ordenar_por in campos_ordenaveis:
-        prefixo = '-' if direcao == 'desc' else ''
-        convidados_do_colaborador = convidados_do_colaborador.order_by(f'{prefixo}{campos_ordenaveis[ordenar_por]}')
+        prefixo = "-" if direcao == "desc" else ""
+        convidados_do_colaborador = convidados_do_colaborador.order_by(
+            f"{prefixo}{campos_ordenaveis[ordenar_por]}"
+        )
     # --- Fim da Lógica de Ordenação ---
 
     meta = 15
@@ -97,16 +99,16 @@ def colaborador_convidados(request, pk):
         meta_status = "superada"
 
     context = {
-        'colaborador': colaborador,
-        'convidados': convidados_do_colaborador,
-        'total_convidados': convidados_do_colaborador.count(),
-        'ordenar_por': ordenar_por, # Passa o campo de ordenação atual para o template
-        'direcao': direcao,         # Passa a direção de ordenação atual para o template
-        'meta': meta,
-        'meta_status': meta_status,
-        'porcentagem_meta': porcentagem_meta,
+        "colaborador": colaborador,
+        "convidados": convidados_do_colaborador,
+        "total_convidados": convidados_do_colaborador.count(),
+        "ordenar_por": ordenar_por,  # Passa o campo de ordenação atual para o template
+        "direcao": direcao,  # Passa a direção de ordenação atual para o template
+        "meta": meta,
+        "meta_status": meta_status,
+        "porcentagem_meta": porcentagem_meta,
     }
-    return render(request, 'convidados/colaborador_convidados.html', context)
+    return render(request, "convidados/colaborador_convidados.html", context)
 
 
 @login_required
@@ -115,7 +117,7 @@ def cadastrar_convidado(request, colaborador_id=None):
     if colaborador_id:
         colaborador = get_object_or_404(Colaborador, pk=colaborador_id)
 
-    if request.method == 'POST':
+    if request.method == "POST":
         form = ConvidadoForm(request.POST)
         if form.is_valid():
             convidado = form.save(commit=False)
@@ -125,63 +127,73 @@ def cadastrar_convidado(request, colaborador_id=None):
             convidado_nome = convidado.nome
 
             # Verificamos o atributo de aviso APÓS o salvamento
-            if getattr(form, 'phone_is_duplicate', False):
-                messages.warning(request,
-                                 f'AVISO: O telefone "{convidado.telefone}" já está cadastrado em outro convidado. Convidado "{convidado_nome}" salvo com sucesso!')
+            if getattr(form, "phone_is_duplicate", False):
+                messages.warning(
+                    request,
+                    f'AVISO: O telefone "{convidado.telefone}" já está '
+                    f'cadastrado em outro convidado. Convidado "{convidado_nome}" '
+                    f"salvo com sucesso!",
+                )
             else:
-                messages.success(request, f'Convidado "{convidado_nome}" salvo com sucesso!')
+                messages.success(
+                    request, f'Convidado "{convidado_nome}" salvo com sucesso!'
+                )
 
             if colaborador:
-                return redirect('convidados:colaborador_convidados', pk=colaborador_id)
-            else:
-                return redirect('convidados:lista_convidados')
+                return redirect("convidados:colaborador_convidados", pk=colaborador_id)
+            return redirect("convidados:lista_convidados")
     else:
         if colaborador:
-            form = ConvidadoForm(initial={'colaborador': colaborador})
+            form = ConvidadoForm(initial={"colaborador": colaborador})
         else:
             form = ConvidadoForm()
 
     context = {
-        'form': form,
-        'colaborador': colaborador,
+        "form": form,
+        "colaborador": colaborador,
     }
-    return render(request, 'convidados/cadastrar_convidado.html', context)
+    return render(request, "convidados/cadastrar_convidado.html", context)
 
 
 @login_required
 def editar_convidado(request, pk):
     convidado = get_object_or_404(Convidado, pk=pk)
-    if request.method == 'POST':
+    if request.method == "POST":
         form = ConvidadoForm(request.POST, instance=convidado)
         if form.is_valid():
             form.save()
-            messages.success(request, f'Convidado "{convidado.nome}" atualizado com sucesso!')
+            messages.success(
+                request, f'Convidado "{convidado.nome}" atualizado com sucesso!'
+            )
 
             # --- MODIFICAÇÃO PRINCIPAL AQUI ---
             # Pega a URL de retorno do formulário, se ela existir.
-            next_url = request.POST.get('next', None)
+            next_url = request.POST.get("next", None)
             if next_url:
                 # Redireciona para a URL completa fornecida pelo formulário
                 return redirect(next_url)
-            else:
-                # Se não houver, volta para a lista geral como fallback
-                return redirect('convidados:lista_convidados')
+            # Se não houver, volta para a lista geral como fallback
+            return redirect("convidados:lista_convidados")
             # ----------------------------------
     else:
         form = ConvidadoForm(instance=convidado)
 
     # Adiciona a URL de retorno para o contexto, se ela existir
-    next_url_get = request.GET.get('next', None)
-    return render(request, 'convidados/cadastrar_convidado.html',
-                  {'form': form, 'convidado': convidado, 'next': next_url_get})
+    next_url_get = request.GET.get("next", None)
+    return render(
+        request,
+        "convidados/cadastrar_convidado.html",
+        {"form": form, "convidado": convidado, "next": next_url_get},
+    )
+
 
 @login_required
 def excluir_convidado(request, pk):
     convidado = get_object_or_404(Convidado, pk=pk)
 
-    if request.method == 'POST':
+    if request.method == "POST":
         # Pega a URL de redirecionamento que o formulário enviou
-        redirect_url = request.POST.get('redirect_url', None)
+        redirect_url = request.POST.get("redirect_url", None)
 
         # Guarda o nome do convidado antes de o apagar
         nome_convidado = convidado.nome
@@ -195,52 +207,55 @@ def excluir_convidado(request, pk):
         # Caso contrário, usa uma URL padrão (fallback de segurança).
         if redirect_url:
             return redirect(redirect_url)
-        else:
-            return redirect('convidados:lista_convidados')
+        return redirect("convidados:lista_convidados")
 
     # Se a requisição não for POST, simplesmente redireciona para a lista geral.
-    return redirect('convidados:lista_convidados')
+    return redirect("convidados:lista_convidados")
 
 
 def relatorio_convidados_view(request):
     f = ConvidadoFilter(request.GET, queryset=Convidado.objects.all())
 
-    selected_columns = request.GET.getlist('columns')
+    selected_columns = request.GET.getlist("columns")
 
-    if 'export_excel' in request.GET:
+    if "export_excel" in request.GET:
         print("Colunas para Excel:", selected_columns)  # <-- Adicione esta linha
         return exportar_convidados_excel(f.qs, selected_columns)
-    elif 'export_pdf' in request.GET:
+    if "export_pdf" in request.GET:
         print("Colunas para PDF:", selected_columns)  # <-- Adicione esta linha
         return exportar_convidados_pdf(f.qs, selected_columns)
-    elif 'export_print' in request.GET:
+    if "export_print" in request.GET:
         print("Colunas para Impressão:", selected_columns)  # <-- Adicione esta linha
         return imprimir_relatorio(f.qs, selected_columns)
 
     context = {
-        'filter': f,
-        'convidados': f.qs,
-        'selected_columns': selected_columns,
+        "filter": f,
+        "convidados": f.qs,
+        "selected_columns": selected_columns,
     }
-    return render(request, 'report/guest_report_form.html', context)
+    return render(request, "report/guest_report_form.html", context)
+
 
 def get_bairros_ajax(request):
-    cidade_id = request.GET.get('cidade_id')
+    cidade_id = request.GET.get("cidade_id")
     bairros = []
     if cidade_id:
-        bairros_qs = Bairro.objects.filter(cidade_id=cidade_id).order_by('nome_bairro')
-        bairros = [{'id': bairro.id, 'nome_bairro': bairro.nome_bairro} for bairro in bairros_qs]
+        bairros_qs = Bairro.objects.filter(cidade_id=cidade_id).order_by("nome_bairro")
+        bairros = [
+            {"id": bairro.id, "nome_bairro": bairro.nome_bairro}
+            for bairro in bairros_qs
+        ]
     return JsonResponse(bairros, safe=False)
 
 
 @require_http_methods(["GET"])
 def check_telefone_exists(request):
-    telefone = request.GET.get('telefone', None)
-    convidado_id = request.GET.get('pk', None)
+    telefone = request.GET.get("telefone", None)
+    convidado_id = request.GET.get("pk", None)
 
     if telefone:
         # Lógica para limpar a formatação do telefone
-        telefone_limpo = re.sub(r'[\(\)\-\s]', '', telefone)
+        telefone_limpo = re.sub(r"[\(\)\-\s]", "", telefone)
 
         # Checa se o telefone limpo existe no banco de dados
         queryset = Convidado.objects.filter(telefone=telefone_limpo)
@@ -248,14 +263,14 @@ def check_telefone_exists(request):
             queryset = queryset.exclude(pk=convidado_id)
 
         exists = queryset.exists()
-        return JsonResponse({'exists': exists})
-    return JsonResponse({'exists': False})
+        return JsonResponse({"exists": exists})
+    return JsonResponse({"exists": False})
 
 
 @require_http_methods(["GET"])
 def check_nome_exists(request):
-    nome = request.GET.get('nome', None)
-    convidado_id = request.GET.get('pk', None)
+    nome = request.GET.get("nome", None)
+    convidado_id = request.GET.get("pk", None)
 
     if nome:
         queryset = Convidado.objects.filter(nome__iexact=nome)
@@ -263,5 +278,5 @@ def check_nome_exists(request):
             queryset = queryset.exclude(pk=convidado_id)
 
         exists = queryset.exists()
-        return JsonResponse({'exists': exists})
-    return JsonResponse({'exists': False})
+        return JsonResponse({"exists": exists})
+    return JsonResponse({"exists": False})

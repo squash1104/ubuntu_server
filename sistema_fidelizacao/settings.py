@@ -10,9 +10,12 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
-from django.contrib.messages import constants as messages
-from pathlib import Path
+# from pickle import FALSE
+
 import os
+from pathlib import Path
+
+from django.contrib.messages import constants as messages
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,112 +25,135 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-ld%33t$+_#cw)_ssw(++i^9s*xc57@jssh(m!8w@wm65@jwm(='
+SECRET_KEY = "django-insecure-ld%33t$+_#cw)_ssw(++i^9s*xc57@jssh(m!8w@wm65@jwm(="
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['sistema.fidelizamax.app.br', '127.0.0.1', 'localhost', '192.168.18.158']
-
-CSRF_TRUSTED_ORIGINS = [
-    'https://sistema.fidelizamax.app.br',
-    # Adicione 'http://localhost:8000' ou o socket se você testar localmente
-    # 'http://127.0.0.1:8000',
+ALLOWED_HOSTS = [
+    "sistema.fidelizamax.app.br",
+    "www.sistema.fidelizamax.app.br",
+    "localhost",
+    "127.0.0.1",
 ]
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-# Ou 'django.core.mail.backends.filebased.EmailBackend' com EMAIL_FILE_PATH = '/tmp/app-messages'
+CSRF_TRUSTED_ORIGINS = [
+    "https://sistema.fidelizamax.app.br",
+    "https://www.sistema.fidelizamax.app.br",
+]
+
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+# Ou 'django.core.mail.backends.filebased.EmailBackend' com
+# EMAIL_FILE_PATH = '/tmp/app-messages'
 
 # Application definition
 
 MESSAGE_TAGS = {
-    messages.DEBUG: 'alert-secondary',
-    messages.INFO: 'alert-info',
-    messages.SUCCESS: 'alert-success',
-    messages.WARNING: 'alert-warning',
-    messages.ERROR: 'alert-danger',
+    messages.DEBUG: "alert-secondary",
+    messages.INFO: "alert-info",
+    messages.SUCCESS: "alert-success",
+    messages.WARNING: "alert-warning",
+    messages.ERROR: "alert-danger",
 }
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'geografia',
-    'colaboradores',
-    'convidados',
-    'django_filters',
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "geografia",
+    "colaboradores",
+    "convidados",
+    "django_filters",
+    "channels",
+    "chat",
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = 'sistema_fidelizacao.urls'
+ROOT_URLCONF = "sistema_fidelizacao.urls"
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) #
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
-        # 'APP_DIRS': True, #
-        'OPTIONS': {
-            'context_processors': [
-		        'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [os.path.join(BASE_DIR, "templates")],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
-            'loaders': [
-                'django.template.loaders.filesystem.Loader', # Busca nos diretórios listados em DIRS
-                'django.template.loaders.app_directories.Loader',
-            ]
+            # 'loaders': [
+            #     'django.template.loaders.filesystem.Loader',
+            #     # Busca nos diretórios listados em DIRS
+            #     'django.template.loaders.app_directories.Loader',
+            # ]
         },
     },
 ]
 
-WSGI_APPLICATION = 'sistema_fidelizacao.wsgi.application'
+WSGI_APPLICATION = "sistema_fidelizacao.wsgi.application"
+
+ASGI_APPLICATION = "sistema_fidelizacao.asgi.application"
 
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'sisvot_db',
-        'USER': 'sisuserdb',
-        'PASSWORD':'lu531676',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "sisvot_db",
+        "USER": "sisuserdb",
+        "PASSWORD": "lu531676",
+        "HOST": "127.0.0.1",
+        "PORT": "5432",
     }
 }
 
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+        # "BACKEND": "channels_redis.core.RedisChannelLayer",
+        # "CONFIG": {
+        # "hosts": [("localhost", 6379)],
+        # },
+    },
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": (
+            "django.contrib.auth.password_validation."
+            "UserAttributeSimilarityValidator"
+        ),
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
@@ -135,9 +161,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = 'America/Cuiaba'
+TIME_ZONE = "America/Cuiaba"
 
 USE_I18N = True
 
@@ -147,54 +173,89 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_URL = "/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 STATICFILES_DIRS = [
-     os.path.join(BASE_DIR, 'static'), # Aponta para a pasta 'static' que criamos na raiz do projeto
+    os.path.join(BASE_DIR, "static"),
 ]
 
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STATICFILES_STORAGE = "whitenoise.storage.StaticFilesStorage"
+
+# Configurações adicionais do WhiteNoise
+WHITENOISE_USE_FINDERS = True
+WHITENOISE_AUTOREFRESH = True
+WHITENOISE_ROOT = os.path.join(BASE_DIR, "staticfiles")
+WHITENOISE_INDEX_FILE = True
+WHITENOISE_MIMETYPES = {
+    ".js": "application/javascript",
+    ".css": "text/css",
+    ".html": "text/html",
+}
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-LOGIN_URL = '/login/'
+LOGIN_URL = "/login/"
 
-LOGIN_REDIRECT_URL = 'home'
+LOGIN_REDIRECT_URL = "home"
 
-LOGOUT_REDIRECT_URL = '/accounts/login/'
+LOGOUT_REDIRECT_URL = "/accounts/login/"
+
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+# SECURE_SSL_REDIRECT = True
+
 
 # === CONFIGURAÇÃO CONTENT SECURITY POLICY (CSP) PARA django-csp >= 4.0 ===
-# Certifique-se de que todas as configurações antigas CSP_xxx_SRC foram removidas ou comentadas.
+# Certifique-se de que todas as configurações antigas CSP_xxx_SRC foram
+# removidas ou comentadas.
 
 CSP_DEFAULT_SRC = ("'self'", "https://unpkg.com", "https://*.tile.openstreetmap.org")
-CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'", "https://unpkg.com", "https://code.jquery.com", "https://cdnjs.cloudflare.com")
-CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", "https://unpkg.com")
+CSP_SCRIPT_SRC = (
+    "'self'",
+    "'unsafe-inline'",
+    "https://unpkg.com",
+    "https://code.jquery.com",
+    "https://cdnjs.cloudflare.com",
+    "https://cdn.jsdelivr.net",
+)
+CSP_STYLE_SRC = (
+    "'self'",
+    "'unsafe-inline'",
+    "https://unpkg.com",
+    "https://cdn.jsdelivr.net",
+)
 CSP_IMG_SRC = ("'self'", "data:", "https://*.tile.openstreetmap.org")
-CSP_FONT_SRC = ("'self'",)
-CSP_CONNECT_SRC = ("'self'",) # Para requisições AJAX, se houver
+CSP_FONT_SRC = ("'self'", "https://cdn.jsdelivr.net")
+CSP_CONNECT_SRC = ("'self'",)
 
-# Se você está usando DEBUG=True, pode definir CSP_REPORT_ONLY = False para ver os bloqueios no console.
-# Em produção, você usaria CSP_REPORT_ONLY = True com um URL para onde os relatórios seriam enviados.
+# Se você está usando DEBUG=True, pode definir CSP_REPORT_ONLY = False
+# para ver os bloqueios no console.
+# Em produção, você usaria CSP_REPORT_ONLY = True com um URL para onde
+# os relatórios seriam enviados.
 # Por agora, mantenha-o em False para que as políticas sejam aplicadas.
 CSP_REPORT_ONLY = False
 
-# Para desenvolvimento, se você tiver problemas persistentes com "unsafe-inline" ou "unsafe-eval"
+# Para desenvolvimento, se você tiver problemas persistentes com
+# "unsafe-inline" ou "unsafe-eval"
 # E *APENAS* EM DESENVOLVIMENTO:
 # CSP_SCRIPT_SRC += ("'unsafe-eval'",) # Se precisar para alguns scripts que usam eval
 # CSP_STYLE_SRC += ("'unsafe-inline'",) # Já incluído acima
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend' # Ou outro backend (console para teste)
-EMAIL_HOST = 'smtp.gmail.com' # Ex: smtp.gmail.com, smtp.mailgun.org
-EMAIL_PORT = 587 # Porta comum para TLS
-EMAIL_USE_TLS = True # Use True para TLS (segurança)
-# EMAIL_USE_SSL = False # Se usar SSL (porta 465), defina como True e EMAIL_USE_TLS como False
-EMAIL_HOST_USER = 'lucianolrv@gmail.com' # Seu endereço de e-mail
-EMAIL_HOST_PASSWORD = 'fdww ubmc vjqm xdos'
-DEFAULT_FROM_EMAIL = 'suporte@fidelizamax.app.br' # E-mail que aparecerá como remetente
-SERVER_EMAIL = 'suporte@fidelizamax.app.br' # E-mail para erros de servidor
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+# Ou outro backend (console para teste)
+EMAIL_HOST = "smtp.gmail.com"  # Ex: smtp.gmail.com, smtp.mailgun.org
+EMAIL_PORT = 587  # Porta comum para TLS
+EMAIL_USE_TLS = True  # Use True para TLS (segurança)
+# EMAIL_USE_SSL = False
+# Se usar SSL (porta 465), defina como True e EMAIL_USE_TLS como False
+EMAIL_HOST_USER = "lucianolrv@gmail.com"  # Seu endereço de e-mail
+EMAIL_HOST_PASSWORD = "fdww ubmc vjqm xdos"
+DEFAULT_FROM_EMAIL = "suporte@fidelizamax.app.br"  # E-mail que aparecerá como remetente
+SERVER_EMAIL = "suporte@fidelizamax.app.br"  # E-mail para erros de servidor
 
 # Configuração para o e-mail de reset de senha
 # Nome do site que aparece no e-mail (opcional)
@@ -202,6 +263,7 @@ SITE_NAME = "SisAps - Fidelização de Apoiadores"
 # Domínio completo que aparecerá no link de reset de senha
 # É CRÍTICO que este seja o seu domínio de produção, ex:
 # https://sistema.fidelizamax.app.br
-# Use "SITE_ID = 1" e o objeto Site do Django para gerenciar isso dinamicamente se tiver vários domínios.
+# Use "SITE_ID = 1" e o objeto Site do Django para gerenciar isso
+# dinamicamente se tiver vários domínios.
 # Ou defina na mão se for um único domínio fixo:
-DOMAIN_NAME = 'sistema.fidelizamax.app.br'
+DOMAIN_NAME = "sistema.fidelizamax.app.br"

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste WebSocket Simples</title>
+</head>
+<body>
+    <h1>Teste WebSocket Simples</h1>
+    <div id="status">Desconectado</div>
+    <div id="messages"></div>
+    <input type="text" id="messageInput" placeholder="Digite uma mensagem...">
+    <button onclick="sendMessage()">Enviar</button>
+    <button onclick="connectWebSocket()">Conectar</button>
+    <button onclick="disconnectWebSocket()">Desconectar</button>
+    
+    <script>
+        let socket;
+        
+        function connectWebSocket() {
+            const protocol = (location.protocol === 'https:') ? 'wss' : 'ws';
+            const username = 'test_user';
+            socket = new WebSocket(`${protocol}://${window.location.host}/ws/test/${username}/`);
+            
+            document.getElementById('status').textContent = 'Conectando...';
+            
+            socket.onopen = function(e) {
+                console.log("WebSocket conectado!");
+                document.getElementById('status').textContent = 'Conectado';
+                document.getElementById('messages').innerHTML += '<p style="color: green;">Conectado!</p>';
+            };
+            
+            socket.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                console.log("Mensagem recebida:", data);
+                document.getElementById('messages').innerHTML += `<p><strong>${data.sender}:</strong> ${data.message}</p>`;
+            };
+            
+            socket.onclose = function(event) {
+                console.log("WebSocket desconectado!", event);
+                document.getElementById('status').textContent = 'Desconectado';
+                document.getElementById('messages').innerHTML += '<p style="color: red;">Desconectado!</p>';
+            };
+            
+            socket.onerror = function(error) {
+                console.error("Erro WebSocket:", error);
+                document.getElementById('status').textContent = 'Erro';
+                document.getElementById('messages').innerHTML += '<p style="color: red;">Erro na conexão!</p>';
+            };
+        }
+        
+        function disconnectWebSocket() {
+            if (socket) {
+                socket.close();
+            }
+        }
+        
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value;
+            
+            if (socket && socket.readyState === WebSocket.OPEN && message) {
+                socket.send(JSON.stringify({
+                    'message': message,
+                    'timestamp': new Date().toISOString()
+                }));
+                messageInput.value = '';
+            }
+        }
+        
+        document.getElementById('messageInput').addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        // Conectar automaticamente ao carregar a página
+        window.onload = function() {
+            connectWebSocket();
+        };
+    </script>
+</body>
+</html>

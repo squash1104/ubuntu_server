@@ -20,7 +20,9 @@
 
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<link rel="stylesheet" href="{% static 'css/custom.css' %}">
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+    <link rel="stylesheet" href="{% static 'css/chat.css' %}">
+    <link rel="stylesheet" href="{% static 'css/chat_complete.css' %}">
 
 
 
@@ -135,6 +137,7 @@ flex-grow: 1;
 
 text-align: left;
 
+
 }
 
 }
@@ -190,11 +193,99 @@ body {
         border-color: #5a5a5a !important;
     }
 
+    #logout-navbar {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1.5rem;
+        color: white;
+        padding: 0;
+    }
+
+    #navbar-chat-icon {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1.5rem;
+        color: white;
+    }
+
+/* Estilos do chat movidos para chat.css */
+
+.message-status {
+    color: #4caf50;
+    font-size: 12px;
+    margin-left: 4px;
+}
+
+/* Notificações nos contatos */
+.contact-notification {
+    background: #dc3545 !important;
+    color: white !important;
+    font-size: 10px !important;
+    padding: 2px 6px !important;
+    border-radius: 10px !important;
+    margin-left: auto !important;
+    min-width: 16px !important;
+    text-align: center !important;
+    font-weight: bold !important;
+    display: inline-block !important;
+    position: relative !important;
+    z-index: 10 !important;
+}
+
+#contacts-list li {
+    padding: 10px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+    justify-content: space-between;
+}
+
+#contacts-list li .contact-info {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.badge.bg-purple {
+    background-color: #6f42c1 !important; /* A mesma cor roxa do seu gráfico */
+}
+
+.stat-card {
+    /* Usa as nossas variáveis de tema para fundo e borda */
+    background-color: var(--card-bg);
+    border-radius: 0.5rem; /* 8px */
+    padding: 1.25rem; /* 20px */
+    text-align: center;
+    height: 100%; /* Garante que o card ocupe a altura toda da sua coluna */
+}
+
+.stat-card h3 {
+    color: var(--bs-primary);
+    margin-top: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    text-transform: uppercase; /* Deixa o título em maiúsculas */
+    letter-spacing: 0.5px;
+}
+
+.stat-card p {
+    font-size: 2.2em;
+    font-weight: 700; /* Mais negrito */
+    color: var(--text-color);
+    margin: 5px 0 0;
+}
+
+
+
 </style>
 
 
-
-{% block extra_css %}{% endblock %}
 
 <script>
         (function() {
@@ -210,7 +301,7 @@ body {
 
 
 
-<nav class="navbar navbar-dark bg-dark shadow-sm fixed-top">
+    <nav class="navbar navbar-dark bg-dark shadow-sm fixed-top">
         <div class="container">
             <button class="navbar-toggler me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
                 <span class="navbar-toggler-icon"></span>
@@ -223,9 +314,21 @@ body {
                     <span class="navbar-text mx-3 d-none d-lg-block">Olá, {{ user.get_full_name }}</span>
                 {% endif %}
 
-                <button id="theme-toggler" class="btn btn-outline-light btn-sm" type="button" title="Mudar tema">
+
+
+
+                <button id="theme-toggler" class="btn btn-outline-light me-2" type="button" title="Mudar tema">
                     <i id="theme-icon" class="bi bi-moon-stars-fill"></i>
                 </button>
+
+                {% if user.is_authenticated %}
+                    <form action="{% url 'logout' %}" method="post" class="d-inline">
+                    {% csrf_token %}
+                        <button id="logout-navbar" class="btn btn-outline-light mx-2" type="submit" title="Sair">
+                            <i class="bi bi-box-arrow-right"></i>
+                        </button>
+                    </form>
+                {% endif %}
             </div>
         </div>
     </nav>
@@ -307,110 +410,888 @@ body {
         {% block content %}{% endblock %}
     </main>
 
-    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100">
+     <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100">
         {% if messages %}
-
-{% for message in messages %}
-
-<div class="alert {{ message.tags }} alert-dismissible fade show" role="alert">
-
-{{ message }}
-
-</div>
-
-{% endfor %}
-
-{% endif %}
-
-</div>
+            {% for message in messages %}
+              <div class="alert {{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+              </div>
+            {% endfor %}
+        {% endif%}
+     </div> 
 
 
+      {% if user.is_authenticated %}
+        <!-- Sistema de Chat Moderno -->
+        <button id="chat-toggle" title="Abrir Chat">
+          💬 <span id="chat-badge" style="display:none">0</span>
+        </button>
+        
+        <!-- Audio para notificações -->
+        <audio id="chat-sound" src="{% static 'chat/notification.mp3' %}" preload="auto"></audio>
 
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+        <!-- Dock de Contatos -->
+        <div id="contacts-dock" style="display: none;">
+          <div id="contacts-header">
+            <span>💬 Contatos Online</span>
+            <button id="close-contacts" title="Fechar">✕</button>
+          </div>
+          <div id="contacts-list">
+            <ul id="contacts-ul"></ul>
+          </div>
+        </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
-
+        <!-- Container para Janelas de Chat -->
+        <div id="chat-windows-container"></div>
+        
+        <!-- Container para Notificações Toast -->
+        <div class="toast-container"></div>
+      {% endif%}
 
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const themeToggler = document.getElementById('theme-toggler');
-        const themeIcon = document.getElementById('theme-icon');
-        const body = document.body;
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggler = document.getElementById('theme-toggler');
+            const themeIcon = document.getElementById('theme-icon');
+            const body = document.body;
 
-        function setTheme(theme) {
-                document.documentElement.setAttribute('data-bs-theme', theme);
-                localStorage.setItem('theme', theme);
-                if (theme === 'dark') {
-                    body.classList.add('dark-theme');
-                    body.classList.remove('light-theme');
-                    themeIcon.className = 'bi bi-sun-fill'; // Ícone de sol para alternar para claro
+            function setTheme(theme) {
+                    document.documentElement.setAttribute('data-bs-theme', theme);
+                    localStorage.setItem('theme', theme);
+                    if (theme === 'dark') {
+                        body.classList.add('dark-theme');
+                        body.classList.remove('light-theme');
+                        themeIcon.className = 'bi bi-sun-fill'; // Ícone de sol para alternar para claro
+                    } else {
+                        body.classList.remove('dark-theme');
+                        body.classList.add('light-theme');
+                        themeIcon.className = 'bi bi-moon-stars-fill'; // Ícone de lua para alternar para escuro
+                    }
+                }
+            // Define o tema inicial baseado no localStorage ou padrão 'light'
+                let currentTheme = localStorage.getItem('theme') || 'light';
+                setTheme(currentTheme);
+
+                // Adiciona listener para o clique no botão
+                themeToggler.addEventListener('click', () => {
+                    // Alterna o tema
+                    currentTheme = body.classList.contains('light-theme') ? 'dark' : 'light';
+                    setTheme(currentTheme);
+                });
+
+
+    // Ativa as notificações
+
+    const alertElements = document.querySelectorAll('.toast-container .alert.alert-dismissible');
+
+    alertElements.forEach(function(alertElement) {
+
+    const alertInstance = new bootstrap.Alert(alertElement);
+
+    setTimeout(() => {
+
+    if (alertElement) {
+
+    alertInstance.close();
+
+    }
+
+    }, 4000);
+
+    });
+
+
+
+    // Ativa os tooltips
+
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+
+    return new bootstrap.Tooltip(tooltipTriggerEl);
+
+    });
+
+    });
+
+    </script>
+
+            <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+        <script src="{% static 'js/jquery.mask.min.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+
+    <script>
+        window.LOGGED_USER = "{{ request.user.username|escapejs }}";
+        window.LOGGED_USER_FULLNAME = "{{ request.user.get_full_name|escapejs }}";
+        
+                    // Variáveis globais do chat
+            window.socket = null;
+            window.globalSocket = null; // Socket global para receber mensagens
+            window.currentChatUser = null;
+            window.typingTimer = null;
+            window.isTyping = false;
+            window.unreadByUser = new Map();
+            window.totalUnread = 0;
+        
+        // Funções globais para o chat (workaround para problema de truncamento)
+        window.showContactsDock = function() {
+            console.log('=== showContactsDock INICIADO ===');
+            console.log('Procurando por contacts-dock...');
+            const dock = document.getElementById('contacts-dock');
+            console.log('Dock encontrado:', dock);
+            if (dock) {
+                console.log('Dock encontrado, exibindo...');
+                console.log('Display atual do dock:', dock.style.display);
+                dock.style.display = 'flex';
+                console.log('Display alterado para:', dock.style.display);
+                console.log('Verificando se loadContacts é uma função...');
+                if (typeof loadContacts === 'function') {
+                    console.log('Chamando loadContacts...');
+                    loadContacts();
                 } else {
-                    body.classList.remove('dark-theme');
-                    body.classList.add('light-theme');
-                    themeIcon.className = 'bi bi-moon-stars-fill'; // Ícone de lua para alternar para escuro
+                    console.log('loadContacts não é uma função, tipo:', typeof loadContacts);
+                    console.log('loadContacts valor:', loadContacts);
+                }
+            } else {
+                console.log('Dock não encontrado!');
+                console.log('Elementos com id similar:', document.querySelectorAll('[id*="contact"]));
+            }
+            console.log('=== showContactsDock FINALIZADO ===');
+        };
+        
+        window.hideContactsDock = function() {
+            const dock = document.getElementById('contacts-dock');
+            if (dock) {
+                dock.style.display = 'none';
+            }
+        };
+        
+        window.closeChatBox = function() {
+            const chatBox = document.getElementById("chat-box");
+            if (chatBox) {
+                chatBox.style.display = "none";
+            }
+            if (window.currentChatUser && typeof window.disconnectChatSocket === 'function') {
+                window.disconnectChatSocket(window.currentChatUser);
+            }
+            window.currentChatUser = null;
+            if (typeof stopTyping === 'function') {
+                stopTyping();
+            }
+        };
+        
+        window.loadContacts = function() {
+            fetch('/chat/contatos_status/')
+                .then(r => r.json())
+                .then(data => {
+                    const ul = document.getElementById('contacts-ul') || document.getElementById('chat-contacts');
+                    if (!ul) {
+                        console.log('Lista de contatos não encontrada');
+                        return;
+                    }
+                    console.log('Carregando contatos:', data);
+                    ul.innerHTML = '';
+                    data.forEach(u => {
+                        const li = document.createElement('li');
+                        li.onclick = () => startChat(u.username, u.full_name, u.online);
+                        li.setAttribute('data-username', u.username);
+                        
+                        const dot = document.createElement('span');
+                        dot.className = 'status-icon ' + (u.online ? 'online' : 'offline');
+
+                        const name = document.createElement('span');
+                        name.textContent = u.full_name;
+                        
+                        li.appendChild(dot);
+                        li.appendChild(name);
+                        
+                        // Badge de mensagens não lidas
+                        const unreadCount = window.unreadByUser.get(u.username) || 0;
+                        console.log(`Contato ${u.username}: ${unreadCount} mensagens não lidas`);
+                        if (unreadCount > 0) {
+                            const notification = document.createElement('span');
+                            notification.className = 'contact-notification';
+                            notification.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                            li.appendChild(notification);
+                            console.log(`Badge adicionada para ${u.username}: ${unreadCount}`);
+                        }
+                        
+                        ul.appendChild(li);
+                    });
+                    
+                    // Atualizar badge do chat após carregar contatos
+                    if (window.updateChatBadge) {
+                        window.updateChatBadge();
+                    }
+                    
+                    // Sincronizar badges dos contatos após renderizar a lista
+                    if (window.syncAllContactBadges) {
+                        window.syncAllContactBadges();
+                    }
+                })
+                .catch(e => console.error('Erro ao carregar contatos:', e));
+        };
+        
+        // Sistema de fila para mensagens recebidas quando chat não está aberto
+        window.messageQueue = new Map(); // username -> array de mensagens
+        
+        // Inicializar sistema de contadores de mensagens não lidas
+        window.unreadByUser = new Map();
+        
+        // Sistema para detectar se chat está ativo e visível
+        window.isChatActive = function(username) {
+            console.log(`isChatActive chamado para ${username}`);
+            
+            // Verificar se o chat está aberto
+            const chatBox = document.getElementById('chat-box');
+            const chatOpen = chatBox && chatBox.style.display === 'flex';
+            console.log(`Chat aberto: ${chatOpen}`);
+            
+            // Verificar se o chat está com o usuário correto
+            const isCurrentUser = window.currentChatUser === username;
+            console.log(`É usuário atual: ${isCurrentUser}, currentChatUser: ${window.currentChatUser}`);
+            
+            // Verificar se a janela está visível (não minimizada)
+            const windowVisible = !(document.hidden || document.visibilityState === 'hidden');
+            console.log(`Janela visível: ${windowVisible}`);
+            
+            const result = chatOpen && isCurrentUser && windowVisible;
+            console.log(`Resultado isChatActive para ${username}: ${result}`);
+            
+            return result;
+        };
+        
+        // Sistema para marcar mensagens como lidas
+        window.markMessageAsRead = function(username) {
+            if (window.isChatActive(username)) {
+                // Se chat está ativo, marcar como lido
+                if (window.clearUnreadFor) {
+                    window.clearUnreadFor(username);
+                }
+                return true;
+            }
+            return false;
+        };
+        
+        // Função para atualizar badge do botão flutuante (total de mensagens não lidas)
+        window.updateChatBadge = function() {
+            const chatBadge = document.getElementById('chat-badge');
+            if (!chatBadge) return;
+            
+            let totalUnread = 0;
+            if (window.unreadByUser) {
+                window.unreadByUser.forEach((count, username) => {
+                    totalUnread += count;
+                });
+            }
+            
+            if (totalUnread > 0) {
+                chatBadge.textContent = totalUnread > 99 ? '99+' : totalUnread;
+                chatBadge.style.display = 'inline-block';
+                
+                // Adicionar animação de pulso
+                const chatToggle = document.getElementById('chat-toggle');
+                if (chatToggle) {
+                    chatToggle.classList.add('notify');
+                }
+            } else {
+                chatBadge.style.display = 'none';
+                
+                // Remover animação de pulso
+                const chatToggle = document.getElementById('chat-toggle');
+                if (chatToggle) {
+                    chatToggle.classList.remove('notify');
                 }
             }
-        // Define o tema inicial baseado no localStorage ou padrão 'light'
-            let currentTheme = localStorage.getItem('theme') || 'light';
-            setTheme(currentTheme);
-
-            // Adiciona listener para o clique no botão
-            themeToggler.addEventListener('click', () => {
-                // Alterna o tema
-                currentTheme = body.classList.contains('light-theme') ? 'dark' : 'light';
-                setTheme(currentTheme);
+            
+            console.log(`Badge do chat atualizado: ${totalUnread} mensagens não lidas`);
+        };
+        
+        // Função para atualizar badge de um contato específico
+        window.updateContactBadge = function(username) {
+            const contactsList = document.getElementById('contacts-ul');
+            if (!contactsList) return;
+            
+            // Encontrar o contato pelo data-username
+            const contactItem = contactsList.querySelector(`li[data-username="${username}"]`);
+            if (!contactItem) return;
+            
+            const unreadCount = window.unreadByUser.get(username) || 0;
+            
+            // Remover badge existente
+            const existingBadge = contactItem.querySelector('.contact-notification');
+            if (existingBadge) {
+                existingBadge.remove();
+            }
+            
+            // Adicionar nova badge se houver mensagens não lidas
+            if (unreadCount > 0) {
+                const notification = document.createElement('span');
+                notification.className = 'contact-notification';
+                notification.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                contactItem.appendChild(notification);
+                console.log(`Badge atualizado para ${username}: ${unreadCount}`);
+            }
+        };
+        
+        // Função para sincronizar todas as badges dos contatos
+        window.syncAllContactBadges = function() {
+            if (!window.unreadByUser) return;
+            
+            console.log('Sincronizando todas as badges dos contatos...');
+            window.unreadByUser.forEach((count, username) => {
+                if (count > 0) {
+                    window.updateContactBadge(username);
+                }
             });
+        };
+        
+        // Conectar socket de notificação global (sempre que o usuário estiver logado)
+        (function connectNotifySocket(){
+            try {
+                if (!window.LOGGED_USER) return;
+                if (window.notifySocket && window.notifySocket.readyState === WebSocket.OPEN) return;
+                const protocol = (location.protocol === 'https:') ? 'wss' : 'ws';
+                const url = `${protocol}://${window.location.host}/ws/notify/`;
+                const sock = new WebSocket(url);
+                window.notifySocket = sock;
+                sock.onopen = () => console.log('Notify socket conectado');
+                sock.onclose = () => console.log('Notify socket desconectado');
+                sock.onerror = (e) => console.error('Erro no notify socket:', e);
+                sock.onmessage = (e) => {
+                    try {
+                        console.log('Notify socket recebeu:', e.data);
+                        const data = JSON.parse(e.data);
+                        console.log('Notify socket dados parseados:', data);
+                        
+                        if (data.type === 'new_message') {
+                            console.log('Processando nova mensagem via notify:', data);
+                            const fromUser = data.sender;
+                            const chatActive = window.isChatActive && window.isChatActive(fromUser);
+                            console.log(`Chat ativo para ${fromUser}: ${chatActive}`);
+                            
+                            // Mostrar som sempre que vier notificação
+                            if (!chatActive && window.playNotifySound) {
+                                console.log('Tocando som de notificação');
+                                window.playNotifySound();
+                            }
+                            
+                            // Incrementar badge se chat não estiver ativo
+                            if (!chatActive && window.incUnread) {
+                                console.log(`Chamando incUnread para ${fromUser}`);
+                                window.incUnread(fromUser);
+                                if (window.updateChatBadge) window.updateChatBadge();
+                                if (window.updateContactBadge) window.updateContactBadge(fromUser);
+                            } else {
+                                console.log(`Não incrementando badge - chat ativo ou incUnread não disponível`);
+                            }
+                        } else {
+                            console.log('Tipo de mensagem não reconhecido:', data.type);
+                        }
+                    } catch(err) { console.error('Erro ao processar notify:', err); }
+                };
+            } catch(err) { console.error('Falha ao conectar notify socket:', err); }
+        })();
 
+        // Função para conectar WebSocket com um usuário específico
+        window.connectChatSocket = function(username) {
+            if (window.chatSockets && window.chatSockets.has(username)) {
+                console.log(`Socket já existe para ${username}`);
+                return window.chatSockets.get(username);
+            }
+            
+            // Inicializar o mapa se não existir
+            if (!window.chatSockets) {
+                window.chatSockets = new Map();
+            }
+            
+            const protocol = (location.protocol === 'https:') ? 'wss' : 'ws';
+            const socket = new WebSocket(`${protocol}://${window.location.host}/ws/chat/${username}/`);
+            
+            socket.onopen = () => {
+                console.log(`Socket conectado para chat com ${username}`);
+            };
+            
+            socket.onmessage = (e) => {
+                const data = JSON.parse(e.data);
+                console.log(`Mensagem recebida de ${username}:`, data);
+                
+                // Verificar se é uma mensagem de digitação
+                if (data.type === 'typing_start') {
+                    if (data.sender !== window.LOGGED_USER) {
+                        if (window.showTypingIndicator) {
+                            window.showTypingIndicator(data.sender);
+                        }
+                    }
+                    return;
+                }
 
-// Ativa as notificações
+                if (data.type === 'typing_stop') {
+                    if (window.hideTypingIndicator) {
+                        window.hideTypingIndicator();
+                    }
+                    return;
+                }
 
-const alertElements = document.querySelectorAll('.toast-container .alert.alert-dismissible');
+                // Verificar se é uma mensagem de chat
+                if (!data.message) {
+                    return; // Ignorar mensagens sem conteúdo
+                }
 
-alertElements.forEach(function(alertElement) {
+                const isOwnMessage = data.sender === window.LOGGED_USER;
+                const displayName = isOwnMessage ? "Você" : data.sender;
 
-const alertInstance = new bootstrap.Alert(alertElement);
+                // Verificar se o chat está ativo para este usuário
+                const chatActive = window.isChatActive(username);
 
-setTimeout(() => {
+                // Adicionar mensagem ao chat se estiver aberto
+                if (chatActive) {
+                    if (window.addMessageBubble) {
+                        window.addMessageBubble(displayName, data.message, data.timestamp, false, isOwnMessage);
+                    }
+                    
+                    // Se chat está ativo, marcar como lido automaticamente
+                    if (!isOwnMessage) {
+                        window.markMessageAsRead(username);
+                    }
+                } else {
+                    // Se chat não está aberto, adicionar à fila
+                    if (!window.messageQueue.has(username)) {
+                        window.messageQueue.set(username, []);
+                    }
+                    window.messageQueue.get(username).push({
+                        sender: displayName,
+                        message: data.message,
+                        timestamp: data.timestamp,
+                        isOwn: isOwnMessage,
+                        message_id: data.message_id
+                    });
+                    console.log(`Mensagem adicionada à fila para ${username}:`, data.message);
+                }
 
-if (alertElement) {
+                // Chat socket não deve tocar som nem atualizar badges para evitar duplicidade;
+                // isso é feito pelo notify socket global.
+            };
+            
+            socket.onclose = () => {
+                console.log(`Socket desconectado para ${username}`);
+                if (window.chatSockets) {
+                    window.chatSockets.delete(username);
+                }
+            };
+            
+            socket.onerror = (error) => {
+                console.error(`Erro no socket para ${username}:`, error);
+            };
+            
+            window.chatSockets.set(username, socket);
+            return socket;
+        };
+        
+        // Função para desconectar WebSocket
+        window.disconnectChatSocket = function(username) {
+            if (window.chatSockets && window.chatSockets.has(username)) {
+                const socket = window.chatSockets.get(username);
+                socket.close();
+                window.chatSockets.delete(username);
+            }
+        };
+        
+        // Listener para detectar quando a janela ganha foco
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden && window.currentChatUser) {
+                // Janela ganhou foco e chat está ativo
+                console.log('Janela ganhou foco, marcando mensagens como lidas');
+                if (window.markMessageAsRead) {
+                    window.markMessageAsRead(window.currentChatUser);
+                }
+            }
+        });
+        
+        // Listener para detectar quando o chat ganha foco
+        window.addEventListener('focus', function() {
+            if (window.currentChatUser) {
+                console.log('Chat ganhou foco, marcando mensagens como lidas');
+                if (window.markMessageAsRead) {
+                    window.markMessageAsRead(window.currentChatUser);
+                }
+            }
+        });
+        
+        window.startChat = function(username, fullName, isOnline) {
+            console.log('Abrindo chat com:', username);
+            document.getElementById('chat-title').textContent = fullName;
+            const statusIcon = document.getElementById('chat-status');
+            if (statusIcon) {
+                statusIcon.className = "status-icon " + (isOnline ? "online" : "offline");
+            }
 
-alertInstance.close();
+            document.getElementById('chat-box').style.display = 'flex';
+            window.currentChatUser = username;
 
-}
+            // Limpar mensagens não lidas para este usuário
+            if (window.clearUnreadFor) {
+                window.clearUnreadFor(username);
+            }
+            
+            // Atualizar badge do contato específico
+            if (window.updateContactBadge) {
+                window.updateContactBadge(username);
+            }
 
-}, 4000);
+            const messagesEl = document.getElementById('messages');
+            messagesEl.innerHTML = '';
+            
+            // Carregar histórico
+            fetch(`/chat/historico/${username}/`)
+                .then(res => res.json())
+                .then(items => {
+                    items.forEach(m => {
+                        if (window.addMessageBubble) {
+                            window.addMessageBubble(m.sender, m.message, m.timestamp, m.read, m.is_own);
+                        }
+                    });
+                    
+                    // Exibir mensagens da fila (recebidas quando chat não estava aberto)
+                    if (window.messageQueue && window.messageQueue.has(username)) {
+                        const queuedMessages = window.messageQueue.get(username);
+                        console.log(`Exibindo ${queuedMessages.length} mensagens da fila para ${username}`);
+                        
+                        queuedMessages.forEach(msg => {
+                            if (window.addMessageBubble) {
+                                window.addMessageBubble(msg.sender, msg.message, msg.timestamp, false, msg.isOwn);
+                            }
+                        });
+                        
+                        // Limpar fila após exibir
+                        window.messageQueue.delete(username);
+                        
+                        // Marcar mensagens como lidas após exibir
+                        if (window.clearUnreadFor) {
+                            window.clearUnreadFor(username);
+                        }
+                    }
+                    
+                    messagesEl.scrollTop = messagesEl.scrollHeight;
+                })
+                .catch(e => console.error('Erro ao carregar histórico:', e));
 
-});
+            // Conectar WebSocket para este usuário específico
+            console.log("Conectando WebSocket para chat com:", username);
+            window.connectChatSocket(username);
+        };
+        
+        window.sendMessage = function() {
+            const input = document.getElementById("messageInput");
+            if (!input) return;
+            
+            const message = input.value.trim();
+            if (!message) return;
 
+            console.log('Tentando enviar mensagem:', message);
+            console.log('Usuário atual do chat:', window.currentChatUser);
 
+            if (window.currentChatUser) {
+                // Usar o WebSocket específico para este usuário
+                const socket = window.chatSockets.get(window.currentChatUser);
+                if (socket && socket.readyState === WebSocket.OPEN) {
+                    console.log('Enviando mensagem via WebSocket específico:', message);
+                    const timestamp = new Date().toISOString();
+                    const messageId = Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                    
+                    socket.send(JSON.stringify({
+                        'message': message,
+                        'timestamp': timestamp,
+                        'message_id': messageId,
+                        'sender': window.LOGGED_USER
+                    }));
+                    
+                    // NÃO adicionar mensagem localmente aqui - será recebida via WebSocket
+                    // para evitar duplicação
+                    input.value = "";
+                } else {
+                    console.error('WebSocket não está pronto para', window.currentChatUser);
+                    // Adicionar mensagem localmente como fallback apenas se WebSocket falhar
+                    if (window.addMessageBubble) {
+                        const timestamp = new Date().toISOString();
+                        window.addMessageBubble("Você", message, timestamp, false, true);
+                    }
+                    input.value = "";
+                }
+            } else {
+                console.error('Nenhum usuário selecionado para chat');
+                input.value = "";
+            }
+        };
+        
+        window.handleKey = function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                sendMessage();
+                if (typeof stopTyping === 'function') {
+                    stopTyping();
+                }
+            } else {
+                if (typeof startTyping === 'function') {
+                    startTyping();
+                }
+            }
+        };
+        
+        // Funções de notificação e mensagens
+        window.addMessageBubble = function(sender, text, tsIso, read = false, isOwn = false) {
+            const messagesEl = document.getElementById('messages');
+            if (!messagesEl) return;
+            
+            console.log('Adicionando mensagem:', { sender, text, tsIso, read, isOwn });
 
-// Ativa os tooltips
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message-container', isOwn ? 'sent' : 'received');
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.classList.add('message-content');
+            
+            const textSpan = document.createElement('span');
+            textSpan.classList.add('message-text');
+            textSpan.textContent = `${sender}: ${text}`;
+            
+            const timestampSpan = document.createElement('span');
+            timestampSpan.classList.add('message-timestamp');
+            const formattedTime = tsIso ? window.fmtTs(tsIso) : window.fmtTs(new Date().toISOString());
+            timestampSpan.textContent = formattedTime;
+            console.log('Timestamp formatado:', formattedTime, 'de:', tsIso);
+            
+            // Adicionar indicador de leitura para mensagens próprias
+            if (isOwn) {
+                const statusSpan = document.createElement('span');
+                statusSpan.classList.add('message-status');
+                statusSpan.textContent = read ? ' ✓✓' : ' ✓';
+                contentDiv.appendChild(textSpan);
+                contentDiv.appendChild(statusSpan);
+            } else {
+                contentDiv.appendChild(textSpan);
+            }
+            
+            contentDiv.appendChild(timestampSpan);
+            messageDiv.appendChild(contentDiv);
+            messagesEl.appendChild(messageDiv);
+            messagesEl.scrollTop = messagesEl.scrollHeight;
+        };
+        
+        window.fmtTs = function(iso) {
+            try {
+                const d = new Date(iso);
+                const dd = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+                const hh = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                return `${dd} ${hh}`;
+            } catch (e) {
+                return '';
+            }
+        };
+        
+        window.updateBadge = function() {
+            const badge = document.getElementById('chat-badge');
+            const btn = document.getElementById('chat-toggle');
 
-const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            console.log('Atualizando badges. Total unread:', window.totalUnread);
 
-tooltipTriggerList.map(function (tooltipTriggerEl) {
+            if (window.totalUnread > 0) {
+                console.log('Mostrando badges');
+                if (badge) {
+                    badge.textContent = String(window.totalUnread);
+                    badge.style.display = 'inline-block';
+                }
+                if (btn) {
+                    btn.classList.add('notify');
+                }
+            } else {
+                console.log('Escondendo badges');
+                if (badge) {
+                    badge.style.display = 'none';
+                }
+                if (btn) {
+                    btn.classList.remove('notify');
+                }
+            }
+        };
+        
+        window.incUnread = function(fromUser) {
+            console.log(`incUnread chamado para: ${fromUser}`);
+            
+            // Sempre incrementar o contador
+            const old = window.unreadByUser.get(fromUser) || 0;
+            window.unreadByUser.set(fromUser, old + 1);
+            window.totalUnread++;
+            console.log(`Incrementando unread para ${fromUser}: ${old + 1}. Total: ${window.totalUnread}`);
+            console.log('Estado atual de unreadByUser:', Array.from(window.unreadByUser.entries()));
+            
+            // Atualizar badges
+            if (window.updateChatBadge) window.updateChatBadge();
+            if (window.updateContactBadge) window.updateContactBadge(fromUser);
+            
+            // Atualizar lista de contatos se estiver visível
+            const dock = document.getElementById('contacts-dock');
+            if (dock && dock.style.display !== 'none') {
+                console.log('Atualizando lista de contatos...');
+                window.loadContacts();
+            }
+        };
+        
+        window.clearUnreadFor = function(user) {
+            const count = window.unreadByUser.get(user) || 0;
+            if (count > 0) {
+                window.totalUnread -= count;
+                window.unreadByUser.set(user, 0);
+                
+                // Atualizar badges
+                if (window.updateChatBadge) window.updateChatBadge();
+                if (window.updateContactBadge) window.updateContactBadge(user);
+                
+                // Atualizar lista de contatos se estiver visível
+                const dock = document.getElementById('contacts-dock');
+                if (dock && dock.style.display !== 'none') {
+                    window.loadContacts();
+                }
+            }
+        };
+        
+        window.playNotifySound = function() {
+            const el = document.getElementById('chat-sound');
+            if (!el) return;
+            el.currentTime = 0;
+            el.play().catch(() => {});
+        };
+        
+        window.showTypingIndicator = function(username) {
+            const typingDiv = document.getElementById('typing-indicator');
+            if (typingDiv) {
+                typingDiv.textContent = `${username} está digitando...`;
+                typingDiv.style.display = 'block';
+            }
+        };
 
-return new bootstrap.Tooltip(tooltipTriggerEl);
+        window.hideTypingIndicator = function() {
+            const typingDiv = document.getElementById('typing-indicator');
+            if (typingDiv) {
+                typingDiv.style.display = 'none';
+            }
+        };
+        
+        // Event listeners de backup para garantir que funcionem
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar variáveis globais do chat
+            window.chatSockets = new Map();
+            window.currentChatUser = null;
 
-});
+            // Event listeners para abrir o dock de contatos
+            const chatToggle = document.getElementById('chat-toggle');
+            console.log('Chat toggle encontrado:', chatToggle);
+            if (chatToggle) {
+                console.log('Adicionando event listener ao chat toggle');
+                chatToggle.addEventListener('click', function(e) {
+                    console.log('Clique detectado no chat toggle!');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Tentando chamar showContactsDock...');
+                    console.log('showContactsDock é uma função?', typeof window.showContactsDock);
+                    if (typeof window.showContactsDock === 'function') {
+                        console.log('Chamando showContactsDock...');
+                        window.showContactsDock();
+                    } else {
+                        console.log('showContactsDock não é uma função!');
+                        console.log('showContactsDock:', window.showContactsDock);
+                    }
+                });
+                
+                // Teste direto da função
+                console.log('Testando função showContactsDock diretamente...');
+                setTimeout(() => {
+                    console.log('Chamando showContactsDock...');
+                    window.showContactsDock();
+                }, 1000);
+                
+                // Teste adicional - verificar se o botão está clicável
+                console.log('Verificando propriedades do botão...');
+                console.log('Botão visível:', chatToggle.offsetParent !== null);
+                console.log('Botão clicável:', chatToggle.style.pointerEvents !== 'none');
+                console.log('Z-index:', window.getComputedStyle(chatToggle).zIndex);
+                console.log('Display:', window.getComputedStyle(chatToggle).display);
+                console.log('Visibility:', window.getComputedStyle(chatToggle).visibility);
+                console.log('Position:', window.getComputedStyle(chatToggle).position);
+                console.log('Top:', window.getComputedStyle(chatToggle).top);
+                console.log('Bottom:', window.getComputedStyle(chatToggle).bottom);
+                console.log('Right:', window.getComputedStyle(chatToggle).right);
+                console.log('Left:', window.getComputedStyle(chatToggle).left);
+                
+                // Adicionar evento de teste adicional
+                chatToggle.addEventListener('mousedown', () => console.log('Mouse down detectado!'));
+                chatToggle.addEventListener('mouseup', () => console.log('Mouse up detectado!'));
+                chatToggle.addEventListener('touchstart', () => console.log('Touch start detectado!'));
+            } else {
+                console.log('Chat toggle NÃO encontrado!');
+            }
+            // Desbloquear áudio no primeiro gesto do usuário
+            const unlockAudioOnce = () => {
+                const el = document.getElementById('chat-sound');
+                if (!el) return;
+                el.play().then(() => { el.pause(); el.currentTime = 0; }).catch(() => {});
+                window.removeEventListener('click', unlockAudioOnce);
+                window.removeEventListener('touchstart', unlockAudioOnce);
+            };
+            window.addEventListener('click', unlockAudioOnce, { once: true });
+            window.addEventListener('touchstart', unlockAudioOnce, { once: true });
 
-});
+            // Carregar lista de contatos no carregamento da página
+            if (typeof loadContacts === 'function') {
+                loadContacts();
+            }
 
-</script>
+            // Event listener para fechar o dock de contatos
+            const closeContacts = document.getElementById('close-contacts');
+            if (closeContacts) {
+                closeContacts.addEventListener('click', hideContactsDock);
+            }
 
+            // Event listener para fechar o chat
+            const closeChat = document.getElementById('close-chat');
+            if (closeChat) {
+                closeChat.addEventListener('click', closeChatBox);
+            }
 
+            // Event listener para enviar mensagem com botão
+            const sendBtn = document.getElementById('send-message');
+            if (sendBtn) {
+                sendBtn.addEventListener('click', sendMessage);
+            }
 
-{% block extra_js %}{% endblock %}
+            // Event listener para enviar mensagem com Enter e detectar digitação
+            const messageInput = document.getElementById('messageInput');
+            if (messageInput) {
+                messageInput.addEventListener('keydown', handleKey);
+            }
+            
+            // Atualizar status dos contatos a cada 30 segundos
+            setInterval(() => {
+                const dock = document.getElementById('contacts-dock');
+                if (dock && dock.style.display !== 'none') {
+                    window.loadContacts();
+                }
+            }, 30000);
+        });
+    </script>
 
+        <script>
+            // Variável global para o usuário atual
+            window.currentUser = '{{ user.username }}';
+        </script>
+        <script src="{% static 'chat/chat_complete.js' %}"></script>
+        <script src="{% static 'js/main.js' %}"></script>
 
+    {% block extra_js %}{% endblock %}
 
 </body>
-
 </html>

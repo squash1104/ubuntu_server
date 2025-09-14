@@ -14,11 +14,13 @@
         .table > tbody > tr.meta-atingida > td,
         .table-hover > tbody > tr.meta-atingida:hover > td {
             background-color: #ccffcc;
+            color: #1b1b1b;
         }
 
         .table > tbody > tr.meta-superada > td,
         .table-hover > tbody > tr.meta-superada:hover > td {
             background-color: #e0ccff;
+            color: #1b1b1b;11
         }
 
         body.dark-theme {
@@ -29,13 +31,15 @@
         .body.dark-theme .table tr.meta-abaixo,
         .table-hover > tbody > tr.meta-abaixo:hover > td {
             background-color: #a12312;
-            --bs-table-hover-bg: #ffacccc;
+            {#--bs-table-hover-bg: #ffacccc;#}
         }
 
         .body.dark-theme .table > tbody > tr.meta-atingida > td,
         .table-hover > tbody > tr.meta-atingida:hover > td {
-            background-color: #ccffcc;
+            background-color : #146c43 !important; /* Verde escuro e vibrante */
+            --bs-table-hover-bg: #1d8250;
         }
+
 
         .body.dark-theme .table > tbody > tr.meta-superada > td,
         .table-hover > tbody > tr.meta-superada:hover > td {
@@ -45,6 +49,11 @@
         body.dark-theme .table-light {
              background-color: #4a4a4a;
         }
+        body.dark-theme .table-success {
+    --bs-table-bg: #146c43; /* Verde escuro e vibrante */
+    --bs-table-hover-bg: #1d8250;
+}
+
 
         /* Estilos específicos para os cards de informação desta página */
         .info-card {

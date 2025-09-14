@@ -2,53 +2,279 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>SisAps - Relatório de Colaboradores</title>
+    <title>SisVot - Relatório de Colaboradores</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
-        h1, p { margin-bottom: 10px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 12px; word-wrap: break-word; }
-        thead th { background-color: #007bff; color: white; }
-        tbody tr:nth-child(even) { background-color: #f2f2f2; }
+        @page {
+            margin: 1cm;
+            size: A4;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0; 
+            padding: 0;
+            color: #333;
+            line-height: 1.4;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px 30px;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            margin: 0 0 10px 0;
+            font-size: 28px;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header .subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+            margin: 0;
+        }
+        
+        .report-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border-left: 5px solid #667eea;
+        }
+        
+        .report-info h2 {
+            margin: 0 0 15px 0;
+            color: #495057;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .info-item {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #6c757d;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            font-size: 16px;
+            color: #495057;
+            font-weight: 500;
+        }
+        
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border: 1px solid #e9ecef;
+        }
+        
+        table { 
+            width: 100%; 
+            border-collapse: collapse;
+            margin: 0;
+        }
+        
+        thead th { 
+            background: linear-gradient(135deg, #495057 0%, #6c757d 100%);
+            color: white;
+            padding: 18px 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: none;
+        }
+        
+        tbody td {
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+            font-size: 13px;
+            vertical-align: middle;
+        }
+        
+        tbody tr:nth-child(even) { 
+            background-color: #f8f9fa;
+        }
+        
+        tbody tr:hover {
+            background-color: #e3f2fd;
+        }
+        
+        /* Cores para status de meta */
+        .meta-pendente {
+            background-color: #ffebee !important;
+            border-left: 4px solid #f44336;
+        }
+        
+        .meta-atingida {
+            background-color: #e8f5e8 !important;
+            border-left: 4px solid #4caf50;
+        }
+        
+        .meta-superada {
+            background-color: #e3f2fd !important;
+            border-left: 4px solid #2196f3;
+        }
+        
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .badge-pendente {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .badge-atingida {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .badge-superada {
+            background-color: #bbdefb;
+            color: #1565c0;
+        }
+        
+        .footer {
+            margin-top: 40px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            text-align: center;
+            color: #6c757d;
+            font-size: 12px;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+            font-style: italic;
+            font-size: 16px;
+        }
+        
+        @media print {
+            body { 
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+        }
     </style>
 </head>
 <body>
-    <h1>Relatório de Colaboradores</h1>
-    <p>Gerado em: {{ data_geracao|date:"d/m/Y H:i:s" }}</p>
+    <div class="header">
+        <h1>🤝 SisVot - Sistema de Fidelização</h1>
+        <p class="subtitle">Relatório Detalhado de Colaboradores</p>
+    </div>
 
-    <table>
-        <thead>
-            <tr>
-                {% for column in selected_columns %}
-                <th>
-                    {% if column == 'nome' %}Nome{% endif %}
-                    {% if column == 'telefone' %}Telefone{% endif %}
-                    {% if column == 'cidade' %}Cidade{% endif %}
-                    {% if column == 'bairro' %}Bairro{% endif %}
-                    {% if column == 'total_convidados' %}Convidados{% endif %}
-                    {% if column == 'data_cadastro' %}Data Cadastro{% endif %}
-                </th>
-                {% endfor %}
-            </tr>
-        </thead>
-        <tbody>
-            {% for colaborador in colaboradores %}
-            <tr>
-                {% for column in selected_columns %}
-                <td>
-                    {% if column == 'nome' %}{{ colaborador.nome }}{% endif %}
-                    {% if column == 'telefone' %}{{ colaborador.telefone }}{% endif %}
-                    {% if column == 'cidade' %}{{ colaborador.cidade|default:"" }}{% endif %}
-                    {% if column == 'bairro' %}{{ colaborador.bairro|default:"" }}{% endif %}
-                    {% if column == 'total_convidados' %}{{ colaborador.total_convidados }}{% endif %}
-                    {% if column == 'data_cadastro' %}{{ colaborador.data_cadastro|date:"d/m/Y H:i" }}{% endif %}
-                </td>
-                {% endfor %}
-            </tr>
-            {% empty %}
-            <tr><td colspan="{{ selected_columns|length }}">Nenhum colaborador encontrado para este relatório.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="report-info">
+        <h2>📊 Informações do Relatório</h2>
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Data de Geração</div>
+                <div class="info-value">{{ data_geracao|date:"d/m/Y às H:i:s" }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Total de Colaboradores</div>
+                <div class="info-value">{{ colaboradores|length }} encontrado{{ colaboradores|length|pluralize:"s" }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Colunas Selecionadas</div>
+                <div class="info-value">{{ selected_columns|length }} coluna{{ selected_columns|length|pluralize:"s" }}</div>
+            </div>
+        </div>
+    </div>
+
+    {% if colaboradores %}
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">#</th>
+                        {% for column in selected_columns %}
+                            <th>
+                                {% if column == 'nome' %}👤 Nome{% endif %}
+                                {% if column == 'telefone' %}📞 Telefone{% endif %}
+                                {% if column == 'cidade' %}🏙️ Cidade{% endif %}
+                                {% if column == 'bairro' %}📍 Bairro{% endif %}
+                                {% if column == 'total_convidados' %}👥 Convidados{% endif %}
+                                {% if column == 'data_cadastro' %}📅 Data Cadastro{% endif %}
+                            </th>
+                        {% endfor %}
+                        <th style="width: 120px;">🎯 Status Meta</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for colaborador in colaboradores %}
+                        <tr {% if colaborador.total_convidados <= 14 %}class="meta-pendente"{% elif colaborador.total_convidados == 15 %}class="meta-atingida"{% elif colaborador.total_convidados >= 16 %}class="meta-superada"{% endif %}>
+                            <td><strong>{{ forloop.counter }}</strong></td>
+                            {% for column in selected_columns %}
+                                <td>
+                                    {% if column == 'nome' %}<strong>{{ colaborador.nome }}</strong>{% endif %}
+                                    {% if column == 'telefone' %}{{ colaborador.telefone|default:"Não informado" }}{% endif %}
+                                    {% if column == 'cidade' %}{{ colaborador.cidade|default:"Não informado" }}{% endif %}
+                                    {% if column == 'bairro' %}{{ colaborador.bairro|default:"Não informado" }}{% endif %}
+                                    {% if column == 'total_convidados' %}<strong>{{ colaborador.total_convidados }}</strong>{% endif %}
+                                    {% if column == 'data_cadastro' %}{{ colaborador.data_cadastro|date:"d/m/Y H:i" }}{% endif %}
+                                </td>
+                            {% endfor %}
+                            <td>
+                                {% if colaborador.total_convidados <= 14 %}
+                                    <span class="status-badge badge-pendente">Pendente</span>
+                                {% elif colaborador.total_convidados == 15 %}
+                                    <span class="status-badge badge-atingida">Atingida</span>
+                                {% elif colaborador.total_convidados >= 16 %}
+                                    <span class="status-badge badge-superada">Superada</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="no-data">
+            <p>📋 Nenhum colaborador encontrado para este relatório.</p>
+            <p>Verifique os filtros aplicados e tente novamente.</p>
+        </div>
+    {% endif %}
+
+    <div class="footer">
+        <p><strong>SisVot - Sistema de Fidelização</strong></p>
+        <p>Relatório gerado automaticamente em {{ data_geracao|date:"d/m/Y às H:i:s" }}</p>
+        <p>📧 Para dúvidas ou suporte, entre em contato com a equipe técnica.</p>
+    </div>
 </body>
 </html>

@@ -9,25 +9,49 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('geografia', '__first__'),
+        ("geografia", "__first__"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Colaborador',
+            name="Colaborador",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('nome', models.CharField(max_length=100)),
-                ('telefone', models.CharField(blank=True, max_length=20, null=True)),
-                ('data_cadastro', models.DateTimeField(auto_now_add=True)),
-                ('bairro', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='geografia.bairro')),
-                ('cidade', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='geografia.cidade')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("nome", models.CharField(max_length=100)),
+                ("telefone", models.CharField(blank=True, max_length=20, null=True)),
+                ("data_cadastro", models.DateTimeField(auto_now_add=True)),
+                (
+                    "bairro",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to="geografia.bairro",
+                    ),
+                ),
+                (
+                    "cidade",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to="geografia.cidade",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Colaborador',
-                'verbose_name_plural': 'Colaboradores',
-                'db_table': 'colaboradores',
-                'ordering': ['nome'],
+                "verbose_name": "Colaborador",
+                "verbose_name_plural": "Colaboradores",
+                "db_table": "colaboradores",
+                "ordering": ["nome"],
             },
         ),
     ]

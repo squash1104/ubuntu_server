@@ -1,0 +1,461 @@
+/* ====================================
+   RELATÓRIOS - CSS PERSONALIZADO
+   ==================================== */
+
+/* Estilos específicos para impressão */
+@media print {
+    /* Ocultar elementos que não devem aparecer na impressão */
+    .navbar, .offcanvas, .btn, .export-btn, .button-group, .toast-container, .btn-outline-light, .report-buttons {
+        display: none !important;
+    }
+    
+    /* Forçar cores e remover fundos para impressão */
+    body {
+        background: white !important;
+        color: black !important;
+        font-size: 12pt;
+    }
+    
+    .report-header {
+        background: white !important;
+        color: black !important;
+        border-bottom: 2px solid #000;
+        box-shadow: none !important;
+    }
+    
+    .table {
+        border: 1px solid #000 !important;
+        box-shadow: none !important;
+    }
+    
+    .table thead th {
+        background: #f8f9fa !important;
+        color: black !important;
+        border: 1px solid #000 !important;
+    }
+    
+    .table tbody td {
+        border: 1px solid #000 !important;
+        color: black !important;
+    }
+}
+
+/* Header do relatório */
+.report-header {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 10px;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.report-header h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 600;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.report-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.report-buttons .btn {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.report-buttons .btn:hover {
+    background: rgba(255,255,255,0.25);
+    border-color: rgba(255,255,255,0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    color: white;
+}
+
+/* Seção de formulário de filtros */
+.filter-form-section {
+    background: white;
+    border-radius: 10px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+}
+
+.section-header h4 {
+    color: #495057;
+    font-weight: 600;
+}
+
+/* Melhorias para as seções de filtro */
+.filter-section {
+    background-color: #f8f9fa;
+    border-radius: 0.5rem;
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+    border: 1px solid #e9ecef;
+    position: relative;
+}
+
+.filter-section h6 {
+    color: #495057;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #dee2e6;
+    display: flex;
+    align-items: center;
+}
+
+/* Grid melhorado para campos de filtro */
+.filter-section .row {
+    margin: 0;
+    align-items: end;
+}
+
+.filter-section .col-md-3,
+.filter-section .col-md-4 {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+}
+
+.filter-section .form-label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: #495057;
+    font-size: 0.875rem;
+}
+
+.filter-section .form-control {
+    border-radius: 0.375rem;
+    border: 1px solid #ced4da;
+    transition: all 0.15s ease-in-out;
+    height: 38px;
+    padding: 0.375rem 0.75rem;
+}
+
+.filter-section .form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    outline: 0;
+}
+
+/* Seção de seleção de colunas melhorada */
+.filter-section .form-check {
+    margin-bottom: 0.75rem;
+    padding-left: 1.75rem;
+}
+
+.filter-section .form-check-input {
+    margin-left: -1.75rem;
+    margin-top: 0.25rem;
+}
+
+.filter-section .form-check-label {
+    font-weight: 500;
+    color: #495057;
+    font-size: 0.875rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.filter-section .form-check-label i {
+    margin-right: 0.375rem;
+    width: 1rem;
+    text-align: center;
+}
+
+/* Seção de preview da tabela */
+.table-preview-section {
+    background: white;
+    border-radius: 10px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-top: 2rem;
+}
+
+.table-preview-section h5 {
+    color: #495057;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+/* Melhorias para as tabelas Bootstrap */
+.table-striped tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.075) !important;
+}
+
+.table thead th {
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Botões de ação reorganizados */
+.buttons-container {
+    margin-top: 1.5rem;
+    padding-top: 1.25rem;
+    border-top: 2px solid #e9ecef;
+}
+
+.buttons-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.buttons-row .btn {
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    border-radius: 0.375rem;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    white-space: nowrap;
+}
+
+.buttons-row .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+/* Responsividade para botões */
+@media (max-width: 768px) {
+    .buttons-row {
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    
+    .buttons-row .btn {
+        flex: 1 1 auto;
+        min-width: 120px;
+        justify-content: center;
+        font-size: 0.875rem;
+        padding: 0.4rem 0.8rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .buttons-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .buttons-row .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .report-header {
+        text-align: center;
+        padding: 1.5rem;
+    }
+    
+    .report-header h1 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .filter-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .button-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .button-group .btn {
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* ===== ESTILOS PARA RELATÓRIOS PDF ===== */
+
+/* Estilos específicos para os PDFs de relatórios */
+@page {
+    size: A4;
+    margin: 1cm;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    border-radius: 8px;
+}
+
+.header h1 {
+    font-size: 28px;
+    margin: 0 0 8px 0;
+    font-weight: bold;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.header .subtitle {
+    font-size: 16px;
+    opacity: 0.9;
+    margin: 0;
+}
+
+.report-info {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    border-left: 4px solid #007bff;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.info-item {
+    background: white;
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+    text-align: center;
+}
+
+.info-item strong {
+    display: block;
+    color: #495057;
+    font-size: 14px;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-item span {
+    color: #007bff;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.table-container {
+    margin-top: 25px;
+}
+
+.table-container table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.table-container th {
+    background: linear-gradient(135deg, #343a40 0%, #495057 100%);
+    color: white;
+    padding: 12px 10px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.table-container td {
+    padding: 10px;
+    border-bottom: 1px solid #e9ecef;
+    font-size: 14px;
+    vertical-align: middle;
+}
+
+.table-container tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+.table-container tbody tr:hover {
+    background-color: #e3f2fd;
+}
+
+/* Meta status badges */
+.meta-pendente {
+    background-color: rgba(220, 53, 69, 0.1) !important;
+}
+
+.meta-atingida {
+    background-color: rgba(40, 167, 69, 0.1) !important;
+}
+
+.meta-superada {
+    background-color: rgba(0, 123, 255, 0.1) !important;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-pendente {
+    background-color: #dc3545;
+    color: white;
+}
+
+.badge-atingida {
+    background-color: #28a745;
+    color: white;
+}
+
+.badge-superada {
+    background-color: #007bff;
+    color: white;
+}
+
+.footer {
+    margin-top: 30px;
+    padding: 15px;
+    text-align: center;
+    font-size: 12px;
+    color: #6c757d;
+    border-top: 1px solid #e9ecef;
+}
+
+.no-data {
+    text-align: center;
+    padding: 40px;
+    color: #6c757d;
+    font-style: italic;
+}
+
+.no-data i {
+    font-size: 48px;
+    margin-bottom: 15px;
+    display: block;
+    opacity: 0.5;
+}

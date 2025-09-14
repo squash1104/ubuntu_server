@@ -1,29 +1,36 @@
-from openpyxl import Workbook
-from openpyxl.styles import Font, Alignment
+from collections import OrderedDict
+
 from django.http import HttpResponse
 from django.template.loader import get_template
-from xhtml2pdf import pisa
-from io import BytesIO
-from collections import OrderedDict
 from django.utils import timezone
+from openpyxl import Workbook
+from openpyxl.styles import Alignment, Font
+
+# from xhtml2pdf import pisa  # Temporariamente comentado devido a incompatibilidade com Python 3.12
 
 
 def exportar_colaboradores_excel(colaborador_queryset, selected_columns):
-    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response['Content-Disposition'] = 'attachment; filename=relatorio_colaboradores.xlsx'
+    response = HttpResponse(
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    response["Content-Disposition"] = (
+        "attachment; filename=relatorio_colaboradores.xlsx"
+    )
 
     workbook = Workbook()
     sheet = workbook.active
     sheet.title = "Relatório de Colaboradores"
 
-    column_headers = OrderedDict([
-        ('nome', 'Nome'),
-        ('telefone', 'Telefone'),
-        ('cidade', 'Cidade'),
-        ('bairro', 'Bairro'),
-        ('total_convidados', 'Convidados'),
-        ('data_cadastro', 'Data Cadastro'),
-    ])
+    column_headers = OrderedDict(
+        [
+            ("nome", "Nome"),
+            ("telefone", "Telefone"),
+            ("cidade", "Cidade"),
+            ("bairro", "Bairro"),
+            ("total_convidados", "Convidados"),
+            ("data_cadastro", "Data Cadastro"),
+        ]
+    )
 
     headers = [column_headers[col] for col in selected_columns if col in column_headers]
     sheet.append(headers)
@@ -31,56 +38,63 @@ def exportar_colaboradores_excel(colaborador_queryset, selected_columns):
     header_font = Font(bold=True)
     for cell in sheet[1]:
         cell.font = header_font
-        cell.alignment = Alignment(horizontal='center')
+        cell.alignment = Alignment(horizontal="center")
 
     for colaborador in colaborador_queryset:
         row_data = []
         for col in selected_columns:
-            if col == 'cidade':
-                row_data.append(str(colaborador.cidade) if colaborador.cidade else '')
-            elif col == 'bairro':
-                row_data.append(str(colaborador.bairro) if colaborador.bairro else '')
-            elif col == 'total_convidados':
+            if col == "cidade":
+                row_data.append(str(colaborador.cidade) if colaborador.cidade else "")
+            elif col == "bairro":
+                row_data.append(str(colaborador.bairro) if colaborador.bairro else "")
+            elif col == "total_convidados":
                 row_data.append(colaborador.total_convidados)
-            elif col == 'data_cadastro':
+            elif col == "data_cadastro":
                 row_data.append(
-                    colaborador.data_cadastro.strftime('%Y-%m-%d %H:%M:%S') if colaborador.data_cadastro else '')
+                    colaborador.data_cadastro.strftime("%Y-%m-%d %H:%M:%S")
+                    if colaborador.data_cadastro
+                    else ""
+                )
             else:
-                row_data.append(getattr(colaborador, col, ''))
+                row_data.append(getattr(colaborador, col, ""))
         sheet.append(row_data)
-
 
     workbook.save(response)
     return response
 
 
 def exportar_colaboradores_pdf(colaborador_queryset, selected_columns):
-    template_path = 'relatorios/relatorios_colaboradores_pdf.html'
-    context = {
-        'colaboradores': colaborador_queryset,
-        'selected_columns': selected_columns,
-        'data_geracao': timezone.now(),
-    }
+    # Temporariamente desabilitado devido a incompatibilidade com Python 3.12
+    return HttpResponse("Funcionalidade PDF temporariamente indisponível", status=503)
 
-    template = get_template(template_path)
-    html = template.render(context)
+    # template_path = "relatorios/relatorios_colaboradores_pdf.html"
+    # context = {
+    #     "colaboradores": colaborador_queryset,
+    #     "selected_columns": selected_columns,
+    #     "data_geracao": timezone.now(),
+    # }
 
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="relatorio_colaboradores.pdf"'
+    # template = get_template(template_path)
+    # html = template.render(context)
 
-    pisa_status = pisa.CreatePDF(html, dest=response)
-    if pisa_status.err:
-        return HttpResponse('Erro ao gerar o PDF', status=500)
+    # response = HttpResponse(content_type="application/pdf")
+    # response["Content-Disposition"] = (
+    #     'attachment; filename="relatorio_colaboradores.pdf"'
+    # )
 
-    return response
+    # pisa_status = pisa.CreatePDF(html, dest=response)
+    # if pisa_status.err:
+    #     return HttpResponse("Erro ao gerar o PDF", status=500)
+
+    # return response
 
 
 def imprimir_relatorio_colaboradores(colaborador_queryset, selected_columns):
-    template_path = 'relatorios/relatorios_colaboradores_pdf.html'
+    template_path = "relatorios/relatorios_colaboradores_pdf.html"
     context = {
-        'colaboradores': colaborador_queryset,
-        'selected_columns': selected_columns,
-        'data_geracao': timezone.now(),
+        "colaboradores": colaborador_queryset,
+        "selected_columns": selected_columns,
+        "data_geracao": timezone.now(),
     }
     template = get_template(template_path)
     html = template.render(context)

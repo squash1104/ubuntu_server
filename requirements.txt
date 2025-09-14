@@ -1,4 +1,9 @@
 asgiref==3.9.1
+daphne==4.1.0
+channels==4.2.2
+whitenoise==6.6.0
+xhtml2pdf==0.2.13
+reportlab==4.0.7
 attrs==23.2.0
 Babel==2.10.3
 blinker==1.7.0

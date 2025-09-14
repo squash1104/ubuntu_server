@@ -1,29 +1,65 @@
+# -----------------------
 # Ambientes Virtuais
+# -----------------------
 .venv/
 venv/
 env/
 
-# Ficheiros de Cache do Python
+# -----------------------
+# Python
+# -----------------------
 __pycache__/
-*.pyc
+*.py[cod]
+*.pyo
+*.pyd
+*.pdb
 
-# Ficheiros de Cache e Configuração de Editores
+# -----------------------
+# Configurações Locais
+# -----------------------
+*.env
+local_settings.py
+
+# -----------------------
+# Banco de Dados
+# -----------------------
+*.sqlite3
+db.sqlite3
+
+# -----------------------
+# Arquivos Estáticos e Mídia
+# -----------------------
+/media/
+/staticfiles/
+/static/admin/
+
+# -----------------------
+# Logs e temporários
+# -----------------------
+*.log
+*.pot
+*.mo
+
+# -----------------------
+# Editores/IDE
+# -----------------------
 .cache/
 .idea/
 .vscode/
 
-# Ficheiros de Base de Dados local (se usar)
-*.sqlite3
-db.sqlite3
+# -----------------------
+# Node / Frontend
+# -----------------------
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+.next/
+dist/
+build/
 
-# Ficheiros de Mídia e Estáticos coletados
-/media/
-/staticfiles/
-
-# Logs e outros ficheiros temporários
-*.log
-local_settings.py
-
-# Ficheiros de dependências do sistema operativo
+# -----------------------
+# SO
+# -----------------------
 .DS_Store
 Thumbs.db

@@ -1,0 +1,29 @@
+[tool.black]
+line-length = 88
+target-version = ["py312"]
+exclude = '''
+/(
+  \.venv
+  | migrations
+  | static
+  | media
+)/
+'''
+
+[tool.ruff]
+target-version = "py312"
+line-length = 88
+fix = true
+extend-exclude = ["migrations", ".venv", "static", "media"]
+
+[tool.ruff.lint]
+select = ["E","F","W","I","UP","B","C4","RET","SIM","N","RUF"]
+ignore = [
+  "E203",  # compatibilidade com Black
+]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+DJANGO_SETTINGS_MODULE = "core.settings"
+python_files = ["tests.py", "test_*.py", "*_tests.py"]
+asyncio_mode = "auto"

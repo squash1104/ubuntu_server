@@ -3,6 +3,8 @@
 
 {% block title %}SisAps - Dashboard{% endblock %}
 
+
+
 {% block extra_css %}
     <style>
         .header {
@@ -114,6 +116,8 @@
 {% endblock %}
 
 {% block content %}
+
+
 <div class="card shadow-sm">
     <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
@@ -121,7 +125,6 @@
         </div>
 
         <div class="row g-4 mb-4">
-
             <div class="col-lg-3">
                 <div class="row g-4">
                     <div class="col-12">
@@ -136,8 +139,20 @@
                             <p>{{ total_convidados }}</p>
                         </div>
                     </div>
-
-
+                    <!-- --- NOVOS CARDS --- -->
+                    <div class="col-12">
+                        <div class="card stat-card h-100">
+                            <h3>Eficiência Média</h3>
+                            <p>{{ eficiencia_media|floatformat:1 }}</p>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="card stat-card h-100">
+                            <h3>Próximo KPI</h3>
+                            <p class="text-muted">Em breve...</p>
+                        </div>
+                    </div>
+                    <!-- --- FIM DOS NOVOS CARDS --- -->
                 </div>
             </div>
 
@@ -280,94 +295,118 @@ document.addEventListener('DOMContentLoaded', function() {
     // GRÁFICO 2: TOP 10 CIDADES POR COLABORADORES (barras) - Sem alterações
     const ctxColabCidades = document.getElementById('colaboradoresPorCidadeChart');
     if (ctxColabCidades) {
-        new Chart(ctxColabCidades.getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: JSON.parse('{{ labels_cidades_colab|default:"[]"|safe }}'),
-                datasets: [{
-                    label: 'Nº de Colaboradores',
-                    data: JSON.parse('{{ data_cidades_colab|default:"[]"|safe }}'),
-                    backgroundColor: 'rgba(54, 162, 235, 0.7)',
-                }]
-            },
-            options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } }, scales: { x: { ticks: { precision: 0 } } } }
-        });
+        try {
+            const labelsColab = JSON.parse('{{ labels_cidades_colab|default:"[]"|safe }}');
+            const dataColab = JSON.parse('{{ data_cidades_colab|default:"[]"|safe }}');
+            
+            new Chart(ctxColabCidades.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: labelsColab,
+                    datasets: [{
+                        label: 'Nº de Colaboradores',
+                        data: dataColab,
+                        backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                    }]
+                },
+                options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } }, scales: { x: { ticks: { precision: 0 } } } }
+            });
+        } catch (error) {
+            console.error('Erro ao criar gráfico de cidades por colaboradores:', error);
+        }
     }
 
     // GRÁFICO 3: TOP 10 CIDADES POR CONVIDADOS (barras) - Sem alterações
     const ctxConvCidades = document.getElementById('convidadosPorCidadeChart');
     if (ctxConvCidades) {
-        new Chart(ctxConvCidades.getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: JSON.parse('{{ labels_cidades_conv|default:"[]"|safe }}'),
-                datasets: [{
-                    label: 'Nº de Convidados',
-                    data: JSON.parse('{{ data_cidades_conv|default:"[]"|safe }}'),
-                    backgroundColor: 'rgba(75, 192, 192, 0.7)',
-                }]
-            },
-            options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } }, scales: { x: { ticks: { precision: 0 } } } }
-        });
+        try {
+            const labelsConv = JSON.parse('{{ labels_cidades_conv|default:"[]"|safe }}');
+            const dataConv = JSON.parse('{{ data_cidades_conv|default:"[]"|safe }}');
+            
+            new Chart(ctxConvCidades.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: labelsConv,
+                    datasets: [{
+                        label: 'Nº de Convidados',
+                        data: dataConv,
+                        backgroundColor: 'rgba(75, 192, 192, 0.7)',
+                    }]
+                },
+                options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } }, scales: { x: { ticks: { precision: 0 } } } }
+            });
+        } catch (error) {
+            console.error('Erro ao criar gráfico de cidades por convidados:', error);
+        }
     }
 
     // --- NOVO GRÁFICO 4: CONVIDADOS POR MESORREGIÃO (barras verticais) ---
     const ctxRegioes = document.getElementById('mesorregioesChart');
     if (ctxRegioes) {
-        new Chart(ctxRegioes.getContext('2d'), {
-            type: 'bar', // Tipo: barra vertical (padrão)
-            data: {
-                labels: JSON.parse('{{ labels_regioes|default:"[]"|safe }}'),
-                datasets: [{
-                    label: 'Nº de Convidados',
-                    data: JSON.parse('{{ data_regioes|default:"[]"|safe }}'),
-                    backgroundColor: 'rgba(153, 102, 255, 0.7)', // Roxo
-                    borderColor: 'rgba(153, 102, 255, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { display: false }
+        try {
+            const labelsRegioes = JSON.parse('{{ labels_regioes|default:"[]"|safe }}');
+            const dataRegioes = JSON.parse('{{ data_regioes|default:"[]"|safe }}');
+            
+            new Chart(ctxRegioes.getContext('2d'), {
+                type: 'bar', // Tipo: barra vertical (padrão)
+                data: {
+                    labels: labelsRegioes,
+                    datasets: [{
+                        label: 'Nº de Convidados',
+                        data: dataRegioes,
+                        backgroundColor: 'rgba(153, 102, 255, 0.7)', // Roxo
+                        borderColor: 'rgba(153, 102, 255, 1)',
+                        borderWidth: 1
+                    }]
                 },
-                scales: {
-                    y: { // O eixo Y é o dos valores
-                        beginAtZero: true,
-                        ticks: {
-                            precision: 0 // Garante contagem de 1 em 1
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { // O eixo Y é o dos valores
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0 // Garante contagem de 1 em 1
+                            }
                         }
                     }
                 }
-            }
-        });
+            });
+        } catch (error) {
+            console.error('Erro ao criar gráfico de regiões:', error);
+        }
     }
 
     // --- NOVO SCRIPT PARA O MAPA DE CALOR ---
-    const heatData = JSON.parse('{{ heat_data|default:"[]"|safe }}');
-    const heatmapElement = document.getElementById('heatmap');
+    try {
+        const heatData = JSON.parse('{{ heat_data|default:"[]"|safe }}');
+        const heatmapElement = document.getElementById('heatmap');
 
-    if (heatmapElement && heatData.length > 0) {
-        // 1. Cria o mapa e centra-o em Mato Grosso
-        const map = L.map('heatmap').setView([-12.5, -55.5], 6);
+        if (heatmapElement && heatData.length > 0) {
+            // 1. Cria o mapa e centra-o em Mato Grosso
+            const map = L.map('heatmap').setView([-12.5, -55.5], 6);
 
-        // 2. Adiciona a camada de "azulejos" do mapa
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        }).addTo(map);
+            // 2. Adiciona a camada de "azulejos" do mapa
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            }).addTo(map);
 
-        // 3. Adiciona a camada de calor com os nossos dados
-        L.heatLayer(heatData, {
-            radius: 25,
-            blur: 15,
-            maxZoom: 10,
-        }).addTo(map);
+            // 3. Adiciona a camada de calor com os nossos dados
+            L.heatLayer(heatData, {
+                radius: 25,
+                blur: 15,
+                maxZoom: 10,
+            }).addTo(map);
+        }
+    } catch (error) {
+        console.error('Erro ao criar mapa de calor:', error);
     }
 });
 
 
 </script>
 
-    <script src="{% static 'js/main.js' %}"></script>
 
 {% endblock %}
