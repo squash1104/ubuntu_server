@@ -194,16 +194,31 @@ class ChatConsumer(AsyncWebsocketConsumer):
         print(f"Mensagem recebida no WebSocket. Grupo: {self.room_group_name}")
         data = json.loads(text_data)
 
-        # Verificar se é mensagem de digitação
+        # Verificar se é evento de digitação ou visto
         msg_type = data.get("type")
-        if msg_type in ["typing_start", "typing_stop"]:
-            print(f"Enviando {msg_type} para grupo {self.room_group_name}")
+        if msg_type == "typing":
+            is_typing = data.get("is_typing", False)
+            print(
+                f"Enviando evento de digitação para grupo {self.room_group_name}: {is_typing}"
+            )
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
-                    "type": "typing_status",
-                    "message_type": msg_type,
+                    "type": "typing_event",
                     "sender": self.scope["user"].username,
+                    "is_typing": is_typing,
+                },
+            )
+            return
+        if msg_type == "seen":
+            timestamp = data.get("timestamp")
+            print(f"Enviando evento de visto para grupo {self.room_group_name}")
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "seen_event",
+                    "sender": self.scope["user"].username,
+                    "timestamp": timestamp,
                 },
             )
             return
@@ -215,7 +230,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             print(
                 f"Salvando mensagem e enviando para grupo {self.room_group_name}: {message}"
             )
-            await self.save_message(message)
+            message_id = await self.save_message(message)
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
@@ -223,6 +238,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "message": message,
                     "sender": self.scope["user"].username,
                     "timestamp": timestamp,
+                    "id": message_id,
                 },
             )
 
@@ -236,6 +252,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         "message": message,
                         "sender": self.scope["user"].username,
                         "timestamp": timestamp,
+                        "id": message_id,
                     },
                 )
             except Exception as e:
@@ -252,16 +269,31 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "message": event["message"],
                     "sender": event["sender"],
                     "timestamp": event.get("timestamp"),
+                    "id": event.get("id"),
                 }
             )
         )
 
-    async def typing_status(self, event):
+    async def typing_event(self, event):
+        # Enviar evento de digitação
         await self.send(
             text_data=json.dumps(
                 {
-                    "type": event["message_type"],
+                    "type": "typing",
                     "sender": event["sender"],
+                    "is_typing": event["is_typing"],
+                }
+            )
+        )
+
+    async def seen_event(self, event):
+        # Enviar evento de visto
+        await self.send(
+            text_data=json.dumps(
+                {
+                    "type": "seen",
+                    "sender": event["sender"],
+                    "timestamp": event.get("timestamp"),
                 }
             )
         )
@@ -274,12 +306,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
             sender = user_model.objects.get(username=self.scope["user"].username)
             recipient = user_model.objects.get(username=self.username)
 
-            Message.objects.create(sender=sender, recipient=recipient, content=message)
-            print(
-                f"Mensagem salva: {sender.username} -> {recipient.username}: {message}"
+            msg = Message.objects.create(
+                sender=sender, recipient=recipient, content=message
             )
+            print(
+                f"Mensagem salva: {sender.username} -> {recipient.username}: {message} (ID: {msg.id})"
+            )
+            return msg.id
         except user_model.DoesNotExist as e:
             print(f"Erro: Usuário não encontrado - {e}")
+            return None
 
     @database_sync_to_async
     def set_user_online(self, online_status):
@@ -341,5 +377,14 @@ class NotifyConsumer(AsyncWebsocketConsumer):
             "message": event.get("message"),
             "sender": event.get("sender"),
             "timestamp": event.get("timestamp"),
+            "id": event.get("id"),
+        }
+        await self.send(text_data=json.dumps(payload))
+
+    async def notify_typing(self, event):
+        payload = {
+            "type": "typing",
+            "sender": event.get("sender"),
+            "is_typing": event.get("is_typing"),
         }
         await self.send(text_data=json.dumps(payload))
