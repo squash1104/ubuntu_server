@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.db.models import Count, Q, Sum
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -20,16 +21,30 @@ from .utils import (
 
 @login_required
 def lista_colaboradores(request):
+    # Parâmetros de busca e ordenação
     termo_busca = request.GET.get("q", "")
     ordenar_por_param = request.GET.get("ordenar_por", "nome")
     direcao = request.GET.get("direcao", "asc")
+    per_page = request.GET.get("per_page", "20")
 
+    # Validar per_page
+    valid_per_page_options = [20, 50, 100, 200]
+    try:
+        per_page = int(per_page)
+        if per_page not in valid_per_page_options:
+            per_page = 20
+    except (ValueError, TypeError):
+        per_page = 20
+
+    # Ordenação
     ordenar_por_query = ordenar_por_param
     if direcao == "desc":
         ordenar_por_query = f"-{ordenar_por_param}"
 
+    # Query base
     colaboradores_qs = Colaborador.objects.select_related("cidade", "bairro")
 
+    # Filtro de busca
     if termo_busca:
         colaboradores_qs = colaboradores_qs.filter(
             Q(nome__icontains=termo_busca)
@@ -38,30 +53,35 @@ def lista_colaboradores(request):
             | Q(bairro__nome_bairro__icontains=termo_busca)
         )
 
+    # Aplicar ordenação
     colaboradores_final = colaboradores_qs.annotate(
         num_convidados=Count("convidados", distinct=True)
     ).order_by(ordenar_por_query)
 
-    total_colaboradores_filtrados = colaboradores_final.count()
-    soma_convidados = colaboradores_final.aggregate(total=Sum("num_convidados"))
-    total_convidados_filtrados = soma_convidados["total"] or 0
+    # Paginação simples usando padrão Django
+    paginator = Paginator(colaboradores_final, per_page)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    # Calcular totais da página atual
+    total_colaboradores_pagina_atual = page_obj.object_list.count()
+    soma_convidados_pagina_atual = page_obj.object_list.aggregate(
+        total=Sum("num_convidados")
+    )
+    total_convidados_pagina_atual = soma_convidados_pagina_atual["total"] or 0
 
     context = {
-        "colaboradores": colaboradores_final,
+        "page_obj": page_obj,  # Usar page_obj (padrão Django)
+        "paginator": paginator,  # Adicionar paginator também
         "termo_busca": termo_busca,
         "ordenar_por": ordenar_por_param,
         "direcao": direcao,
-        "total_colaboradores_filtrados": total_colaboradores_filtrados,
-        "total_convidados_filtrados": total_convidados_filtrados,
+        "per_page": per_page,
+        "per_page_options": valid_per_page_options,
+        "total_colaboradores_filtrados": total_colaboradores_pagina_atual,
+        "total_convidados_filtrados": total_convidados_pagina_atual,
     }
 
-    # 7. Responde de forma inteligente (AJAX ou requisição normal)
-    if request.GET.get("is_ajax") == "true":
-        # Se for AJAX, retorna APENAS o fragmento da tabela
-        return render(
-            request, "colaboradores/colaboradores_table_fragment.html", context
-        )
-    # Se for uma requisição normal, retorna a página completa
     return render(request, "colaboradores/lista_colaboradores.html", context)
 
 

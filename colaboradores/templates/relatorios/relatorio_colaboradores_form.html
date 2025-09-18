@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load colaboradores_filters %}
 
 {% block title %}SisAps - Relatório de Colaboradores{% endblock %}
 
@@ -244,7 +245,7 @@
                                         {% if column == 'telefone' %}
                                             {% if colaborador.telefone %}
                                                 <a href="tel:{{ colaborador.telefone }}" class="text-decoration-none">
-                                                    <i class="bi bi-telephone me-1"></i>{{ colaborador.telefone }}
+                                                    <i class="bi bi-telephone me-1"></i>{{ colaborador.telefone|format_telefone }}
                                                 </a>
                                             {% else %}
                                                 <span class="text-muted fst-italic">Não informado</span>

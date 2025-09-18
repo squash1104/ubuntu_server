@@ -15,7 +15,19 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os
 from pathlib import Path
 
+from decouple import Csv, config
 from django.contrib.messages import constants as messages
+
+# ===========================================
+# CONFIGURAÇÕES DE SEGURANÇA
+# ===========================================
+try:
+    from security_config import apply_security_settings
+
+    SECURITY_ENABLED = True
+except ImportError:
+    SECURITY_ENABLED = False
+    print("⚠️  Configurações de segurança não encontradas. Execute setup_security.py")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,17 +37,19 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-ld%33t$+_#cw)_ssw(++i^9s*xc57@jssh(m!8w@wm65@jwm(="
+SECRET_KEY = config(
+    "SECRET_KEY",
+    default="django-insecure-ld%33t$+_#cw)_ssw(++i^9s*xc57@jssh(m!8w@wm65@jwm(=",
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config("DEBUG", default=True, cast=bool)
 
-ALLOWED_HOSTS = [
-    "sistema.fidelizamax.app.br",
-    "www.sistema.fidelizamax.app.br",
-    "localhost",
-    "127.0.0.1",
-]
+ALLOWED_HOSTS = config(
+    "ALLOWED_HOSTS",
+    default="sistema.fidelizamax.app.br,www.sistema.fidelizamax.app.br,localhost,127.0.0.1",
+    cast=Csv(),
+)
 
 CSRF_TRUSTED_ORIGINS = [
     "https://sistema.fidelizamax.app.br",
@@ -69,6 +83,15 @@ INSTALLED_APPS = [
     "django_filters",
     "channels",
     "chat",
+    # Apps de segurança
+    "security",
+    # "django_ratelimit",  # Desabilitado temporariamente
+    "django_otp",
+    "django_otp.plugins.otp_totp",
+    "django_otp.plugins.otp_static",
+    "django_extensions",
+    "crispy_forms",
+    "crispy_bootstrap5",
 ]
 
 MIDDLEWARE = [
@@ -80,6 +103,11 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # Middleware de segurança - DESABILITADO PARA DEBUG
+    # "django_otp.middleware.OTPMiddleware",
+    # "security.frontend_protection.FrontendProtectionMiddleware",
+    # "security.headers_protection.HeadersProtectionMiddleware",
+    # "django_ratelimit.middleware.RatelimitMiddleware",  # Desabilitado temporariamente
 ]
 
 ROOT_URLCONF = "sistema_fidelizacao.urls"
@@ -97,6 +125,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "sistema_fidelizacao.context_processors.user_badges",
             ],
             # 'loaders': [
             #     'django.template.loaders.filesystem.Loader',
@@ -117,12 +146,12 @@ ASGI_APPLICATION = "sistema_fidelizacao.asgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "sisvot_db",
-        "USER": "sisuserdb",
-        "PASSWORD": "lu531676",
-        "HOST": "127.0.0.1",
-        "PORT": "5432",
+        "ENGINE": config("DB_ENGINE", default="django.db.backends.postgresql"),
+        "NAME": config("DB_NAME", default="sisvot_db"),
+        "USER": config("DB_USER", default="sisuserdb"),
+        "PASSWORD": config("DB_PASSWORD", default="lu531676"),
+        "HOST": config("DB_HOST", default="127.0.0.1"),
+        "PORT": config("DB_PORT", default="5432"),
     }
 }
 
@@ -133,6 +162,20 @@ CHANNEL_LAYERS = {
         # "CONFIG": {
         # "hosts": [("localhost", 6379)],
         # },
+    },
+}
+
+# ===========================================
+# CONFIGURAÇÕES DE CACHE
+# ===========================================
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "unique-snowflake",
+    },
+    "rate_limit": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "rate-limit-cache",
     },
 }
 
@@ -247,13 +290,13 @@ CSP_REPORT_ONLY = False
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 # Ou outro backend (console para teste)
-EMAIL_HOST = "smtp.gmail.com"  # Ex: smtp.gmail.com, smtp.mailgun.org
-EMAIL_PORT = 587  # Porta comum para TLS
-EMAIL_USE_TLS = True  # Use True para TLS (segurança)
+EMAIL_HOST = config("EMAIL_HOST", default="smtp.gmail.com")
+EMAIL_PORT = config("EMAIL_PORT", default=587, cast=int)
+EMAIL_USE_TLS = config("EMAIL_USE_TLS", default=True, cast=bool)
 # EMAIL_USE_SSL = False
 # Se usar SSL (porta 465), defina como True e EMAIL_USE_TLS como False
-EMAIL_HOST_USER = "lucianolrv@gmail.com"  # Seu endereço de e-mail
-EMAIL_HOST_PASSWORD = "fdww ubmc vjqm xdos"
+EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="lucianolrv@gmail.com")
+EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="fdww ubmc vjqm xdos")
 DEFAULT_FROM_EMAIL = "suporte@fidelizamax.app.br"  # E-mail que aparecerá como remetente
 SERVER_EMAIL = "suporte@fidelizamax.app.br"  # E-mail para erros de servidor
 
@@ -267,3 +310,120 @@ SITE_NAME = "SisAps - Fidelização de Apoiadores"
 # dinamicamente se tiver vários domínios.
 # Ou defina na mão se for um único domínio fixo:
 DOMAIN_NAME = "sistema.fidelizamax.app.br"
+
+# ===========================================
+# CONFIGURAÇÕES DO CRISPY FORMS
+# ===========================================
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+CRISPY_TEMPLATE_PACK = "bootstrap5"
+
+# ===========================================
+# CONFIGURAÇÕES DE DEBUG - FORÇAR HTTP
+# ===========================================
+SECURE_SSL_REDIRECT = False
+
+# ===========================================
+# APLICAR CONFIGURAÇÕES DE SEGURANÇA - DESABILITADO PARA DEBUG
+# ===========================================
+if False:  # SECURITY_ENABLED:
+    # Aplicar configurações de segurança - DESABILITADO PARA DEBUG
+    # apply_security_settings(locals())
+
+    # Configurações específicas de produção - DESABILITADO PARA DEBUG
+    if False:  # not DEBUG:
+        # Configurações HTTPS
+        SECURE_SSL_REDIRECT = True
+        SECURE_HSTS_SECONDS = 31536000
+        SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+        SECURE_HSTS_PRELOAD = True
+
+        # Headers de segurança
+        SECURE_CONTENT_TYPE_NOSNIFF = True
+        SECURE_BROWSER_XSS_FILTER = True
+        X_FRAME_OPTIONS = "DENY"
+
+        # Cookies seguros
+        SESSION_COOKIE_SECURE = True
+        SESSION_COOKIE_HTTPONLY = True
+        SESSION_COOKIE_AGE = 3600
+        SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+        CSRF_COOKIE_SECURE = True
+        CSRF_COOKIE_HTTPONLY = True
+        CSRF_COOKIE_SAMESITE = "Strict"
+
+        # Configurações de senha mais rigorosas
+        AUTH_PASSWORD_VALIDATORS = [
+            {
+                "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+            },
+            {
+                "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+                "OPTIONS": {
+                    "min_length": 12,  # Aumentar para 12 caracteres
+                },
+            },
+            {
+                "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+            },
+            {
+                "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+            },
+        ]
+
+        # Configurações de logging de segurança (desabilitado temporariamente)
+        # LOGGING = {
+        #     'version': 1,
+        #     'disable_existing_loggers': False,
+        #     'formatters': {
+        #         'verbose': {
+        #             'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+        #             'style': '{',
+        #         },
+        #         'simple': {
+        #             'format': '{levelname} {message}',
+        #             'style': '{',
+        #         },
+        #     },
+        #     'handlers': {
+        #         'file': {
+        #             'level': 'INFO',
+        #             'class': 'logging.FileHandler',
+        #             'filename': os.path.join(BASE_DIR, 'logs', 'security.log'),
+        #             'formatter': 'verbose',
+        #         },
+        #         'security_file': {
+        #             'level': 'WARNING',
+        #             'class': 'logging.FileHandler',
+        #             'filename': os.path.join(BASE_DIR, 'logs', 'security_events.log'),
+        #             'formatter': 'verbose',
+        #         },
+        #         'console': {
+        #             'level': 'INFO',
+        #             'class': 'logging.StreamHandler',
+        #             'formatter': 'simple',
+        #         },
+        #     },
+        #     'loggers': {
+        #         'django': {
+        #             'handlers': ['file', 'console'],
+        #             'level': 'INFO',
+        #             'propagate': True,
+        #         },
+        #         'django.security': {
+        #             'handlers': ['security_file'],
+        #             'level': 'WARNING',
+        #             'propagate': True,
+        #         },
+        #         'chat': {
+        #             'handlers': ['file'],
+        #             'level': 'INFO',
+        #             'propagate': True,
+        #         },
+        #     },
+        # }
+
+        print("✅ Configurações de segurança aplicadas para produção")
+    else:
+        print("⚠️  Modo DEBUG ativo - configurações de segurança reduzidas")
+else:
+    print("❌ Configurações de segurança não aplicadas")

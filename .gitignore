@@ -63,3 +63,18 @@ build/
 # -----------------------
 .DS_Store
 Thumbs.db
+# Arquivos de segurança
+logs/
+backups/
+security/
+*.dump
+# Arquivos sensíveis
+secret_key.txt
+database_credentials.txt
+# Cache e temporários
+*.pyc
+.Python
+# IDEs
+*.swp
+*.swo
+# Sistema

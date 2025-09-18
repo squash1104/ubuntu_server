@@ -2,6 +2,7 @@ import re
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -25,6 +26,11 @@ def lista_convidados(request):
     termo_busca = request.GET.get("q", "")
     ordenar_por_param = request.GET.get("ordenar_por", "nome")
     direcao = request.GET.get("direcao", "asc")
+    per_page = int(request.GET.get("per_page", 20))
+    page_number = request.GET.get("page", 1)
+
+    # Opções de registros por página
+    per_page_options = [20, 50, 100, 200]
 
     ordenar_por_query = ordenar_por_param
     if direcao == "desc":
@@ -42,18 +48,26 @@ def lista_convidados(request):
         )
 
     convidados_final = convidados_qs.order_by(ordenar_por_query)
-    total_convidados_filtrados = convidados_final.count()
+
+    # Implementar paginação
+    paginator = Paginator(convidados_final, per_page)
+    page_obj = paginator.get_page(page_number)
+
+    # Totais apenas da página atual
+    total_convidados_filtrados = page_obj.object_list.count()
 
     context = {
-        "convidados": convidados_final,
+        "convidados": page_obj,
+        "page_obj": page_obj,
+        "paginator": paginator,
         "termo_busca": termo_busca,
         "ordenar_por": ordenar_por_param,
         "direcao": direcao,
+        "per_page": per_page,
+        "per_page_options": per_page_options,
         "total_convidados_filtrados": total_convidados_filtrados,
     }
 
-    if request.GET.get("is_ajax") == "true":
-        return render(request, "convidados/convidados_table_fragment.html", context)
     return render(request, "convidados/lista_convidados.html", context)
 
 

@@ -80,6 +80,7 @@ urlpatterns = [
     path("health/", health_check_view),
     path("sobre/", views.sobre, name="sobre"),
     path("chat/", include("chat.urls")),
+    path("security/", include("security.urls", namespace="security")),
 ]
 
 # Adicionar URLs para arquivos estáticos

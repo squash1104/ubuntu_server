@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste do Sistema de Chat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .log {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        input {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Teste do Sistema de Chat Dedicado</h1>
+    
+    <div class="test-section">
+        <h3>Configuração</h3>
+        <label>Usuário Logado: <input type="text" id="logged-user" value="lucianosouza" placeholder="username"></label><br>
+        <label>Usuário Alvo: <input type="text" id="target-user" value="admin" placeholder="username"></label><br>
+        <button onclick="setupTest()">Configurar Teste</button>
+    </div>
+
+    <div class="test-section">
+        <h3>Controle de Conexão</h3>
+        <button onclick="connectChat()">Conectar Chat</button>
+        <button onclick="disconnectChat()">Desconectar Chat</button>
+        <button onclick="getStatus()">Status da Conexão</button>
+    </div>
+
+    <div class="test-section">
+        <h3>Envio de Mensagens</h3>
+        <input type="text" id="message-input" placeholder="Digite sua mensagem" style="width: 300px;">
+        <button onclick="sendMessage()">Enviar Mensagem</button>
+        <button onclick="sendTyping()">Enviar Digitação</button>
+        <button onclick="sendSeen()">Enviar Visto</button>
+    </div>
+
+    <div class="test-section">
+        <h3>Logs do Sistema</h3>
+        <button onclick="clearLogs()">Limpar Logs</button>
+        <div id="logs" class="log"></div>
+    </div>
+
+    <script src="/static/chat/dedicated_chat.js"></script>
+    <script>
+        let testChat = null;
+
+        function log(message) {
+            const logs = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString();
+            logs.innerHTML += `[${timestamp}] ${message}\n`;
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = '';
+        }
+
+        function setupTest() {
+            const loggedUser = document.getElementById('logged-user').value;
+            const targetUser = document.getElementById('target-user').value;
+            
+            if (!loggedUser || !targetUser) {
+                alert('Por favor, preencha ambos os usuários');
+                return;
+            }
+
+            // Configurar usuário logado globalmente
+            window.LOGGED_USER = loggedUser;
+            
+            // Criar nova instância do chat
+            testChat = new DedicatedChat();
+            
+            // Configurar callbacks
+            testChat.onConnectionEstablished = function() {
+                log('✅ Conexão estabelecida com sucesso');
+            };
+
+            testChat.onMessageReceived = function(data) {
+                log(`📨 Mensagem recebida: "${data.message}" de ${data.sender}`);
+            };
+
+            testChat.onTypingEvent = function(data) {
+                log(`⌨️ Digitação: ${data.sender} está ${data.is_typing ? 'digitando' : 'parou de digitar'}`);
+            };
+
+            testChat.onSeenEvent = function(data) {
+                log(`👁️ Visto: ${data.sender} viu a mensagem em ${data.timestamp}`);
+            };
+
+            testChat.onConnectionError = function(error) {
+                log(`❌ Erro de conexão: ${error}`);
+            };
+
+            testChat.onConnectionFailed = function() {
+                log('❌ Falha na conexão - máximo de tentativas atingido');
+            };
+
+            log(`🔧 Teste configurado: ${loggedUser} -> ${targetUser}`);
+        }
+
+        function connectChat() {
+            if (!testChat) {
+                alert('Configure o teste primeiro');
+                return;
+            }
+
+            const targetUser = document.getElementById('target-user').value;
+            log(`🔌 Conectando ao chat com ${targetUser}...`);
+            testChat.connect(targetUser);
+        }
+
+        function disconnectChat() {
+            if (!testChat) {
+                alert('Configure o teste primeiro');
+                return;
+            }
+
+            log('🔌 Desconectando do chat...');
+            testChat.disconnect();
+        }
+
+        function getStatus() {
+            if (!testChat) {
+                alert('Configure o teste primeiro');
+                return;
+            }
+
+            const status = testChat.getConnectionStatus();
+            log(`📊 Status: ${JSON.stringify(status, null, 2)}`);
+        }
+
+        function sendMessage() {
+            if (!testChat) {
+                alert('Configure o teste primeiro');
+                return;
+            }
+
+            const message = document.getElementById('message-input').value;
+            if (!message.trim()) {
+                alert('Digite uma mensagem');
+                return;
+            }
+
+            log(`📤 Enviando mensagem: "${message}"`);
+            const success = testChat.sendMessage(message);
+            
+            if (success) {
+                log('✅ Mensagem enviada com sucesso');
+                document.getElementById('message-input').value = '';
+            } else {
+                log('❌ Falha ao enviar mensagem');
+            }
+        }
+
+        function sendTyping() {
+            if (!testChat) {
+                alert('Configure o teste primeiro');
+                return;
+            }
+
+            log('⌨️ Enviando evento de digitação...');
+            testChat.sendTypingEvent(true);
+            
+            setTimeout(() => {
+                log('⌨️ Parando evento de digitação...');
+                testChat.sendTypingEvent(false);
+            }, 2000);
+        }
+
+        function sendSeen() {
+            if (!testChat) {
+                alert('Configure o teste primeiro');
+                return;
+            }
+
+            log('👁️ Enviando evento de visto...');
+            testChat.sendSeenEvent();
+        }
+
+        // Log inicial
+        log('🚀 Sistema de teste carregado');
+        log('📝 Instruções:');
+        log('1. Configure os usuários');
+        log('2. Clique em "Configurar Teste"');
+        log('3. Conecte ao chat');
+        log('4. Teste o envio de mensagens');
+    </script>
+</body>
+</html>
+
+
+
+

@@ -144,6 +144,7 @@
                         <div class="card stat-card h-100">
                             <h3>Eficiência Média</h3>
                             <p>{{ eficiencia_media|floatformat:1 }}</p>
+                            <h3 style="font-size: 0.8rem; margin-top: 5px;">CONVIDADOS POR COLABORADOR</h3>
                         </div>
                     </div>
                     <div class="col-12">
@@ -212,7 +213,7 @@
             <div class="col-lg-6">
                 <div class="card h-100">
                     <div class="card-body">
-                        <h5 class="card-title mb-3">📈 Cidades por Colaboradores</h5>
+                        <h5 class="card-title mb-3">📈 Colaboradores por Cidades</h5>
                         <canvas id="colaboradoresPorCidadeChart"></canvas>
                     </div>
                 </div>
@@ -220,7 +221,7 @@
             <div class="col-lg-6">
                 <div class="card h-100">
                     <div class="card-body">
-                        <h5 class="card-title mb-3">👥 Cidades por Convidados</h5>
+                        <h5 class="card-title mb-3">👥 Convidados por Cidade</h5>
                         <canvas id="convidadosPorCidadeChart"></canvas>
                     </div>
                 </div>
@@ -231,7 +232,7 @@
             <div class="col-lg-6">
                 <div class="card h-100">
                     <div class="card-body d-flex flex-column">
-                        <h5 class="card-title mb-3 text-center">🗺️ Convidados por Mesorregião</h5>
+                        <h5 class="card-title mb-3 text-center">🗺️ Convidados por Região</h5>
                         <div class="flex-grow-1" style="position: relative;">
                             <canvas id="mesorregioesChart"></canvas>
                         </div>
@@ -251,15 +252,267 @@
             <div class="col-lg-6">
                 <div class="card h-100">
                     <div class="card-body">
-                        <h5 class="card-title mb-3">🔥 Mapa de Calor de Apoiadores</h5>
+                        <h5 class="card-title mb-3">🔥 Concentração de Apoiadores</h5>
                         <div id="heatmap" style="height: 450px; border-radius: 8px;"></div>
                     </div>
                 </div>
             </div>
         </div>
 
-    </div>
-</div>
+        <!-- Seção de Ranking -->
+        <hr class="my-4">
+        <h3 class="mb-3">🏆 Ranking de Cadastros</h3>
+        
+        <div class="row g-4 mb-4">
+            <!-- Top 3 em Destaque -->
+            <div class="col-lg-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <h5 class="card-title mb-3">🥇 Top 3</h5>
+                        {% for usuario in top_3_usuarios %}
+                            <div class="d-flex align-items-center mb-3 p-2 {% if usuario.usuario == user %}bg-primary bg-opacity-10 rounded{% endif %}">
+                                <div class="me-3">
+                                    {% if usuario.posicao == 1 %}
+                                        <span class="badge bg-warning text-dark fs-6">🥇</span>
+                                    {% elif usuario.posicao == 2 %}
+                                        <span class="badge bg-secondary fs-6">🥈</span>
+                                    {% elif usuario.posicao == 3 %}
+                                        <span class="badge bg-warning text-dark fs-6">🥉</span>
+                                    {% endif %}
+                                </div>
+                                <div class="flex-grow-1 text-start">
+                                    <strong>{{ usuario.first_name }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ usuario.total }} cadastros</small>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Ranking Completo -->
+            <div class="col-lg-8">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">📊 Ranking Completo</h5>
+                        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                            <table class="table table-hover">
+                                <thead class="table-light sticky-top">
+                                    <tr>
+                                        <th>Posição</th>
+                                        <th>Usuário</th>
+                                        <th class="text-center">Colaboradores</th>
+                                        <th class="text-center">Convidados</th>
+                                        <th class="text-center">Total</th>
+                                        <th class="text-center">Nível</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for usuario in ranking_usuarios %}
+                                        <tr {% if usuario.usuario == user %}class="table-primary"{% endif %}>
+                                            <td>
+                                                {% if usuario.posicao <= 3 %}
+                                                    {% if usuario.posicao == 1 %}🥇{% elif usuario.posicao == 2 %}🥈{% elif usuario.posicao == 3 %}🥉{% endif %}
+                                                {% else %}
+                                                    <strong>{{ usuario.posicao }}º</strong>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <strong>{{ usuario.first_name }}</strong>
+                                                {% if usuario.usuario == user %}<span class="badge bg-primary ms-1">Você</span>{% endif %}
+                                            </td>
+                                            <td class="text-center">{{ usuario.colaboradores }}</td>
+                                            <td class="text-center">{{ usuario.convidados }}</td>
+                                            <td class="text-center"><strong>{{ usuario.total }}</strong></td>
+                                            <td class="text-center">
+                                                {% if usuario.total >= 1000 %}
+                                                    <span class="badge bg-danger" title="Rei dos Cadastros">👑</span>
+                                                {% elif usuario.total >= 500 %}
+                                                    <span class="badge bg-primary" title="Diamante">💎</span>
+                                                {% elif usuario.total >= 250 %}
+                                                    <span class="badge bg-warning" title="Campeão">🏆</span>
+                                                {% elif usuario.total >= 100 %}
+                                                    <span class="badge bg-warning" title="Ouro">🥇</span>
+                                                {% elif usuario.total >= 50 %}
+                                                    <span class="badge bg-success" title="Super Cadastrador">⭐</span>
+                                                {% elif usuario.total >= 25 %}
+                                                    <span class="badge bg-danger" title="Em Chamas">🔥</span>
+                                                {% elif usuario.total >= 10 %}
+                                                    <span class="badge bg-info" title="Decolando">🚀</span>
+                                                {% elif usuario.total >= 5 %}
+                                                    <span class="badge bg-success" title="Crescendo">🌱</span>
+                                                {% elif usuario.total >= 1 %}
+                                                    <span class="badge bg-secondary" title="Iniciante">🌱</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary" title="Novato">🌱</span>
+                                                {% endif %}
+                                                
+                                                {% if usuario.colaboradores >= 50 %}
+                                                    <span class="badge bg-primary" title="Rei dos Colaboradores">👑</span>
+                                                {% elif usuario.colaboradores >= 25 %}
+                                                    <span class="badge bg-info" title="Mentor Master">👥</span>
+                                                {% elif usuario.colaboradores >= 10 %}
+                                                    <span class="badge bg-info" title="Mentor de Colaboradores">👥</span>
+                                                {% endif %}
+                                                
+                                                {% if usuario.convidados >= 500 %}
+                                                    <span class="badge bg-warning" title="Mestre dos Convidados">🎯</span>
+                                                {% elif usuario.convidados >= 250 %}
+                                                    <span class="badge bg-warning" title="Expert em Convidados">🎯</span>
+                                                {% elif usuario.convidados >= 100 %}
+                                                    <span class="badge bg-warning" title="Convidados Master">🎯</span>
+                                                {% elif usuario.convidados >= 50 %}
+                                                    <span class="badge bg-warning" title="Especialista em Convidados">🎯</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Legenda das Badges -->
+        <div class="row g-4 mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">🏆 Legenda das Conquistas</h5>
+                        <div class="row g-3">
+                            <!-- Badges por Total de Cadastros -->
+                            <div class="col-md-3 col-sm-6">
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-danger me-2">👑</span>
+                                    <div>
+                                        <strong>Rei dos Cadastros</strong>
+                                        <br>
+                                        <small class="text-muted">1000+ cadastros totais</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-primary me-2">💎</span>
+                                    <div>
+                                        <strong>Diamante</strong>
+                                        <br>
+                                        <small class="text-muted">500+ cadastros totais</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-warning me-2">🏆</span>
+                                    <div>
+                                        <strong>Campeão</strong>
+                                        <br>
+                                        <small class="text-muted">250+ cadastros totais</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-warning me-2">🥇</span>
+                                    <div>
+                                        <strong>Ouro</strong>
+                                        <br>
+                                        <small class="text-muted">100+ cadastros totais</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-success me-2">⭐</span>
+                                    <div>
+                                        <strong>Super Cadastrador</strong>
+                                        <br>
+                                        <small class="text-muted">50+ cadastros totais</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-danger me-2">🔥</span>
+                                    <div>
+                                        <strong>Em Chamas</strong>
+                                        <br>
+                                        <small class="text-muted">25+ cadastros totais</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-info me-2">🚀</span>
+                                    <div>
+                                        <strong>Decolando</strong>
+                                        <br>
+                                        <small class="text-muted">10+ cadastros totais</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-success me-2">🌱</span>
+                                    <div>
+                                        <strong>Crescendo</strong>
+                                        <br>
+                                        <small class="text-muted">5+ cadastros totais</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Badges Especiais por Colaboradores -->
+                            <div class="col-md-3 col-sm-6">
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-primary me-2">👑</span>
+                                    <div>
+                                        <strong>Rei dos Colaboradores</strong>
+                                        <br>
+                                        <small class="text-muted">50+ colaboradores</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-info me-2">👥</span>
+                                    <div>
+                                        <strong>Mentor Master</strong>
+                                        <br>
+                                        <small class="text-muted">25+ colaboradores</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Badges Especiais por Convidados -->
+                            <div class="col-md-3 col-sm-6">
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-warning me-2">🎯</span>
+                                    <div>
+                                        <strong>Mestre dos Convidados</strong>
+                                        <br>
+                                        <small class="text-muted">500+ convidados</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-warning me-2">🎯</span>
+                                    <div>
+                                        <strong>Expert em Convidados</strong>
+                                        <br>
+                                        <small class="text-muted">250+ convidados</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
     </div>
 </div>

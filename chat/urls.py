@@ -13,4 +13,6 @@ urlpatterns = [
     path("debug/", views.debug_chat, name="debug_chat"),
     path("simple-test/", views.simple_chat_test, name="simple_chat_test"),
     path("complete-test/", views.chat_complete_test, name="chat_complete_test"),
+    path("test-simple/", views.test_chat_simple, name="test_chat_simple"),
+    path("test-navbar/", views.test_navbar_responsive, name="test_navbar_responsive"),
 ]

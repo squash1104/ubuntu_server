@@ -1,0 +1,46 @@
+# ===========================================
+# DEPENDÊNCIAS DE SEGURANÇA - SISTEMA FIDELIZAÇÃO
+# ===========================================
+
+# Rate Limiting
+django-ratelimit==4.1.0
+
+# Autenticação de dois fatores
+django-otp==1.2.0
+qrcode==7.4.2
+
+# Criptografia e segurança
+cryptography==41.0.7
+pyotp==2.9.0
+
+# Monitoramento e logs
+django-extensions==3.2.3
+django-debug-toolbar==4.2.0
+
+# Validação de dados
+django-crispy-forms==2.1
+crispy-bootstrap5==0.7
+
+# Backup e recuperação
+django-dbbackup==3.3.0
+
+# Cache Redis
+django-redis==5.4.0
+redis==5.0.1
+
+# Headers de segurança
+django-csp==3.7
+django-security==1.1.2
+
+# Validação de senhas
+django-password-validators==1.3.0
+
+# Monitoramento de performance
+django-silk==5.0.4
+
+# Análise de segurança
+bandit==1.7.5
+safety==2.3.5
+
+# Testes de segurança
+django-security-tests==0.1.0

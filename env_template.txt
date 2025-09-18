@@ -1,0 +1,56 @@
+# ===========================================
+# CONFIGURAÇÕES DE BANCO DE DADOS
+# ===========================================
+DB_ENGINE=django.db.backends.postgresql
+DB_NAME=sisvot_db
+DB_USER=sisuserdb
+DB_PASSWORD=lu531676
+DB_HOST=127.0.0.1
+DB_PORT=5432
+
+# ===========================================
+# CONFIGURAÇÕES DE SEGURANÇA
+# ===========================================
+SECRET_KEY=sua_chave_secreta_aqui
+DEBUG=False
+ALLOWED_HOSTS=localhost,127.0.0.1,sistema.fidelizamax.app.br
+
+# ===========================================
+# CONFIGURAÇÕES DE EMAIL
+# ===========================================
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER=seu_email@gmail.com
+EMAIL_HOST_PASSWORD=sua_senha_de_app
+
+# ===========================================
+# CONFIGURAÇÕES DE REDIS (OPCIONAL)
+# ===========================================
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=
+
+# ===========================================
+# CONFIGURAÇÕES DE BACKUP
+# ===========================================
+BACKUP_DIR=/srv/sisvot/backups
+BACKUP_RETENTION_DAYS=30
+
+# ===========================================
+# CONFIGURAÇÕES DE LOGGING
+# ===========================================
+LOG_LEVEL=INFO
+LOG_DIR=/srv/sisvot/logs
+
+# ===========================================
+# CONFIGURAÇÕES DE SEGURANÇA AVANÇADA
+# ===========================================
+SECURE_SSL_REDIRECT=True
+SECURE_HSTS_SECONDS=31536000
+SECURE_HSTS_INCLUDE_SUBDOMAINS=True
+SECURE_HSTS_PRELOAD=True
+SECURE_CONTENT_TYPE_NOSNIFF=True
+SECURE_BROWSER_XSS_FILTER=True
+SECURE_REFERRER_POLICY=strict-origin-when-cross-origin
+SECURE_CROSS_ORIGIN_OPENER_POLICY=same-origin

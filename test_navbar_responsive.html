@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Responsividade da Navbar</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="/static/css/custom.css">
+    <style>
+        body {
+            padding-top: 70px;
+            background: #f8f9fa;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .screen-size {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: #007bff;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            z-index: 1000;
+        }
+        .breakpoint-info {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar de teste -->
+    <nav class="navbar navbar-dark bg-dark shadow-sm fixed-top">
+        <div class="container">
+            <!-- Botão do menu hambúrguer -->
+            <button class="navbar-toggler me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Brand/Título -->
+            <a class="navbar-brand mx-2 flex-grow-1" href="#">Fidelização de Apoiadores</a>
+
+            <!-- Container dos botões - não permite quebra -->
+            <div class="navbar-actions d-flex align-items-center flex-shrink-0">
+                <span class="navbar-text mx-3 d-none d-lg-block">Olá, Usuário Teste</span>
+
+                <!-- Botão de tema -->
+                <button id="theme-toggler" class="btn btn-outline-light me-2" type="button" title="Mudar tema">
+                    <i id="theme-icon" class="bi bi-moon-stars-fill"></i>
+                </button>
+
+                <!-- Botão de logout -->
+                <button id="logout-navbar" class="btn btn-outline-light mx-2" type="button" title="Sair">
+                    <i class="bi bi-box-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Indicador de tamanho da tela -->
+    <div class="screen-size" id="screen-size">
+        <span id="screen-width">0</span> x <span id="screen-height">0</span>
+    </div>
+
+    <div class="container">
+        <div class="test-section">
+            <h2>🧪 Teste de Responsividade da Navbar</h2>
+            <p>Esta página testa a responsividade da navbar em diferentes tamanhos de tela.</p>
+            
+            <div class="breakpoint-info">
+                <strong>Breakpoints do Bootstrap:</strong><br>
+                • < 576px: Extra Small (xs)<br>
+                • 576px - 767px: Small (sm)<br>
+                • 768px - 991px: Medium (md)<br>
+                • 992px - 1199px: Large (lg)<br>
+                • ≥ 1200px: Extra Large (xl)
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>📱 Instruções para Teste</h3>
+            <ol>
+                <li><strong>Redimensione a janela do navegador</strong> para testar diferentes tamanhos</li>
+                <li><strong>Use as ferramentas de desenvolvedor</strong> (F12) para simular dispositivos móveis</li>
+                <li><strong>Verifique se os ícones não quebram</strong> em telas pequenas</li>
+                <li><strong>Teste em dispositivos reais</strong> se possível</li>
+            </ol>
+        </div>
+
+        <div class="test-section">
+            <h3>✅ Checklist de Testes</h3>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="test1">
+                <label class="form-check-label" for="test1">
+                    Ícones de tema e logout não quebram em telas pequenas
+                </label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="test2">
+                <label class="form-check-label" for="test2">
+                    Título da navbar se adapta ao espaço disponível
+                </label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="test3">
+                <label class="form-check-label" for="test3">
+                    Botões mantêm tamanho mínimo adequado
+                </label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="test4">
+                <label class="form-check-label" for="test4">
+                    Menu hambúrguer funciona corretamente
+                </label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="test5">
+                <label class="form-check-label" for="test5">
+                    Layout não quebra em telas muito pequenas (< 400px)
+                </label>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔧 Tamanhos de Teste Recomendados</h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Dispositivos Móveis</h5>
+                    <ul>
+                        <li>iPhone SE: 375 x 667</li>
+                        <li>iPhone 12: 390 x 844</li>
+                        <li>Samsung Galaxy: 360 x 640</li>
+                        <li>Pixel 5: 393 x 851</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h5>Tablets</h5>
+                    <ul>
+                        <li>iPad: 768 x 1024</li>
+                        <li>iPad Pro: 834 x 1194</li>
+                        <li>Surface: 912 x 1368</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🐛 Problemas Conhecidos e Soluções</h3>
+            <div class="alert alert-info">
+                <h6>Problema: Ícones quebram em telas pequenas</h6>
+                <p><strong>Solução:</strong> Adicionado <code>flex-shrink: 0</code> e tamanhos mínimos para os botões.</p>
+            </div>
+            <div class="alert alert-info">
+                <h6>Problema: Título sobrepõe os botões</h6>
+                <p><strong>Solução:</strong> Usado <code>max-width: calc(100vw - 180px)</code> para limitar o espaço do título.</p>
+            </div>
+            <div class="alert alert-info">
+                <h6>Problema: Botões muito pequenos em mobile</h6>
+                <p><strong>Solução:</strong> Definido tamanhos mínimos responsivos (40px, 36px, 32px).</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Menu lateral de teste -->
+    <div class="offcanvas offcanvas-start text-bg-dark" tabindex="-1" id="offcanvasNavbar">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title">Menu de Teste</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="#"><i class="bi bi-house-door-fill me-2"></i>Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#"><i class="bi bi-bar-chart-line-fill me-2"></i>Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#"><i class="bi bi-briefcase-fill me-2"></i>Colaboradores</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Atualizar indicador de tamanho da tela
+        function updateScreenSize() {
+            document.getElementById('screen-width').textContent = window.innerWidth;
+            document.getElementById('screen-height').textContent = window.innerHeight;
+        }
+
+        // Atualizar quando a tela for redimensionada
+        window.addEventListener('resize', updateScreenSize);
+        updateScreenSize(); // Atualizar inicialmente
+
+        // Simular funcionalidade dos botões
+        document.getElementById('theme-toggler').addEventListener('click', function() {
+            alert('Botão de tema clicado!');
+        });
+
+        document.getElementById('logout-navbar').addEventListener('click', function() {
+            alert('Botão de logout clicado!');
+        });
+    </script>
+</body>
+</html>

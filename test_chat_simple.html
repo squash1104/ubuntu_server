@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Simples do Chat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .log {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        input {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .status.connected {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.disconnected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Teste Simples do Chat</h1>
+    
+    <div class="test-section">
+        <h3>Status da Conexão</h3>
+        <div id="connection-status" class="status disconnected">Desconectado</div>
+        <button onclick="connect()">Conectar</button>
+        <button onclick="disconnect()">Desconectar</button>
+    </div>
+
+    <div class="test-section">
+        <h3>Envio de Mensagens</h3>
+        <input type="text" id="message-input" placeholder="Digite sua mensagem" style="width: 300px;">
+        <button onclick="sendMessage()">Enviar</button>
+        <button onclick="sendTyping()">Testar Digitação</button>
+    </div>
+
+    <div class="test-section">
+        <h3>Mensagens Recebidas</h3>
+        <div id="messages" style="border: 1px solid #ddd; padding: 10px; height: 200px; overflow-y: auto;"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Logs</h3>
+        <button onclick="clearLogs()">Limpar Logs</button>
+        <div id="logs" class="log"></div>
+    </div>
+
+    <script>
+        let socket = null;
+        let isConnected = false;
+
+        function log(message) {
+            const logs = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString();
+            logs.innerHTML += `[${timestamp}] ${message}\n`;
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = '';
+        }
+
+        function updateStatus(connected) {
+            isConnected = connected;
+            const status = document.getElementById('connection-status');
+            if (connected) {
+                status.className = 'status connected';
+                status.textContent = 'Conectado';
+            } else {
+                status.className = 'status disconnected';
+                status.textContent = 'Desconectado';
+            }
+        }
+
+        function connect() {
+            if (socket) {
+                socket.close();
+            }
+
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const host = window.location.host;
+            const wsUrl = `${protocol}//${host}/ws/chat/admin/`; // Conectar com admin
+            
+            log(`🔌 Conectando ao WebSocket: ${wsUrl}`);
+            
+            socket = new WebSocket(wsUrl);
+            
+            socket.onopen = function() {
+                log('✅ WebSocket conectado com sucesso');
+                updateStatus(true);
+            };
+            
+            socket.onmessage = function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    log(`📨 Mensagem recebida: ${JSON.stringify(data)}`);
+                    
+                    // Adicionar mensagem à interface
+                    const messagesDiv = document.getElementById('messages');
+                    const messageDiv = document.createElement('div');
+                    messageDiv.innerHTML = `<strong>${data.sender || 'Sistema'}:</strong> ${data.message || JSON.stringify(data)}`;
+                    messagesDiv.appendChild(messageDiv);
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                } catch (error) {
+                    log(`❌ Erro ao processar mensagem: ${error}`);
+                }
+            };
+            
+            socket.onerror = function(error) {
+                log(`❌ Erro no WebSocket: ${error}`);
+            };
+            
+            socket.onclose = function(event) {
+                log(`❌ WebSocket desconectado (código: ${event.code})`);
+                updateStatus(false);
+            };
+        }
+
+        function disconnect() {
+            if (socket) {
+                socket.close();
+                socket = null;
+                updateStatus(false);
+                log('🔌 Desconectado manualmente');
+            }
+        }
+
+        function sendMessage() {
+            if (!isConnected || !socket) {
+                alert('Conecte primeiro ao WebSocket');
+                return;
+            }
+
+            const message = document.getElementById('message-input').value;
+            if (!message.trim()) {
+                alert('Digite uma mensagem');
+                return;
+            }
+
+            const payload = {
+                message: message,
+                timestamp: new Date().toISOString()
+            };
+
+            log(`📤 Enviando mensagem: ${message}`);
+            socket.send(JSON.stringify(payload));
+            
+            // Adicionar mensagem à interface
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.innerHTML = `<strong>Você:</strong> ${message}`;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            
+            document.getElementById('message-input').value = '';
+        }
+
+        function sendTyping() {
+            if (!isConnected || !socket) {
+                alert('Conecte primeiro ao WebSocket');
+                return;
+            }
+
+            const payload = {
+                type: 'typing',
+                is_typing: true
+            };
+
+            log('⌨️ Enviando evento de digitação');
+            socket.send(JSON.stringify(payload));
+            
+            // Parar digitação após 2 segundos
+            setTimeout(() => {
+                const stopPayload = {
+                    type: 'typing',
+                    is_typing: false
+                };
+                socket.send(JSON.stringify(stopPayload));
+                log('⌨️ Parando evento de digitação');
+            }, 2000);
+        }
+
+        // Log inicial
+        log('🚀 Sistema de teste carregado');
+        log('📝 Instruções:');
+        log('1. Clique em "Conectar" para estabelecer conexão WebSocket');
+        log('2. Digite uma mensagem e clique em "Enviar"');
+        log('3. Teste o evento de digitação');
+        log('4. Observe os logs para debug');
+    </script>
+</body>
+</html>
+
+
+
