@@ -162,33 +162,57 @@ class GlobalChatConsumer(AsyncWebsocketConsumer):
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.username = self.scope["url_route"]["kwargs"]["username"]
-        self.current_user = self.scope["user"]
+        try:
+            self.username = self.scope["url_route"]["kwargs"]["username"]
+            self.current_user = self.scope["user"]
 
-        # Criar nome do grupo baseado nos dois usuários (ordenado alfabeticamente)
-        if self.current_user.is_authenticated:
+            # Verificar se o usuário está autenticado
+            if not self.current_user.is_authenticated:
+                print("❌ Usuário não autenticado tentando conectar ao chat")
+                await self.close()
+                return
+
+            # Criar nome do grupo baseado nos dois usuários (ordenado alfabeticamente)
             users = sorted([self.current_user.username, self.username])
             self.room_group_name = f"chat_{'_'.join(users)}"
-        else:
-            self.room_group_name = f"chat_{self.username}"
 
-        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
+            await self.channel_layer.group_add(self.room_group_name, self.channel_name)
 
-        # Marcar usuário como online
-        await self.set_user_online(True)
+            # Marcar usuário como online (com tratamento de erro)
+            try:
+                await self.set_user_online(True)
+            except Exception as e:
+                print(f"⚠️ Erro ao marcar usuário como online: {e}")
 
-        await self.accept()
-        print(
-            f"WebSocket conectado para {self.current_user.username} -> {self.username}"
-        )
+            await self.accept()
+            print(
+                f"✅ WebSocket conectado para {self.current_user.username} -> {self.username}"
+            )
+        except Exception as e:
+            print(f"❌ Erro ao conectar WebSocket: {e}")
+            await self.close()
 
     async def disconnect(self, close_code):
-        # Marcar usuário como offline
-        await self.set_user_online(False)
-        await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
-        print(
-            f"WebSocket desconectado para {self.current_user.username} -> {self.username}"
-        )
+        try:
+            # Marcar usuário como offline (com tratamento de erro)
+            try:
+                await self.set_user_online(False)
+            except Exception as e:
+                print(f"⚠️ Erro ao marcar usuário como offline: {e}")
+
+            # Remover do grupo (com tratamento de erro)
+            try:
+                await self.channel_layer.group_discard(
+                    self.room_group_name, self.channel_name
+                )
+            except Exception as e:
+                print(f"⚠️ Erro ao remover do grupo: {e}")
+
+            print(
+                f"❌ WebSocket desconectado para {getattr(self.current_user, 'username', 'unknown')} -> {getattr(self, 'username', 'unknown')} (código: {close_code})"
+            )
+        except Exception as e:
+            print(f"❌ Erro ao desconectar WebSocket: {e}")
 
     async def receive(self, text_data):
         print(f"Mensagem recebida no WebSocket. Grupo: {self.room_group_name}")
@@ -320,10 +344,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def set_user_online(self, online_status):
         """Atualiza o status online do usuário atual"""
-        from .models import Profile
+        try:
+            from .models import Profile
 
-        user_lazy = self.scope["user"]
-        if user_lazy.is_authenticated:
+            user_lazy = self.scope["user"]
+            if not user_lazy.is_authenticated:
+                print(
+                    "⚠️ Usuário não autenticado, não é possível atualizar status online"
+                )
+                return
+
             # Obter o usuário real a partir do username
             user_model = get_user_model()
             try:
@@ -331,11 +361,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 profile, created = Profile.objects.get_or_create(user=user)
                 profile.online = online_status
                 profile.save()
-                print(f"Status online atualizado: {user.username} = {online_status}")
+                print(f"✅ Status online atualizado: {user.username} = {online_status}")
             except user_model.DoesNotExist:
                 print(
-                    f"Erro: Usuário {user_lazy.username} não encontrado para atualizar status"
+                    f"❌ Erro: Usuário {user_lazy.username} não encontrado para atualizar status"
                 )
+            except Exception as e:
+                print(f"❌ Erro ao atualizar status online: {e}")
+        except Exception as e:
+            print(f"❌ Erro geral ao definir status online: {e}")
 
     # ===== Helpers que tocam ORM (devem ser sync-to-async) =====
 

@@ -162,11 +162,178 @@ textarea:focus,
         .navbar-dark .navbar-text {
             color: #ffffff !important;
         }
+        /* Estilos base para a navbar */
+        .navbar-actions {
+            flex-shrink: 0; /* Nunca encolher */
+            gap: 0.25rem; /* Espaçamento entre botões */
+        }
+        
+        /* Diminuir ícone do menu hambúrguer */
+        .navbar-toggler {
+            font-size: 0.9rem; /* Diminuir o ícone do menu */
+        }
+        
+        .navbar-toggler-icon {
+            width: 1.2em; /* Diminuir largura do ícone */
+            height: 1.2em; /* Diminuir altura do ícone */
+        }
+        
+        .navbar-brand {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 1.4rem; /* Aumentar mais o tamanho padrão */
+            font-weight: 500; /* Adicionar um pouco mais de peso */
+        }
+        
+        /* Responsividade da Navbar */
         @media (max-width: 991.98px) {
             .navbar-brand {
-                flex-grow: 1;
-                text-align: left;
+                font-size: 1.25rem; /* Aumentar mais */
+                max-width: calc(100% - 120px); /* Limitar largura para não sobrepor os botões */
             }
+            
+            /* Ajustar botões para mobile */
+            #theme-toggler {
+                min-width: 40px; /* Aumentar um pouco */
+                height: 40px; /* Aumentar um pouco */
+                padding: 0.375rem; /* Padding reduzido */
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.2rem; /* Aumentar tamanho do ícone */
+            }
+            
+            #logout-navbar {
+                min-width: 42px; /* Aumentar mais o logout */
+                height: 42px; /* Aumentar mais o logout */
+                padding: 0.375rem; /* Padding reduzido */
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.3rem; /* Aumentar mais o logout */
+            }
+            
+            /* Garantir que os ícones não quebrem */
+            #theme-toggler i {
+                font-size: 1.2rem;
+                line-height: 1;
+            }
+            
+            #logout-navbar i {
+                font-size: 1.3rem;
+                line-height: 1;
+            }
+        }
+        
+        /* Para telas muito pequenas (menos de 576px) */
+        @media (max-width: 575.98px) {
+            .navbar-brand {
+                font-size: 1.15rem; /* Aumentar mais */
+                max-width: calc(100% - 100px); /* Ainda menos espaço para o título */
+            }
+            
+            #theme-toggler {
+                min-width: 38px;
+                height: 38px;
+                font-size: 1.1rem; /* Aumentar ícone */
+            }
+            
+            #logout-navbar {
+                min-width: 40px; /* Aumentar mais o logout */
+                height: 40px; /* Aumentar mais o logout */
+                font-size: 1.2rem; /* Aumentar mais o logout */
+            }
+            
+            #theme-toggler i {
+                font-size: 1.1rem;
+            }
+            
+            #logout-navbar i {
+                font-size: 1.2rem;
+            }
+            
+            /* Reduzir margens em telas muito pequenas */
+            .navbar .container {
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+            }
+        }
+        
+        /* Para telas extremamente pequenas (menos de 400px) */
+        @media (max-width: 399.98px) {
+            .navbar-brand {
+                font-size: 1.05rem; /* Aumentar mais */
+                max-width: calc(100% - 90px);
+            }
+            
+            #theme-toggler {
+                min-width: 34px;
+                height: 34px;
+                font-size: 1rem; /* Aumentar ícone */
+            }
+            
+            #logout-navbar {
+                min-width: 36px; /* Aumentar mais o logout */
+                height: 36px; /* Aumentar mais o logout */
+                font-size: 1.1rem; /* Aumentar mais o logout */
+            }
+            
+            #theme-toggler i {
+                font-size: 1rem;
+            }
+            
+            #logout-navbar i {
+                font-size: 1.1rem;
+            }
+        }
+
+        /* ===== RESPONSIVIDADE DAS TABELAS ===== */
+        
+        /* Container responsivo para tabelas - mantém margens do card */
+        .table-scroll-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin: 0; /* Remove margens para ficar dentro do card */
+            border: none; /* Remove borda para ficar dentro do card */
+        }
+        
+        /* Tabelas com largura mínima para scroll horizontal */
+        .table-scroll-container .table {
+            min-width: 100%; /* Largura mínima para scroll horizontal */
+            margin-bottom: 0;
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+        }
+        
+        /* Cabeçalho fixo para tabelas com scroll */
+        .table-scroll-container .table thead th {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+            white-space: nowrap; /* Garantir que cabeçalhos não quebrem */
+        }
+        
+        /* Garantir que todas as células da tabela não quebrem */
+        .table-scroll-container .table td {
+            white-space: nowrap !important; /* Forçar que não quebrem */
+        }
+        
+        .table-scroll-container .table th {
+            white-space: nowrap !important; /* Forçar que não quebrem */
+        }
+        
+        /* Tema escuro para tabelas responsivas */
+        body.dark-theme .table-scroll-container .table {
+            border-color: #495057;
+        }
+        
+        body.dark-theme .table-scroll-container .table thead th {
+            background-color: #212529;
+            border-bottom-color: #495057;
+            color: #f8f9fa;
         }
 
         /* Estilos do Body e Login Container */
@@ -232,17 +399,16 @@ textarea:focus,
             background: none;
             border: none;
             cursor: pointer;
-            font-size: 1.5rem;
+            font-size: 1.4rem; /* Aumentar para melhor proporção */
             color: white;
             padding: 0;
-
         }
 
         #logout-navbar {
             background: none;
             border: none;
             cursor: pointer;
-            font-size: 1.5rem;
+            font-size: 1.5rem; /* Aumentar mais o botão de logout */
             color: white;
             padding: 0;
         }
@@ -310,12 +476,12 @@ textarea:focus,
 
         /* Estilos dos ícones do botão de tema */
     #theme-icon.bi-sun-fill {
-        font-size: 1.5rem; /* Garante que o ícone tenha tamanho */
+        font-size: 1.4rem; /* Aumentar para melhor proporção */
         color: inherit;     /* Garante que o ícone herde a cor do botão */
         display: none;      /* Por padrão, esconde o sol */
     }
     #theme-icon.bi-moon-stars-fill {
-        font-size: 1.5rem;
+        font-size: 1.4rem; /* Aumentar para melhor proporção */
         color: inherit;
         display: none;      /* Por padrão, esconde a lua */
     }
@@ -453,20 +619,23 @@ body.dark-theme .summary-bar {
     color: #f8f9fa;
 }
 
-/* Cores das linhas para o tema escuro */
+/* Cores das linhas para o tema escuro - iguais ao tema claro */
 body.dark-theme .table-danger {
-    --bs-table-bg: #842029; /* Vermelho escuro e vibrante */
-    --bs-table-hover-bg: #9c2732;
+    background-color: #f8d7da !important;
+    border-color: #f5c6cb !important;
+    color: #721c24 !important;
 }
 
 body.dark-theme .table-success {
-    --bs-table-bg: #146c43; /* Verde escuro e vibrante */
-    --bs-table-hover-bg: #1d8250;
+    background-color: #d1e7dd !important;
+    border-color: #badbcc !important;
+    color: #0f5132 !important;
 }
 
 body.dark-theme .table-primary {
-    --bs-table-bg: #b28fff; /* Roxo */
-    --bs-table-hover-bg: #e0ccff;
+    background-color: #cfe2ff !important;
+    border-color: #b6d7ff !important;
+    color: #084298 !important;
 }
 
 /* Cores dos botões no tema escuro */

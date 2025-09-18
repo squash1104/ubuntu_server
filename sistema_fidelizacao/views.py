@@ -307,6 +307,130 @@ def dashboard(request):
         eficiencia_media = total_convidados / colaboradores_ativos
     # --- FIM DO NOVO CÓDIGO ---
 
+    # --- RANKING DE USUÁRIOS ---
+    from django.contrib.auth.models import User
+
+    # Busca todos os usuários com suas estatísticas
+    ranking_usuarios = []
+    usuarios = User.objects.all()
+
+    for usuario in usuarios:
+        # Conta colaboradores cadastrados por este usuário
+        colaboradores_cadastrados = Colaborador.objects.filter(
+            cadastrado_por=usuario
+        ).count()
+
+        # Conta convidados cadastrados por este usuário (através dos colaboradores)
+        convidados_cadastrados = Convidado.objects.filter(
+            colaborador__cadastrado_por=usuario
+        ).count()
+
+        # Total de cadastros (colaboradores + convidados)
+        total_cadastros = colaboradores_cadastrados + convidados_cadastrados
+
+        ranking_usuarios.append(
+            {
+                "usuario": usuario,
+                "colaboradores": colaboradores_cadastrados,
+                "convidados": convidados_cadastrados,
+                "total": total_cadastros,
+                "username": usuario.username,
+                "first_name": usuario.first_name or usuario.username,
+            }
+        )
+
+    # Ordena por total de cadastros (decrescente)
+    ranking_usuarios.sort(key=lambda x: x["total"], reverse=True)
+
+    # Adiciona posição no ranking
+    for i, usuario_data in enumerate(ranking_usuarios, 1):
+        usuario_data["posicao"] = i
+
+    # Top 3 para destaque
+    top_3_usuarios = ranking_usuarios[:3]
+
+    # Posição do usuário logado
+    usuario_logado_posicao = None
+    for usuario_data in ranking_usuarios:
+        if usuario_data["usuario"] == request.user:
+            usuario_logado_posicao = usuario_data
+            break
+
+    # Função para calcular badges do usuário
+    def calcular_badges_usuario(usuario_data):
+        badges = []
+        total = usuario_data["total"]
+        colaboradores = usuario_data["colaboradores"]
+        convidados = usuario_data["convidados"]
+
+        # Badges por total de cadastros
+        if total >= 1000:
+            badges.append(
+                {"emoji": "👑", "nome": "Rei dos Cadastros", "cor": "bg-danger"}
+            )
+        elif total >= 500:
+            badges.append({"emoji": "💎", "nome": "Diamante", "cor": "bg-primary"})
+        elif total >= 250:
+            badges.append({"emoji": "🏆", "nome": "Campeão", "cor": "bg-warning"})
+        elif total >= 100:
+            badges.append({"emoji": "🥇", "nome": "Ouro", "cor": "bg-warning"})
+        elif total >= 50:
+            badges.append(
+                {"emoji": "⭐", "nome": "Super Cadastrador", "cor": "bg-success"}
+            )
+        elif total >= 25:
+            badges.append({"emoji": "🔥", "nome": "Em Chamas", "cor": "bg-danger"})
+        elif total >= 10:
+            badges.append({"emoji": "🚀", "nome": "Decolando", "cor": "bg-info"})
+        elif total >= 5:
+            badges.append({"emoji": "🌱", "nome": "Crescendo", "cor": "bg-success"})
+        elif total >= 1:
+            badges.append({"emoji": "🌱", "nome": "Iniciante", "cor": "bg-secondary"})
+        else:
+            badges.append({"emoji": "🌱", "nome": "Novato", "cor": "bg-secondary"})
+
+        # Badges especiais por colaboradores
+        if colaboradores >= 50:
+            badges.append(
+                {"emoji": "👑", "nome": "Rei dos Colaboradores", "cor": "bg-primary"}
+            )
+        elif colaboradores >= 25:
+            badges.append({"emoji": "👥", "nome": "Mentor Master", "cor": "bg-info"})
+        elif colaboradores >= 10:
+            badges.append(
+                {"emoji": "👥", "nome": "Mentor de Colaboradores", "cor": "bg-info"}
+            )
+
+        # Badges especiais por convidados
+        if convidados >= 500:
+            badges.append(
+                {"emoji": "🎯", "nome": "Mestre dos Convidados", "cor": "bg-warning"}
+            )
+        elif convidados >= 250:
+            badges.append(
+                {"emoji": "🎯", "nome": "Expert em Convidados", "cor": "bg-warning"}
+            )
+        elif convidados >= 100:
+            badges.append(
+                {"emoji": "🎯", "nome": "Convidados Master", "cor": "bg-warning"}
+            )
+        elif convidados >= 50:
+            badges.append(
+                {
+                    "emoji": "🎯",
+                    "nome": "Especialista em Convidados",
+                    "cor": "bg-warning",
+                }
+            )
+
+        return badges
+
+    # Badges do usuário logado
+    badges_usuario_logado = []
+    if usuario_logado_posicao:
+        badges_usuario_logado = calcular_badges_usuario(usuario_logado_posicao)
+    # --- FIM DO RANKING ---
+
     context = {
         "nome_colaborador": nome_usuario_logado,
         "colaborador_obj": colaborador_obj,
@@ -328,6 +452,11 @@ def dashboard(request):
         "heat_data": json.dumps(heat_data),
         # --- NOVOS KPIs ---
         "eficiencia_media": eficiencia_media,
+        # --- RANKING ---
+        "ranking_usuarios": ranking_usuarios,
+        "top_3_usuarios": top_3_usuarios,
+        "usuario_logado_posicao": usuario_logado_posicao,
+        "badges_usuario_logado": badges_usuario_logado,
     }
     return render(request, "dashboard.html", context)
 

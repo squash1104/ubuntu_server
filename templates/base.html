@@ -296,27 +296,36 @@ body {
 
     <nav class="navbar navbar-dark bg-dark shadow-sm fixed-top">
         <div class="container">
+            <!-- Botão do menu hambúrguer -->
             <button class="navbar-toggler me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-            <a class="navbar-brand mx-2" href="{% url 'home' %}">Fidelização de Apoiadores</a>
+            <!-- Brand/Título -->
+            <a class="navbar-brand mx-2 flex-grow-1" href="{% url 'home' %}">Fidelização de Apoiadores</a>
 
-            <div class="d-flex align-items-center ms-auto">
+            <!-- Container dos botões - não permite quebra -->
+            <div class="navbar-actions d-flex align-items-center flex-shrink-0">
                 {% if user.is_authenticated %}
-                    <span class="navbar-text mx-3 d-none d-lg-block">Olá, {{ user.get_full_name }}</span>
+                    <div class="d-flex align-items-center mx-3 d-none d-lg-block">
+                        <span class="navbar-text me-2">Olá, {{ user.get_full_name }}</span>
+                        {% if badges_usuario_logado %}
+                            {% for badge in badges_usuario_logado %}
+                                <span class="badge {{ badge.cor }} me-1" title="{{ badge.nome }}">{{ badge.emoji }}</span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
                 {% endif %}
 
-
-
-
+                <!-- Botão de tema -->
                 <button id="theme-toggler" class="btn btn-outline-light me-2" type="button" title="Mudar tema">
                     <i id="theme-icon" class="bi bi-moon-stars-fill"></i>
                 </button>
 
+                <!-- Botão de logout -->
                 {% if user.is_authenticated %}
                     <form action="{% url 'logout' %}" method="post" class="d-inline">
-                    {% csrf_token %}
+                        {% csrf_token %}
                         <button id="logout-navbar" class="btn btn-outline-light mx-2" type="submit" title="Sair">
                             <i class="bi bi-box-arrow-right"></i>
                         </button>
@@ -336,7 +345,14 @@ body {
             {# SAUDAÇÃO DO UTILIZADOR (AGORA NO TOPO) #}
             {% if user.is_authenticated %}
                 <div class="mb-3 d-lg-none">
-                    <span class="navbar-text fs-5">Olá, {{ user.get_full_name }}</span>
+                    <div class="d-flex align-items-center">
+                        <span class="navbar-text fs-5 me-2">Olá, {{ user.get_full_name }}</span>
+                        {% if badges_usuario_logado %}
+                            {% for badge in badges_usuario_logado %}
+                                <span class="badge {{ badge.cor }} me-1" title="{{ badge.nome }}">{{ badge.emoji }}</span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
                 </div>
                 <hr class="mt-0"> {# Linha divisória logo abaixo da saudação #}
             {% endif %}
@@ -417,11 +433,6 @@ body {
 
     {% if user.is_authenticated %}
         
-        <!-- Sistema de Chat Moderno -->
-        <button id="chat-toggle" title="Abrir Chat">
-        💬 <span id="chat-badge" style="display:none">0</span>
-        </button>
-                        
         <!-- Audio para notificações -->
         <audio id="chat-sound" src="{% static 'chat/notification.mp3' %}" preload="auto"></audio>
 
@@ -687,19 +698,11 @@ body {
                 chatBadge.textContent = totalUnread > 99 ? '99+' : totalUnread;
                 chatBadge.style.display = 'inline-block';
                 
-                // Adicionar animação de pulso
-                const chatToggle = document.getElementById('chat-toggle');
-                if (chatToggle) {
-                    chatToggle.classList.add('notify');
-                }
+                // Badge atualizado
             } else {
                 chatBadge.style.display = 'none';
                 
-                // Remover animação de pulso
-                const chatToggle = document.getElementById('chat-toggle');
-                if (chatToggle) {
-                    chatToggle.classList.remove('notify');
-                }
+                // Badge removido
             }
             
             console.log(`Badge do chat atualizado: ${totalUnread} mensagens não lidas`);
@@ -1089,7 +1092,6 @@ body {
         
         window.updateBadge = function() {
             const badge = document.getElementById('chat-badge');
-            const btn = document.getElementById('chat-toggle');
 
             console.log('Atualizando badges. Total unread:', window.totalUnread);
 
@@ -1181,53 +1183,7 @@ body {
             window.chatSockets = new Map();
             window.currentChatUser = null;
 
-            // Event listeners para abrir o dock de contatos
-            const chatToggle = document.getElementById('chat-toggle');
-            console.log('Chat toggle encontrado:', chatToggle);
-            if (chatToggle) {
-                console.log('Adicionando event listener ao chat toggle');
-                chatToggle.addEventListener('click', function(e) {
-                    console.log('Clique detectado no chat toggle!');
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log('Tentando chamar showContactsDock...');
-                    console.log('showContactsDock é uma função?', typeof window.showContactsDock);
-                    if (typeof window.showContactsDock === 'function') {
-                        console.log('Chamando showContactsDock...');
-                        window.showContactsDock();
-                    } else {
-                        console.log('showContactsDock não é uma função!');
-                        console.log('showContactsDock:', window.showContactsDock);
-                    }
-                });
-                
-                // Teste direto da função
-                console.log('Testando função showContactsDock diretamente...');
-                setTimeout(() => {
-                    console.log('Chamando showContactsDock...');
-                    window.showContactsDock();
-                }, 1000);
-                
-                // Teste adicional - verificar se o botão está clicável
-                console.log('Verificando propriedades do botão...');
-                console.log('Botão visível:', chatToggle.offsetParent !== null);
-                console.log('Botão clicável:', chatToggle.style.pointerEvents !== 'none');
-                console.log('Z-index:', window.getComputedStyle(chatToggle).zIndex);
-                console.log('Display:', window.getComputedStyle(chatToggle).display);
-                console.log('Visibility:', window.getComputedStyle(chatToggle).visibility);
-                console.log('Position:', window.getComputedStyle(chatToggle).position);
-                console.log('Top:', window.getComputedStyle(chatToggle).top);
-                console.log('Bottom:', window.getComputedStyle(chatToggle).bottom);
-                console.log('Right:', window.getComputedStyle(chatToggle).right);
-                console.log('Left:', window.getComputedStyle(chatToggle).left);
-                
-                // Adicionar evento de teste adicional
-                chatToggle.addEventListener('mousedown', () => console.log('Mouse down detectado!'));
-                chatToggle.addEventListener('mouseup', () => console.log('Mouse up detectado!'));
-                chatToggle.addEventListener('touchstart', () => console.log('Touch start detectado!'));
-            } else {
-                console.log('Chat toggle NÃO encontrado!');
-            }
+            // Sistema de chat desabilitado
             // Desbloquear áudio no primeiro gesto do usuário
             const unlockAudioOnce = () => {
                 const el = document.getElementById('chat-sound');
@@ -1287,6 +1243,8 @@ body {
         <!-- <script src="{% static 'chat/chat_page.js' %}"></script> -->
 
     {% block extra_js %}{% endblock %}
+
+    <!-- Script de proteção contra visualização do código -->
 
 </body>
 </html>

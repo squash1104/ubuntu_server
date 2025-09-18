@@ -54,7 +54,7 @@ sisvot/
 # settings.py - Configurações de desenvolvimento
 DEBUG = True
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
-CSRF_TRUSTED_ORIGNS = ['http://localhost:8000', 'http://127.0.0.1:8000']
+CSRF_TRUSTED_ORIGINS = ['http://localhost:8000', 'http://127.0.0.1:8000']
 
 # Banco de dados de desenvolvimento
 DATABASES = {

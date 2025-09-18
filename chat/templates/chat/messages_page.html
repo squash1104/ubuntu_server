@@ -478,33 +478,9 @@
                 display: flex; /* Mostra quando ativo */
             }
 
-            /* Botão de voltar no mobile */
+            /* Ajustes para o cabeçalho no mobile */
             .chat-header {
                 position: relative;
-            }
-
-            .back-to-contacts {
-                background: rgba(255,255,255,0.2);
-                border: none;
-                color: white;
-                width: 32px;
-                height: 32px;
-                border-radius: 6px;
-                cursor: pointer;
-                font-size: 14px;
-                display: none; /* Oculto por padrão */
-                align-items: center;
-                justify-content: center;
-                transition: background 0.2s ease;
-                margin-right: 8px;
-            }
-
-            .back-to-contacts:hover {
-                background: rgba(255,255,255,0.35);
-            }
-
-            .back-to-contacts.active {
-                display: flex; /* Mostra no mobile */
             }
 
             /* Ajustes para mensagens no mobile */
@@ -522,12 +498,6 @@
             }
         }
 
-        /* Ocultar botão de voltar na versão web */
-        @media (min-width: 769px) {
-            .back-to-contacts {
-                display: none !important;
-            }
-        }
 
         /* Tema escuro */
         body.dark-theme .chat-page {
@@ -614,18 +584,26 @@
   <!-- Navbar -->
   <nav class="navbar navbar-dark bg-dark shadow-sm fixed-top">
       <div class="container">
+          <!-- Botão do menu hambúrguer -->
           <button class="navbar-toggler me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar">
               <span class="navbar-toggler-icon"></span>
           </button>
-          <a class="navbar-brand mx-2" href="{% url 'home' %}">Fidelização de Apoiadores</a>
 
-          <div class="d-flex align-items-center ms-auto">
+          <!-- Brand/Título -->
+          <a class="navbar-brand mx-2 flex-grow-1" href="{% url 'home' %}">Fidelização de Apoiadores</a>
+
+          <!-- Container dos botões - não permite quebra -->
+          <div class="navbar-actions d-flex align-items-center flex-shrink-0">
               {% if user.is_authenticated %}
                   <span class="navbar-text mx-3 d-none d-lg-block">Olá, {{ user.get_full_name }}</span>
               {% endif %}
+
+              <!-- Botão de tema -->
               <button id="theme-toggler" class="btn btn-outline-light me-2" type="button" title="Mudar tema">
                   <i id="theme-icon" class="bi bi-moon-stars-fill"></i>
               </button>
+
+              <!-- Botão de logout -->
               {% if user.is_authenticated %}
                   <form action="{% url 'logout' %}" method="post" class="d-inline">
                       {% csrf_token %}
@@ -721,9 +699,6 @@
         <!-- Cabeçalho -->
         <div class="chat-header">
           <div class="chat-contact-info">
-                        <button id="back-to-contacts" class="back-to-contacts" title="Voltar aos contatos">
-                            <i class="bi bi-arrow-left"></i>
-                        </button>
             <span id="chat-status" class="status-icon offline"></span>
             <span id="chat-contact-name">Selecione um contato</span>
           </div>
@@ -779,18 +754,15 @@
             if (isMobile()) {
                 const sidebar = document.getElementById('chat-sidebar');
                 const chatWindow = document.getElementById('chat-window');
-                const backButton = document.getElementById('back-to-contacts');
                 
                 if (showChat) {
                     sidebar.style.display = 'none';
                     chatWindow.style.display = 'flex';
                     chatWindow.classList.add('active');
-                    backButton.classList.add('active');
                 } else {
                     sidebar.style.display = 'flex';
                     chatWindow.style.display = 'none';
                     chatWindow.classList.remove('active');
-                    backButton.classList.remove('active');
                 }
             }
         }
@@ -848,6 +820,21 @@
 
             // Inicializar chat
             initializeChat();
+            
+            // Listener para redimensionamento da janela
+            window.addEventListener('resize', function() {
+                if (isMobile()) {
+                    // Se não há chat ativo, garantir que a sidebar esteja visível
+                    if (!document.querySelector('#chat-window.active')) {
+                        const sidebar = document.getElementById('chat-sidebar');
+                        const chatWindow = document.getElementById('chat-window');
+                        
+                        sidebar.style.display = 'flex';
+                        chatWindow.style.display = 'none';
+                        chatWindow.classList.remove('active');
+                    }
+                }
+            });
         });
 
         // Função para tocar som de notificação
@@ -1101,34 +1088,79 @@
             window.chatSocket = new WebSocket(`${protocol}//${host}/ws/chat/${username}/`);
 
             window.chatSocket.onopen = function() {
-                console.log('✅ WebSocket do chat conectado');
-            };
-
-            window.chatSocket.onmessage = function(event) {
-                const data = JSON.parse(event.data);
-                
-                if (data.type === 'typing') {
-                    if (data.is_typing && data.sender !== window.LOGGED_USER) {
-                        showTypingIndicator(data.sender);
-                    } else {
-                        hideTypingIndicator();
-                    }
-                } else if (data.type === 'seen') {
-                    // Mostrar indicador de visto com timestamp e sender
-                    showSeenIndicator(data.timestamp, data.sender);
-                } else if (data.message) {
-                    // Só adicionar mensagem se não for do usuário atual (evitar duplicação)
-                    if (data.sender !== window.LOGGED_USER) {
-                        // Esconder visto quando recebe nova mensagem
-                        hideSeenIndicator();
-                        addMessage(data.message, data.sender, data.timestamp, false, data.id);
-                    }
+                console.log('✅ WebSocket do chat conectado com sucesso');
+                // Resetar contador de tentativas em caso de sucesso
+                if (window.reconnectAttempts) {
+                    window.reconnectAttempts = 0;
                 }
             };
 
-            window.chatSocket.onclose = function() {
-                console.log('❌ WebSocket do chat desconectado');
+            window.chatSocket.onmessage = function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    console.log('📨 Mensagem recebida via WebSocket:', data);
+                    
+                    if (data.type === 'typing') {
+                        if (data.is_typing && data.sender !== window.LOGGED_USER) {
+                            showTypingIndicator(data.sender);
+                        } else {
+                            hideTypingIndicator();
+                        }
+                    } else if (data.type === 'seen') {
+                        // Mostrar indicador de visto com timestamp e sender
+                        showSeenIndicator(data.timestamp, data.sender);
+                    } else if (data.message) {
+                        // Só adicionar mensagem se não for do usuário atual (evitar duplicação)
+                        if (data.sender !== window.LOGGED_USER) {
+                            // Esconder visto quando recebe nova mensagem
+                            hideSeenIndicator();
+                            addMessage(data.message, data.sender, data.timestamp, false, data.id);
+                        }
+                    }
+                } catch (error) {
+                    console.error('❌ Erro ao processar mensagem WebSocket:', error);
+                }
             };
+
+            window.chatSocket.onerror = function(error) {
+                console.error('❌ Erro no WebSocket do chat:', error);
+            };
+
+            window.chatSocket.onclose = function(event) {
+                console.log('❌ WebSocket do chat desconectado', {
+                    code: event.code,
+                    reason: event.reason,
+                    wasClean: event.wasClean
+                });
+                
+                // Tentar reconectar se não foi fechamento limpo
+                if (!event.wasClean && window.currentChatUser) {
+                    attemptReconnect();
+                }
+            };
+        }
+
+        // Função para tentar reconectar
+        function attemptReconnect() {
+            if (!window.reconnectAttempts) {
+                window.reconnectAttempts = 0;
+            }
+            
+            const maxAttempts = 5;
+            const delay = Math.min(1000 * Math.pow(2, window.reconnectAttempts), 30000); // Backoff exponencial, máximo 30s
+            
+            if (window.reconnectAttempts < maxAttempts) {
+                window.reconnectAttempts++;
+                console.log(`🔄 Tentativa de reconexão ${window.reconnectAttempts}/${maxAttempts} em ${delay}ms`);
+                
+                setTimeout(() => {
+                    if (window.currentChatUser) {
+                        connectWebSocket(window.currentChatUser);
+                    }
+                }, delay);
+            } else {
+                console.error('❌ Máximo de tentativas de reconexão atingido');
+            }
         }
 
         // Função para carregar histórico
@@ -1197,8 +1229,8 @@
             messagesContainer.appendChild(messageDiv);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
-            // Marcar como lida se for mensagem recebida
-            if (!isOwn && messageId) {
+            // Marcar como lida se for mensagem recebida e tiver ID válido
+            if (!isOwn && messageId && messageId !== '' && messageId !== null) {
                 markMessageAsRead(messageId);
                 // Esconder visto quando recebe nova mensagem
                 hideSeenIndicator();
@@ -1279,10 +1311,6 @@
             }
         });
 
-        // Botão de voltar aos contatos (mobile)
-        document.getElementById('back-to-contacts').addEventListener('click', function() {
-            toggleMobileView(false);
-        });
 
         document.getElementById('close-chat').addEventListener('click', function() {
             // Remover classe active de todos os contatos
@@ -1503,7 +1531,14 @@
         
         // Função para marcar mensagem como lida
         function markMessageAsRead(messageId) {
-            // Implementar chamada para o backend
+            // Só marcar como lida se tiver um ID válido
+            if (!messageId || messageId === '') {
+                console.log('⚠️ MessageId inválido, não marcando como lida');
+                return;
+            }
+            
+            console.log('📖 Marcando mensagem como lida:', messageId);
+            
             fetch('/chat/mark_read/', {
                 method: 'POST',
                 headers: {
@@ -1513,14 +1548,22 @@
                 body: JSON.stringify({
                     message_id: messageId
                 })
-            }).then(response => response.json())
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.status === 'success') {
+                    console.log('✅ Mensagem marcada como lida:', messageId);
                     // Enviar evento de visto via WebSocket
                     sendSeenEvent();
+                } else {
+                    console.warn('⚠️ Falha ao marcar mensagem como lida:', data);
                 }
             }).catch(error => {
-                console.error('Erro ao marcar mensagem como lida:', error);
+                console.error('❌ Erro ao marcar mensagem como lida:', error);
             });
         }
 
@@ -1543,6 +1586,17 @@
         // Função de inicialização
         function initializeChat() {
             console.log('🚀 Inicializando chat dedicado...');
+            
+            // Garantir que a sidebar esteja visível por padrão no mobile
+            if (isMobile()) {
+                const sidebar = document.getElementById('chat-sidebar');
+                const chatWindow = document.getElementById('chat-window');
+                
+                // Forçar exibição correta no mobile
+                sidebar.style.display = 'flex';
+                chatWindow.style.display = 'none';
+                chatWindow.classList.remove('active');
+            }
             
             // Conectar WebSocket de notificações
             connectNotifySocket();
@@ -1571,5 +1625,8 @@
         window.addEventListener('click', unlockAudioOnce, { once: true });
         window.addEventListener('touchstart', unlockAudioOnce, { once: true });
 </script>
+
+    <!-- Script de proteção contra visualização do código -->
+
 </body>
 </html>

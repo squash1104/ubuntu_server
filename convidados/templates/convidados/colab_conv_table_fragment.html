@@ -1,3 +1,4 @@
+
 <div class="table-scroll-container">
     {% if convidados %}
         <table class="table table-hover align-middle">
@@ -34,9 +35,9 @@
             <tbody>
                 {% for convidado in convidados %}
                 <tr class="
-					{% if total_convidados < 15 %}meta-abaixo
-                    {% elif total_convidados == 15 %}meta-atingida
-                    {% else %}meta-superada{% endif %}">
+					{% if total_convidados < meta %}table-danger
+                    {% elif total_convidados == meta %}table-success
+                    {% else %}table-primary{% endif %}">
 				    <td>{{ forloop.counter }}</td>
                     <td><strong>{{ convidado.nome }}</strong></td>
                     <td>{{ convidado.telefone|default:"-" }}</td>

@@ -17,6 +17,22 @@ def messages_page(request):
 
 
 @login_required
+def test_chat_simple(request):
+    """View para testar o sistema de chat de forma simples"""
+    with open("/srv/sisvot/test_chat_simple.html", encoding="utf-8") as f:
+        content = f.read()
+    return HttpResponse(content, content_type="text/html")
+
+
+@login_required
+def test_navbar_responsive(request):
+    """View para testar a responsividade da navbar"""
+    with open("/srv/sisvot/test_navbar_responsive.html", encoding="utf-8") as f:
+        content = f.read()
+    return HttpResponse(content, content_type="text/html")
+
+
+@login_required
 def test_websocket(request):
     content = """
     <!DOCTYPE html>
@@ -251,10 +267,26 @@ def fetch_messages(request, username):
 
 @login_required
 def lista_contatos(request):
-    contatos = User.objects.exclude(id=request.user.id)
-    return JsonResponse(
-        [{"id": u.id, "username": u.username} for u in contatos], safe=False
-    )
+    """Retorna lista de contatos com informações completas"""
+    contatos = User.objects.exclude(id=request.user.id).select_related("profile")
+
+    contatos_data = []
+    for user in contatos:
+        # Verificar se tem profile e status online
+        online = False
+        if hasattr(user, "profile"):
+            online = user.profile.online
+
+        contatos_data.append(
+            {
+                "id": user.id,
+                "username": user.username,
+                "full_name": user.get_full_name() or user.username,
+                "online": online,
+            }
+        )
+
+    return JsonResponse(contatos_data, safe=False)
 
 
 @login_required
