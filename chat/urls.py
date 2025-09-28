@@ -6,7 +6,11 @@ urlpatterns = [
     path("", views.messages_page, name="chat"),
     path("historico/<str:username>/", views.fetch_messages, name="fetch_messages"),
     path("mark_read/", views.mark_message_read, name="mark_message_read"),
-    path("mark_read_batch/", views.mark_messages_read_batch, name="mark_messages_read_batch"),
+    path(
+        "mark_read_batch/",
+        views.mark_messages_read_batch,
+        name="mark_messages_read_batch",
+    ),
     path("lista/", views.lista_contatos, name="lista_contatos"),
     path("contatos_status/", views.contatos_status, name="contatos_status"),
     path("test/", views.test_websocket, name="test_websocket"),

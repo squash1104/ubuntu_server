@@ -1,6 +1,5 @@
 from django import template
 
-
 register = template.Library()
 
 
@@ -8,7 +7,9 @@ register = template.Library()
 def has_group(user, group_name: str) -> bool:
     """Return True if the authenticated user belongs to the given group name."""
     try:
-        return bool(user.is_authenticated and user.groups.filter(name=group_name).exists())
+        return bool(
+            user.is_authenticated and user.groups.filter(name=group_name).exists()
+        )
     except Exception:
         return False
 
@@ -19,5 +20,3 @@ def startswith(text: str, prefix: str) -> bool:
         return str(text).startswith(prefix)
     except Exception:
         return False
-
-

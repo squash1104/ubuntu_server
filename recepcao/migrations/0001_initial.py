@@ -15,64 +15,195 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Visitante',
+            name="Visitante",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('nome', models.CharField(max_length=150)),
-                ('telefone', models.CharField(blank=True, max_length=20, null=True)),
-                ('funcao', models.CharField(blank=True, max_length=100, null=True)),
-                ('municipio', models.CharField(blank=True, max_length=100, null=True)),
-                ('email', models.EmailField(blank=True, max_length=254, null=True)),
-                ('data_nascimento', models.DateField(blank=True, null=True)),
-                ('foto', models.ImageField(blank=True, null=True, upload_to='recepcao/fotos/')),
-                ('criado_em', models.DateTimeField(auto_now_add=True)),
-                ('atualizado_em', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("nome", models.CharField(max_length=150)),
+                ("telefone", models.CharField(blank=True, max_length=20, null=True)),
+                ("funcao", models.CharField(blank=True, max_length=100, null=True)),
+                ("municipio", models.CharField(blank=True, max_length=100, null=True)),
+                ("email", models.EmailField(blank=True, max_length=254, null=True)),
+                ("data_nascimento", models.DateField(blank=True, null=True)),
+                (
+                    "foto",
+                    models.ImageField(
+                        blank=True, null=True, upload_to="recepcao/fotos/"
+                    ),
+                ),
+                ("criado_em", models.DateTimeField(auto_now_add=True)),
+                ("atualizado_em", models.DateTimeField(auto_now=True)),
             ],
         ),
         migrations.CreateModel(
-            name='Atendimento',
+            name="Atendimento",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('pessoa_destino', models.CharField(blank=True, help_text='Com quem veio falar', max_length=150, null=True)),
-                ('status', models.CharField(choices=[('aguardando', 'Aguardando'), ('em_atendimento', 'Em atendimento'), ('concluido', 'Concluído'), ('cancelado', 'Cancelado'), ('ausente', 'Ausente')], default='aguardando', max_length=20)),
-                ('demanda_resumo', models.CharField(blank=True, max_length=200, null=True)),
-                ('demanda_detalhes', models.TextField(blank=True, null=True)),
-                ('horario_chegada', models.DateTimeField(auto_now_add=True)),
-                ('inicio_atendimento', models.DateTimeField(blank=True, null=True)),
-                ('fim_atendimento', models.DateTimeField(blank=True, null=True)),
-                ('criado_em', models.DateTimeField(auto_now_add=True)),
-                ('atualizado_em', models.DateTimeField(auto_now=True)),
-                ('atendente', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='atendimentos_assumidos', to=settings.AUTH_USER_MODEL)),
-                ('recepcionista', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='atendimentos_recebidos', to=settings.AUTH_USER_MODEL)),
-                ('visitante', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='atendimentos', to='recepcao.visitante')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "pessoa_destino",
+                    models.CharField(
+                        blank=True,
+                        help_text="Com quem veio falar",
+                        max_length=150,
+                        null=True,
+                    ),
+                ),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("aguardando", "Aguardando"),
+                            ("em_atendimento", "Em atendimento"),
+                            ("concluido", "Concluído"),
+                            ("cancelado", "Cancelado"),
+                            ("ausente", "Ausente"),
+                        ],
+                        default="aguardando",
+                        max_length=20,
+                    ),
+                ),
+                (
+                    "demanda_resumo",
+                    models.CharField(blank=True, max_length=200, null=True),
+                ),
+                ("demanda_detalhes", models.TextField(blank=True, null=True)),
+                ("horario_chegada", models.DateTimeField(auto_now_add=True)),
+                ("inicio_atendimento", models.DateTimeField(blank=True, null=True)),
+                ("fim_atendimento", models.DateTimeField(blank=True, null=True)),
+                ("criado_em", models.DateTimeField(auto_now_add=True)),
+                ("atualizado_em", models.DateTimeField(auto_now=True)),
+                (
+                    "atendente",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="atendimentos_assumidos",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "recepcionista",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="atendimentos_recebidos",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "visitante",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="atendimentos",
+                        to="recepcao.visitante",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-horario_chegada'],
+                "ordering": ["-horario_chegada"],
             },
         ),
         migrations.CreateModel(
-            name='AtendimentoAnexo',
+            name="AtendimentoAnexo",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('arquivo', models.FileField(upload_to='recepcao/anexos/')),
-                ('descricao', models.CharField(blank=True, max_length=200, null=True)),
-                ('criado_em', models.DateTimeField(auto_now_add=True)),
-                ('atendimento', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='anexos', to='recepcao.atendimento')),
-                ('enviado_por', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("arquivo", models.FileField(upload_to="recepcao/anexos/")),
+                ("descricao", models.CharField(blank=True, max_length=200, null=True)),
+                ("criado_em", models.DateTimeField(auto_now_add=True)),
+                (
+                    "atendimento",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="anexos",
+                        to="recepcao.atendimento",
+                    ),
+                ),
+                (
+                    "enviado_por",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='AtendimentoEvento',
+            name="AtendimentoEvento",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('tipo', models.CharField(choices=[('chegada', 'Chegada'), ('chamado', 'Chamado para atendimento'), ('inicio', 'Início do atendimento'), ('fim', 'Fim do atendimento'), ('cancelamento', 'Cancelamento'), ('ausente', 'Ausente'), ('nota', 'Nota'), ('anexo', 'Anexo adicionado')], max_length=20)),
-                ('timestamp', models.DateTimeField(auto_now_add=True)),
-                ('detalhes', models.TextField(blank=True, null=True)),
-                ('atendimento', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='eventos', to='recepcao.atendimento')),
-                ('usuario', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "tipo",
+                    models.CharField(
+                        choices=[
+                            ("chegada", "Chegada"),
+                            ("chamado", "Chamado para atendimento"),
+                            ("inicio", "Início do atendimento"),
+                            ("fim", "Fim do atendimento"),
+                            ("cancelamento", "Cancelamento"),
+                            ("ausente", "Ausente"),
+                            ("nota", "Nota"),
+                            ("anexo", "Anexo adicionado"),
+                        ],
+                        max_length=20,
+                    ),
+                ),
+                ("timestamp", models.DateTimeField(auto_now_add=True)),
+                ("detalhes", models.TextField(blank=True, null=True)),
+                (
+                    "atendimento",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="eventos",
+                        to="recepcao.atendimento",
+                    ),
+                ),
+                (
+                    "usuario",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-timestamp'],
+                "ordering": ["-timestamp"],
             },
         ),
     ]

@@ -1,5 +1,12 @@
 from django.contrib import admin
-from .models import Visitante, Atendimento, AtendimentoAnexo, AtendimentoEvento, Attendente
+
+from .models import (
+    Atendimento,
+    AtendimentoAnexo,
+    AtendimentoEvento,
+    Attendente,
+    Visitante,
+)
 
 
 @admin.register(Visitante)
@@ -48,6 +55,7 @@ class AtendimentoEventoAdmin(admin.ModelAdmin):
     list_display = ("atendimento", "tipo", "timestamp", "usuario")
     list_filter = ("tipo",)
     search_fields = ("atendimento__visitante__nome", "detalhes")
+
 
 # Register your models here.
 

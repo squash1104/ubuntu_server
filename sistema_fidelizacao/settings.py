@@ -439,7 +439,9 @@ else:
 # ===========================================
 TWILIO_ACCOUNT_SID = config("TWILIO_ACCOUNT_SID", default="")
 TWILIO_AUTH_TOKEN = config("TWILIO_AUTH_TOKEN", default="")
-TWILIO_WHATSAPP_NUMBER = config("TWILIO_WHATSAPP_NUMBER", default="whatsapp:+14155238886")
+TWILIO_WHATSAPP_NUMBER = config(
+    "TWILIO_WHATSAPP_NUMBER", default="whatsapp:+14155238886"
+)
 TWILIO_SMS_NUMBER = config("TWILIO_SMS_NUMBER", default="")
 
 # Configurações de Rate Limiting para mensagens

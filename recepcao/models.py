@@ -1,5 +1,5 @@
-from django.db import models
 from django.contrib.auth.models import User
+from django.db import models
 
 
 class Visitante(models.Model):
@@ -26,13 +26,33 @@ class AtendimentoStatus(models.TextChoices):
 
 
 class Atendimento(models.Model):
-    visitante = models.ForeignKey(Visitante, on_delete=models.CASCADE, related_name="atendimentos")
-    recepcionista = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="atendimentos_recebidos")
+    visitante = models.ForeignKey(
+        Visitante, on_delete=models.CASCADE, related_name="atendimentos"
+    )
+    recepcionista = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="atendimentos_recebidos",
+    )
     # Atendente será um modelo específico para a recepção (nome simples)
-    atendente = models.ForeignKey("recepcao.Attendente", on_delete=models.SET_NULL, null=True, blank=True, related_name="atendimentos_assumidos")
-    pessoa_destino = models.CharField(max_length=150, blank=True, null=True, help_text="Com quem veio falar")
+    atendente = models.ForeignKey(
+        "recepcao.Attendente",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="atendimentos_assumidos",
+    )
+    pessoa_destino = models.CharField(
+        max_length=150, blank=True, null=True, help_text="Com quem veio falar"
+    )
 
-    status = models.CharField(max_length=20, choices=AtendimentoStatus.choices, default=AtendimentoStatus.AGUARDANDO)
+    status = models.CharField(
+        max_length=20,
+        choices=AtendimentoStatus.choices,
+        default=AtendimentoStatus.AGUARDANDO,
+    )
 
     demanda_resumo = models.CharField(max_length=200, blank=True, null=True)
     demanda_detalhes = models.TextField(blank=True, null=True)
@@ -64,10 +84,14 @@ class Atendimento(models.Model):
 
 
 class AtendimentoAnexo(models.Model):
-    atendimento = models.ForeignKey(Atendimento, on_delete=models.CASCADE, related_name="anexos")
+    atendimento = models.ForeignKey(
+        Atendimento, on_delete=models.CASCADE, related_name="anexos"
+    )
     arquivo = models.FileField(upload_to="recepcao/anexos/")
     descricao = models.CharField(max_length=200, blank=True, null=True)
-    enviado_por = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    enviado_por = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True
+    )
     criado_em = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
@@ -86,7 +110,9 @@ class TipoEvento(models.TextChoices):
 
 
 class AtendimentoEvento(models.Model):
-    atendimento = models.ForeignKey(Atendimento, on_delete=models.CASCADE, related_name="eventos")
+    atendimento = models.ForeignKey(
+        Atendimento, on_delete=models.CASCADE, related_name="eventos"
+    )
     tipo = models.CharField(max_length=20, choices=TipoEvento.choices)
     timestamp = models.DateTimeField(auto_now_add=True)
     usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
@@ -98,7 +124,9 @@ class AtendimentoEvento(models.Model):
     def __str__(self) -> str:
         return f"{self.get_tipo_display()} - {self.timestamp:%d/%m/%Y %H:%M}"
 
+
 # Create your models here.
+
 
 class Attendente(models.Model):
     nome = models.CharField(max_length=150)

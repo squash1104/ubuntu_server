@@ -23,7 +23,7 @@ from django.contrib.auth import (
 )
 from django.http import HttpResponse
 from django.urls import include, path
-from django.views.generic import TemplateView
+
 from utils_aniversarios.views import aniversariantes_view
 
 from . import views
@@ -85,8 +85,8 @@ urlpatterns = [
     path("sobre/", views.sobre, name="sobre"),
     path("chat/", include("chat.urls")),
     path("security/", include("security.urls", namespace="security")),
-	# Página de aniversariantes
-	path('aniversariantes/', aniversariantes_view, name='aniversariantes'),
+    # Página de aniversariantes
+    path("aniversariantes/", aniversariantes_view, name="aniversariantes"),
 ]
 
 # Adicionar URLs para arquivos estáticos

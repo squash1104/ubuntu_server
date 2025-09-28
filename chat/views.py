@@ -326,6 +326,7 @@ def contatos_status(request):
 
     return JsonResponse(contatos_data, safe=False)
 
+
 @login_required
 @require_http_methods(["POST"])
 @csrf_exempt
@@ -395,7 +396,7 @@ def mark_messages_read_batch(request):
                 id__in=message_ids,
                 recipient=request.user,
                 sender__username=username,
-                read=False
+                read=False,
             ).update(read=True, read_at=timezone.now())
 
             print(

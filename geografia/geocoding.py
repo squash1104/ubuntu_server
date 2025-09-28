@@ -1,12 +1,14 @@
 import time
+
 import requests
-from typing import Optional, Tuple
 
 USER_AGENT = "sisvot-geocoder/1.0 (contact: admin@sisvot)"
 NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
 
 
-def geocode_bairro(nome_bairro: str, cidade: str = "Cuiabá", uf: str = "MT") -> Optional[Tuple[float, float]]:
+def geocode_bairro(
+    nome_bairro: str, cidade: str = "Cuiabá", uf: str = "MT"
+) -> tuple[float, float] | None:
     """Geocode um bairro via Nominatim. Retorna (lat, lon) ou None.
     Respeita rate limit (1 req/s)."""
     params = {
@@ -31,5 +33,3 @@ def geocode_bairro(nome_bairro: str, cidade: str = "Cuiabá", uf: str = "MT") ->
         return (lat, lon)
     except Exception:
         return None
-
-
