@@ -90,6 +90,7 @@ class ColaboradorForm(forms.ModelForm):
         ),
         label="Data de Nascimento:",
     )
+
     class Meta:
         model = Colaborador
         fields: ClassVar = ["nome", "telefone", "data_nascimento", "cidade", "bairro"]
@@ -143,7 +144,11 @@ class ColaboradorForm(forms.ModelForm):
         # Lógica para carregar os bairros se o formulário já tiver dados (ex: na edição)
         if self.instance and getattr(self.instance, "bairro", None):
             # Caso de edição: garantir queryset e seleção do bairro e cidade atuais
-            self.fields["cidade"].initial = self.instance.bairro.cidade.pk if self.instance.bairro and self.instance.bairro.cidade else (self.instance.cidade.pk if self.instance.cidade else None)
+            self.fields["cidade"].initial = (
+                self.instance.bairro.cidade.pk
+                if self.instance.bairro and self.instance.bairro.cidade
+                else (self.instance.cidade.pk if self.instance.cidade else None)
+            )
             if self.instance.bairro and self.instance.bairro.cidade:
                 self.fields["bairro"].queryset = Bairro.objects.filter(
                     cidade=self.instance.bairro.cidade

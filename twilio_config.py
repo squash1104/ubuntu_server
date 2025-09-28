@@ -1,5 +1,5 @@
 # Configurações do Twilio para o Sistema de Mensagens
-# 
+#
 # INSTRUÇÕES PARA CONFIGURAR:
 # 1. Acesse https://console.twilio.com/
 # 2. Crie uma conta gratuita se não tiver

@@ -7,7 +7,6 @@ from django.shortcuts import render
 
 from colaboradores.models import Colaborador  # Importe o modelo Colaborador
 from convidados.models import Convidado
-from geografia.models import Bairro
 
 CIDADE_PARA_MESORREGIAO = {
     # NORTE
@@ -163,7 +162,11 @@ def home(request):
     # Redireciona recepcionistas não-supervisores para a Home da Recepção
     if request.user.is_authenticated:
         grupos = set(request.user.groups.values_list("name", flat=True))
-        if "Recepcionista" in grupos and "Supervisor" not in grupos and not request.user.is_superuser:
+        if (
+            "Recepcionista" in grupos
+            and "Supervisor" not in grupos
+            and not request.user.is_superuser
+        ):
             from django.shortcuts import redirect
 
             return redirect("recepcao:home")
@@ -369,18 +372,17 @@ def dashboard(request):
             }
 
     # Normalização conjunta (bairro de Cuiabá + outras cidades)
-    pesos = [v["peso"] for v in heat_by_bairro.values()] + [v["peso"] for v in heat_by_cidade.values()]
+    pesos = [v["peso"] for v in heat_by_bairro.values()] + [
+        v["peso"] for v in heat_by_cidade.values()
+    ]
     max_peso = max(pesos) if pesos else 1
-    heat_data = (
-        [
-            [v["lat"], v["lon"], max(v["peso"] / max_peso, 0.1)]
-            for v in heat_by_bairro.values()
-        ]
-        + [
-            [v["lat"], v["lon"], max(v["peso"] / max_peso, 0.1)]
-            for v in heat_by_cidade.values()
-        ]
-    )
+    heat_data = [
+        [v["lat"], v["lon"], max(v["peso"] / max_peso, 0.1)]
+        for v in heat_by_bairro.values()
+    ] + [
+        [v["lat"], v["lon"], max(v["peso"] / max_peso, 0.1)]
+        for v in heat_by_cidade.values()
+    ]
     # --- FIM DO NOVO CÓDIGO ---
 
     # --- NOVO CÓDIGO PARA OS NOVOS KPIs ---
@@ -627,18 +629,17 @@ def mapa_apoiadores(request):
                 "peso": int(item["total"]),
             }
 
-    pesos = [v["peso"] for v in heat_by_bairro.values()] + [v["peso"] for v in heat_by_cidade.values()]
+    pesos = [v["peso"] for v in heat_by_bairro.values()] + [
+        v["peso"] for v in heat_by_cidade.values()
+    ]
     max_peso = max(pesos) if pesos else 1
-    heat_data = (
-        [
-            [v["lat"], v["lon"], max(v["peso"] / max_peso, 0.1)]
-            for v in heat_by_bairro.values()
-        ]
-        + [
-            [v["lat"], v["lon"], max(v["peso"] / max_peso, 0.1)]
-            for v in heat_by_cidade.values()
-        ]
-    )
+    heat_data = [
+        [v["lat"], v["lon"], max(v["peso"] / max_peso, 0.1)]
+        for v in heat_by_bairro.values()
+    ] + [
+        [v["lat"], v["lon"], max(v["peso"] / max_peso, 0.1)]
+        for v in heat_by_cidade.values()
+    ]
 
     context = {"heat_data": json.dumps(heat_data)}
     return render(request, "mapa.html", context)

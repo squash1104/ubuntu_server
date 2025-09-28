@@ -14,5 +14,3 @@ class Migration(migrations.Migration):
             field=models.DateField(null=True, blank=True),
         ),
     ]
-
-

@@ -1,5 +1,5 @@
+from django.contrib.auth.models import Group
 from django.core.management.base import BaseCommand
-from django.contrib.auth.models import Group, Permission
 
 
 class Command(BaseCommand):
@@ -17,5 +17,3 @@ class Command(BaseCommand):
         # Permissões simples (poderemos refinar depois)
         # Aqui, deixamos sem anexar permissões específicas; usaremos decorators nos views.
         self.stdout.write(self.style.SUCCESS("Grupos verificados."))
-
-

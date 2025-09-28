@@ -15,45 +15,107 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='MensagemAniversario',
+            name="MensagemAniversario",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('destinatario_nome', models.CharField(max_length=200)),
-                ('destinatario_telefone', models.CharField(max_length=20)),
-                ('destinatario_tipo', models.CharField(max_length=20)),
-                ('destinatario_id', models.PositiveIntegerField()),
-                ('tipo_mensagem', models.CharField(choices=[('sms', 'SMS'), ('whatsapp', 'WhatsApp')], max_length=10)),
-                ('conteudo', models.TextField()),
-                ('template_usado', models.CharField(blank=True, max_length=100, null=True)),
-                ('status', models.CharField(choices=[('pendente', 'Pendente'), ('enviada', 'Enviada'), ('falhou', 'Falhou')], default='pendente', max_length=10)),
-                ('data_envio', models.DateTimeField(auto_now_add=True)),
-                ('data_processamento', models.DateTimeField(blank=True, null=True)),
-                ('erro_detalhes', models.TextField(blank=True, null=True)),
-                ('api_message_id', models.CharField(blank=True, max_length=200, null=True)),
-                ('api_response', models.JSONField(blank=True, null=True)),
-                ('enviado_por', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("destinatario_nome", models.CharField(max_length=200)),
+                ("destinatario_telefone", models.CharField(max_length=20)),
+                ("destinatario_tipo", models.CharField(max_length=20)),
+                ("destinatario_id", models.PositiveIntegerField()),
+                (
+                    "tipo_mensagem",
+                    models.CharField(
+                        choices=[("sms", "SMS"), ("whatsapp", "WhatsApp")],
+                        max_length=10,
+                    ),
+                ),
+                ("conteudo", models.TextField()),
+                (
+                    "template_usado",
+                    models.CharField(blank=True, max_length=100, null=True),
+                ),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("pendente", "Pendente"),
+                            ("enviada", "Enviada"),
+                            ("falhou", "Falhou"),
+                        ],
+                        default="pendente",
+                        max_length=10,
+                    ),
+                ),
+                ("data_envio", models.DateTimeField(auto_now_add=True)),
+                ("data_processamento", models.DateTimeField(blank=True, null=True)),
+                ("erro_detalhes", models.TextField(blank=True, null=True)),
+                (
+                    "api_message_id",
+                    models.CharField(blank=True, max_length=200, null=True),
+                ),
+                ("api_response", models.JSONField(blank=True, null=True)),
+                (
+                    "enviado_por",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Mensagem de Aniversário',
-                'verbose_name_plural': 'Mensagens de Aniversário',
-                'ordering': ['-data_envio'],
+                "verbose_name": "Mensagem de Aniversário",
+                "verbose_name_plural": "Mensagens de Aniversário",
+                "ordering": ["-data_envio"],
             },
         ),
         migrations.CreateModel(
-            name='TemplateMensagem',
+            name="TemplateMensagem",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('nome', models.CharField(max_length=100)),
-                ('tipo_mensagem', models.CharField(choices=[('sms', 'SMS'), ('whatsapp', 'WhatsApp')], max_length=10)),
-                ('conteudo', models.TextField(help_text='Use {nome} para o nome da pessoa e {idade} para a idade')),
-                ('ativo', models.BooleanField(default=True)),
-                ('criado_em', models.DateTimeField(auto_now_add=True)),
-                ('criado_por', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("nome", models.CharField(max_length=100)),
+                (
+                    "tipo_mensagem",
+                    models.CharField(
+                        choices=[("sms", "SMS"), ("whatsapp", "WhatsApp")],
+                        max_length=10,
+                    ),
+                ),
+                (
+                    "conteudo",
+                    models.TextField(
+                        help_text="Use {nome} para o nome da pessoa e {idade} para a idade"
+                    ),
+                ),
+                ("ativo", models.BooleanField(default=True)),
+                ("criado_em", models.DateTimeField(auto_now_add=True)),
+                (
+                    "criado_por",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Template de Mensagem',
-                'verbose_name_plural': 'Templates de Mensagem',
-                'ordering': ['nome'],
+                "verbose_name": "Template de Mensagem",
+                "verbose_name_plural": "Templates de Mensagem",
+                "ordering": ["nome"],
             },
         ),
     ]

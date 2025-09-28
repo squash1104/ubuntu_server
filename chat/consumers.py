@@ -407,7 +407,19 @@ class NotifyConsumer(AsyncWebsocketConsumer):
     async def recepcao_update(self, event):
         # Broadcast simple payload to reception clients
         # forward event to client (keep event_uuid to dedupe at client)
-        payload = {k: event.get(k) for k in ("action","id","visitante","atendente","inicio","fim","kpis","event_uuid")}
+        payload = {
+            k: event.get(k)
+            for k in (
+                "action",
+                "id",
+                "visitante",
+                "atendente",
+                "inicio",
+                "fim",
+                "kpis",
+                "event_uuid",
+            )
+        }
         payload["type"] = "recepcao_update"
         await self.send(text_data=json.dumps(payload))
 
