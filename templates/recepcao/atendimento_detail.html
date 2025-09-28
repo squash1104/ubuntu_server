@@ -1,0 +1,98 @@
+{% extends 'recepcao/base_recepcao.html' %}
+{% block content %}
+<div class="rec-card">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h1 class="h5 mb-0">Atendimento #{{ atendimento.id }} - {{ atendimento.visitante.nome }}</h1>
+      <div class="d-flex" style="gap:.5rem">
+        {% if atendimento.status == 'aguardando' %}
+        <a class="btn btn-sm btn-success" href="{% url 'recepcao:atendimento_iniciar' atendimento.id %}"><i class="bi bi-play-fill"></i> Iniciar</a>
+        {% endif %}
+        {% if atendimento.status == 'em_atendimento' %}
+        <a class="btn btn-sm btn-danger" href="{% url 'recepcao:atendimento_encerrar' atendimento.id %}"><i class="bi bi-check2-circle"></i> Encerrar</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+      <div class="col-md-3">
+        <strong>Status:</strong>
+        {% if atendimento.status == 'aguardando' %}
+          <span class="badge bg-warning text-dark">{{ atendimento.get_status_display }}</span>
+        {% elif atendimento.status == 'em_atendimento' %}
+          <span class="badge bg-success">{{ atendimento.get_status_display }}</span>
+        {% elif atendimento.status == 'cancelado' %}
+          <span class="badge bg-danger">{{ atendimento.get_status_display }}</span>
+        {% else %}
+          <span class="badge bg-primary">{{ atendimento.get_status_display }}</span>
+        {% endif %}
+      </div>
+      <div class="col-md-3"><strong>Chegada:</strong> {{ atendimento.horario_chegada|date:'d/m/Y H:i' }}</div>
+      <div class="col-md-3"><strong>Início:</strong> {{ atendimento.inicio_atendimento|date:'d/m/Y H:i'|default:'-' }}</div>
+      <div class="col-md-3"><strong>Fim:</strong> {{ atendimento.fim_atendimento|date:'d/m/Y H:i'|default:'-' }}</div>
+      <div class="col-md-3"><strong>Recepcionista:</strong> {{ atendimento.recepcionista|default:'-' }}</div>
+      <div class="col-md-3"><strong>Atendente:</strong> {{ atendimento.atendente|default:'-' }}</div>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-12">
+        <div class="rec-card mb-3">
+          <div class="card-body">
+            <h2 class="h6 mb-2">Demanda</h2>
+            <div class="mb-2"><strong>Resumo:</strong> {{ atendimento.demanda_resumo|default:'-' }}</div>
+            <div><strong>Detalhes:</strong><br>{{ atendimento.demanda_detalhes|linebreaks }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="rec-card mb-3">
+          <div class="card-body">
+            <h2 class="h6 mb-2">Anexos</h2>
+            <form method="post" enctype="multipart/form-data" action="{% url 'recepcao:atendimento_anexar' atendimento.id %}">
+              {% csrf_token %}
+              <div class="input-group mb-2">
+                <input class="form-control" type="file" name="arquivo" accept="application/pdf,image/*" required />
+                <button class="btn btn-outline-primary" type="submit">Anexar</button>
+              </div>
+            </form>
+            <ul class="list-group">
+              {% for an in atendimento.anexos.all %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <a href="{{ an.arquivo.url }}" target="_blank">{{ an.descricao|default:an.arquivo.name }}</a>
+                <span class="text-muted">{{ an.criado_em|date:'d/m/Y H:i' }}</span>
+              </li>
+              {% empty %}
+              <li class="list-group-item text-muted">Nenhum anexo</li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="rec-card mb-3">
+          <div class="card-body">
+            <h2 class="h6 mb-2">Eventos</h2>
+            <div class="list-group">
+              {% for ev in atendimento.eventos.all %}
+              <div class="list-group-item">
+                <div class="d-flex w-100 justify-content-between">
+                  <small class="text-muted">{{ ev.timestamp|date:'d/m/Y H:i' }}</small>
+                  <small class="text-muted">{{ ev.usuario|default:'-' }}</small>
+                </div>
+                <div class="mt-1"><strong>{{ ev.get_tipo_display }}</strong></div>
+                <div class="text-muted small">{{ ev.detalhes|default:'-' }}</div>
+              </div>
+              {% empty %}
+              <div class="list-group-item text-muted">Sem eventos.</div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

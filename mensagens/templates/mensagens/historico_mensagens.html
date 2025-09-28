@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Histórico de Mensagens{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="card-title h3 mb-0">Histórico de Mensagens</h1>
+            <a href="{% url 'aniversariantes' %}" class="btn btn-primary">
+                <i class="bi bi-arrow-left"></i> Voltar para Aniversariantes
+            </a>
+        </div>
+        
+        <!-- Filtros -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <form method="get" class="d-flex gap-2">
+                    <select name="tipo" class="form-select form-select-sm">
+                        <option value="">Todos os tipos</option>
+                        {% for value, label in tipos_mensagem %}
+                            <option value="{{ value }}" {% if tipo_filtro == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    <select name="status" class="form-select form-select-sm">
+                        <option value="">Todos os status</option>
+                        {% for value, label in status_mensagem %}
+                            <option value="{{ value }}" {% if status_filtro == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="btn btn-primary btn-sm">Filtrar</button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Tabela de mensagens -->
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Data/Hora</th>
+                        <th>Destinatário</th>
+                        <th>Tipo</th>
+                        <th>Status</th>
+                        <th>Conteúdo</th>
+                        <th>Enviado por</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for mensagem in mensagens %}
+                    <tr>
+                        <td>{{ mensagem.data_envio|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            <strong>{{ mensagem.destinatario_nome }}</strong><br>
+                            <small class="text-muted">{{ mensagem.destinatario_telefone }}</small>
+                        </td>
+                        <td>
+                            {% if mensagem.tipo_mensagem == 'sms' %}
+                                <span class="badge bg-info">SMS</span>
+                            {% else %}
+                                <span class="badge bg-success">WhatsApp</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if mensagem.status == 'enviada' %}
+                                <span class="badge bg-success">Enviada</span>
+                            {% elif mensagem.status == 'pendente' %}
+                                <span class="badge bg-warning">Pendente</span>
+                            {% else %}
+                                <span class="badge bg-danger">Falhou</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="text-truncate d-inline-block" style="max-width: 200px;" 
+                                  title="{{ mensagem.conteudo }}">
+                                {{ mensagem.conteudo|truncatechars:50 }}
+                            </span>
+                        </td>
+                        <td>{{ mensagem.enviado_por.get_full_name|default:mensagem.enviado_por.username }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">Nenhuma mensagem encontrada</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

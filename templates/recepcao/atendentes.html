@@ -1,0 +1,63 @@
+{% extends 'recepcao/base_recepcao.html' %}
+{% block content %}
+<div class="rec-card">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h1 class="h5 mb-0">Gerenciar Atendentes</h1>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-12 col-lg-8">
+        <div class="rec-card">
+          <div class="card-body">
+            <h2 class="h6 mb-2">Atendentes atuais</h2>
+            <div class="table-responsive">
+              <table class="table table-sm table-striped align-middle mb-0">
+                <thead>
+                  <tr><th>Nome</th><th class="text-end">Ação</th></tr>
+                </thead>
+                <tbody>
+                  {% for a in atendentes %}
+                  <tr>
+                    <td>{{ a.nome|default:'-' }}</td>
+                    <td class="text-end">
+                      <form method="post" class="d-inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="user_id" value="{{ a.id }}" />
+                        <input type="hidden" name="action" value="remove" />
+                        <button class="btn btn-sm btn-outline-danger">Remover</button>
+                      </form>
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr><td colspan="2" class="text-muted">Nenhum atendente cadastrado.</td></tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-4">
+        <div class="rec-card">
+          <div class="card-body">
+            <h2 class="h6 mb-2">Cadastrar atendente</h2>
+            <form method="post">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="create" />
+              <div class="mb-2">
+                <label class="form-label">Nome</label>
+                <input type="text" name="nome" class="form-control" placeholder="Nome do atendente" required />
+              </div>
+              <div class="d-grid">
+                <button class="btn btn-primary">Cadastrar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

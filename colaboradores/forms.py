@@ -77,9 +77,22 @@ class RelatorioColaboradoresForm(forms.Form):
 
 
 class ColaboradorForm(forms.ModelForm):
+    data_nascimento = forms.DateField(
+        required=False,
+        input_formats=["%d/%m/%Y"],
+        widget=forms.DateInput(
+            format="%d/%m/%Y",
+            attrs={
+                "class": "form-control",
+                "placeholder": "dd/mm/aaaa",
+                "data-mask": "00/00/0000",
+            },
+        ),
+        label="Data de Nascimento:",
+    )
     class Meta:
         model = Colaborador
-        fields: ClassVar = ["nome", "telefone", "cidade", "bairro"]
+        fields: ClassVar = ["nome", "telefone", "data_nascimento", "cidade", "bairro"]
         labels: ClassVar = {
             "nome": "Nome:",
             "telefone": "Telefone:",
@@ -117,6 +130,7 @@ class ColaboradorForm(forms.ModelForm):
 
         self.fields["nome"].widget.attrs.update({"class": "form-control"})
         self.fields["telefone"].widget.attrs.update({"class": "form-control"})
+        self.fields["data_nascimento"].widget.attrs.update({"class": "form-control"})
 
         self.fields["cidade"].empty_label = "Selecione uma cidade"
         self.fields["bairro"].empty_label = "Primeiro escolha uma cidade"
@@ -127,7 +141,15 @@ class ColaboradorForm(forms.ModelForm):
         self.fields["bairro"].queryset = Bairro.objects.none()
 
         # Lógica para carregar os bairros se o formulário já tiver dados (ex: na edição)
-        if "cidade" in self.data:
+        if self.instance and getattr(self.instance, "bairro", None):
+            # Caso de edição: garantir queryset e seleção do bairro e cidade atuais
+            self.fields["cidade"].initial = self.instance.bairro.cidade.pk if self.instance.bairro and self.instance.bairro.cidade else (self.instance.cidade.pk if self.instance.cidade else None)
+            if self.instance.bairro and self.instance.bairro.cidade:
+                self.fields["bairro"].queryset = Bairro.objects.filter(
+                    cidade=self.instance.bairro.cidade
+                ).order_by("nome_bairro")
+                self.fields["bairro"].initial = self.instance.bairro.pk
+        elif "cidade" in self.data:
             try:
                 cidade_id = int(self.data.get("cidade"))
                 self.fields["bairro"].queryset = Bairro.objects.filter(
@@ -136,6 +158,7 @@ class ColaboradorForm(forms.ModelForm):
             except (ValueError, TypeError):
                 pass  # Ignora erros se o valor não for um número
         elif self.instance.pk and self.instance.cidade:
+            # Caso de edição sem bairro definido, mas com cidade
             self.fields["bairro"].queryset = self.instance.cidade.bairros.order_by(
                 "nome_bairro"
             )

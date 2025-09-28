@@ -1,0 +1,262 @@
+{% extends 'recepcao/base_recepcao.html' %}
+{% block content %}
+<div class="row align-items-start">
+  <div class="col-12 col-lg-12">
+    <div class="rec-card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h1 class="h5 mb-0">
+            {% if visitante %}
+              {% if view_mode %}Detalhes do visitante{% else %}Editar visitante{% endif %}
+            {% else %}
+              Novo visitante
+            {% endif %}
+          </h1>
+        </div>
+        {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+
+        {% if visitante and visitante.foto %}
+          <div class="mb-3">
+            <img src="{{ visitante.foto.url }}" alt="Foto do visitante" class="img-thumbnail" style="max-height:160px" />
+          </div>
+        {% endif %}
+
+        <ul class="nav nav-tabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-geral" type="button" role="tab">Geral</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-nova" type="button" role="tab">Nova Visita/Demanda</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-historico" type="button" role="tab">Histórico</button>
+          </li>
+        </ul>
+
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="tab-content pt-3">
+            <div class="tab-pane fade show active" id="tab-geral" role="tabpanel">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label">Nome</label>
+                  <input type="text" name="nome" class="form-control" value="{{ visitante.nome|default:'' }}" {% if view_mode %}readonly{% endif %} required />
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label">Telefone</label>
+                  <input type="text" name="telefone" id="telefone" class="form-control" value="{{ visitante.telefone|default:'' }}" placeholder="(xx) xxxxx-xxxx" {% if view_mode %}readonly{% endif %} />
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label">Função</label>
+                  <input type="text" name="funcao" class="form-control" value="{{ visitante.funcao|default:'' }}" {% if view_mode %}readonly{% endif %} />
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Município</label>
+                  {% if view_mode %}
+                    <input type="text" name="municipio" class="form-control" value="{{ visitante.municipio|default:'' }}" readonly />
+                  {% else %}
+                    {% if cidades_mt %}
+                      <select name="municipio" class="form-select">
+                        <option value="">Selecione...</option>
+                        {% for c in cidades_mt %}
+                          <option value="{{ c.nome_cidade }}" {% if visitante.municipio == c.nome_cidade %}selected{% endif %}>{{ c.nome_cidade }}</option>
+                        {% endfor %}
+                      </select>
+                    {% else %}
+                      <input type="text" name="municipio" class="form-control" value="{{ visitante.municipio|default:'' }}" />
+                    {% endif %}
+                  {% endif %}
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Email</label>
+                  <input type="email" name="email" class="form-control" value="{{ visitante.email|default:'' }}" {% if view_mode %}readonly{% endif %} />
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Data de Nascimento</label>
+                  <input type="date" name="data_nascimento" class="form-control" value="{{ visitante.data_nascimento|date:'Y-m-d' }}" {% if view_mode %}readonly{% endif %} />
+                </div>
+              </div>
+            </div>
+
+            <div class="tab-pane fade" id="tab-nova" role="tabpanel">
+              {% if view_mode %}
+                <p class="text-muted">Para registrar uma nova demanda, clique em Editar.</p>
+              {% else %}
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label">Resumo da demanda</label>
+                  <input type="text" name="demanda_resumo" class="form-control" />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Atendente</label>
+                  <select name="atendente_id" class="form-select">
+                    <option value="">(definir depois)</option>
+                    {% for u in atendentes %}
+                      <option value="{{ u.id }}">{{ u.nome }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-12">
+                  <label class="form-label">Detalhes</label>
+                  <textarea name="demanda_detalhes" class="form-control" rows="4"></textarea>
+                </div>
+                <div class="col-12 d-flex" style="gap:.5rem">
+                  {% if visitante %}
+                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalRegistrarVisita">Registrar Visita</button>
+                  {% else %}
+                    <button type="button" class="btn btn-outline-secondary" disabled title="Salve o visitante primeiro">Registrar Visita</button>
+                  {% endif %}
+                  <button class="btn btn-outline-success" name="enfileirar" value="1">Salvar e Enfileirar</button>
+                </div>
+              </div>
+              {% endif %}
+            </div>
+
+            <div class="tab-pane fade" id="tab-historico" role="tabpanel">
+              {% if visitante %}
+              <div class="table-responsive">
+                <table class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th>Chegada</th>
+                      <th>Status</th>
+                      <th>Atendente</th>
+                      <th>Demanda</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for a in visitante.atendimentos.all %}
+                    <tr>
+                      <td>{{ a.horario_chegada|date:'d/m/Y H:i' }}</td>
+                      <td>
+                        {% if a.status == 'aguardando' %}
+                          <span class="badge bg-warning text-dark">{{ a.get_status_display }}</span>
+                        {% elif a.status == 'em_atendimento' %}
+                          <span class="badge bg-success">{{ a.get_status_display }}</span>
+                        {% elif a.status == 'cancelado' %}
+                          <span class="badge bg-danger">{{ a.get_status_display }}</span>
+                        {% else %}
+                          <span class="badge bg-primary">{{ a.get_status_display }}</span>
+                        {% endif %}
+                      </td>
+                      <td>{{ a.atendente|default:'-' }}</td>
+                      <td>{{ a.demanda_resumo|default:'-' }}</td>
+                      <td><a class="btn btn-sm btn-outline-primary" href="{% url 'recepcao:atendimento_detail' a.id %}" title="Abrir"><i class="bi bi-box-arrow-up-right"></i></a></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-muted">Sem histórico.</td></tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+              {% else %}
+              <p class="text-muted">Salve o visitante para ver o histórico.</p>
+              {% endif %}
+            </div>
+          </div>
+
+          {% if not view_mode %}
+          <div class="mt-3 d-flex" style="gap:.5rem">
+            <button class="btn btn-primary" type="submit">Salvar</button>
+            <a class="btn btn-light" href="{% url 'recepcao:visitantes_list' %}">Voltar</a>
+          </div>
+          {% else %}
+          <div class="mt-3 d-flex" style="gap:.5rem">
+            <a class="btn btn-primary" href="{% url 'recepcao:visitante_update' visitante.id %}">
+              <i class="bi bi-pencil me-1"></i>Editar
+            </a>
+            <a class="btn btn-light" href="{% url 'recepcao:visitantes_list' %}">
+              <i class="bi bi-arrow-left me-1"></i>Voltar
+            </a>
+          </div>
+          {% endif %}
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Registrar Visita (reutilizável) -->
+<div class="modal fade" id="modalRegistrarVisita" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Registrar Visita</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post" id="formRegistrarVisita" action="{% if visitante %}{% url 'recepcao:visitante_enfileirar' visitante.id %}{% else %}#{% endif %}">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-2 small text-muted">Visitante: <strong>{{ visitante.nome|default:'-' }}</strong></div>
+          <div class="mb-2">
+            <label class="form-label">Atendente</label>
+            <select name="atendente_id" class="form-select">
+              <option value="">(definir depois)</option>
+              {% for u in atendentes %}
+                <option value="{{ u.id }}">{{ u.nome }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Resumo da demanda</label>
+            <input type="text" name="demanda_resumo" class="form-control" />
+          </div>
+          <div>
+            <label class="form-label">Detalhes</label>
+            <textarea name="demanda_detalhes" class="form-control" rows="4"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Registrar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% block extra_js %}
+<script>
+  (function(){
+    // Máscara para telefone
+    const telefoneInput = document.getElementById('telefone');
+    if (telefoneInput && !telefoneInput.readOnly) {
+      telefoneInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, ''); // Remove tudo que não é dígito
+        
+        if (value.length <= 11) {
+          if (value.length <= 2) {
+            value = value;
+          } else if (value.length <= 7) {
+            value = `(${value.slice(0, 2)}) ${value.slice(2)}`;
+          } else {
+            value = `(${value.slice(0, 2)}) ${value.slice(2, 7)}-${value.slice(7, 11)}`;
+          }
+        } else {
+          value = value.slice(0, 11);
+          value = `(${value.slice(0, 2)}) ${value.slice(2, 7)}-${value.slice(7, 11)}`;
+        }
+        
+        e.target.value = value;
+      });
+      
+      // Aplicar máscara no valor inicial se existir
+      if (telefoneInput.value) {
+        let value = telefoneInput.value.replace(/\D/g, '');
+        if (value.length > 0) {
+          if (value.length <= 2) {
+            telefoneInput.value = value;
+          } else if (value.length <= 7) {
+            telefoneInput.value = `(${value.slice(0, 2)}) ${value.slice(2)}`;
+          } else {
+            telefoneInput.value = `(${value.slice(0, 2)}) ${value.slice(2, 7)}-${value.slice(7, 11)}`;
+          }
+        }
+      }
+    }
+  })();
+</script>
+{% endblock %}
+
+{% endblock %}
