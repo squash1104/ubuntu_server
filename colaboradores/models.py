@@ -13,6 +13,8 @@ class Colaborador(models.Model):
         max_length=20, blank=True, null=True
     )  # Coluna no DB será 'telefone'
 
+    data_nascimento = models.DateField(null=True, blank=True)
+
     # ForeignKeys para Cidade e Bairro. O Django criará 'cidade_id' e 'bairro_id' no DB.
     cidade = models.ForeignKey(Cidade, on_delete=models.SET_NULL, null=True, blank=True)
     bairro = models.ForeignKey(Bairro, on_delete=models.SET_NULL, null=True, blank=True)

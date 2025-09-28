@@ -12,7 +12,7 @@
 
 <th scope="col" style="width: 25%;">
 
-<a href="?ordenar_por=nome&direcao={% if ordenar_por == 'nome' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if termo_busca %}&q={{ termo_busca }}{% endif %}{% if per_page != 20 %}&per_page={{ per_page }}{% endif %}&is_ajax=true">
+<a href="?ordenar_por=nome&direcao={% if ordenar_por == 'nome' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if termo_busca %}&q={{ termo_busca }}{% endif %}{% if per_page != 20 %}&per_page={{ per_page }}{% endif %}{% if grupo and grupo != 'todos' %}&grupo={{ grupo }}{% endif %}&is_ajax=true">
 
 Nome
 
@@ -24,7 +24,7 @@ Nome
 
 <th scope="col" style="width: 15%;">
 
-<a href="?ordenar_por=telefone&direcao={% if ordenar_por == 'telefone' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if termo_busca %}&q={{ termo_busca }}{% endif %}{% if per_page != 20 %}&per_page={{ per_page }}{% endif %}&is_ajax=true">
+<a href="?ordenar_por=telefone&direcao={% if ordenar_por == 'telefone' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if termo_busca %}&q={{ termo_busca }}{% endif %}{% if per_page != 20 %}&per_page={{ per_page }}{% endif %}{% if grupo and grupo != 'todos' %}&grupo={{ grupo }}{% endif %}&is_ajax=true">
 
 Telefone
 
@@ -36,7 +36,7 @@ Telefone
 
 <th scope="col" style="width: 15%;">
 
-<a href="?ordenar_por=cidade__nome_cidade&direcao={% if ordenar_por == 'cidade__nome_cidade' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if termo_busca %}&q={{ termo_busca }}{% endif %}{% if per_page != 20 %}&per_page={{ per_page }}{% endif %}&is_ajax=true">
+<a href="?ordenar_por=cidade__nome_cidade&direcao={% if ordenar_por == 'cidade__nome_cidade' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if termo_busca %}&q={{ termo_busca }}{% endif %}{% if per_page != 20 %}&per_page={{ per_page }}{% endif %}{% if grupo and grupo != 'todos' %}&grupo={{ grupo }}{% endif %}&is_ajax=true">
 
 Cidade
 
@@ -48,7 +48,7 @@ Cidade
 
 <th scope="col" style="width: 15%;">
 
-<a href="?ordenar_por=bairro__nome_bairro&direcao={% if ordenar_por == 'bairro__nome_bairro' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if termo_busca %}&q={{ termo_busca }}{% endif %}{% if per_page != 20 %}&per_page={{ per_page }}{% endif %}&is_ajax=true">
+<a href="?ordenar_por=bairro__nome_bairro&direcao={% if ordenar_por == 'bairro__nome_bairro' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if termo_busca %}&q={{ termo_busca }}{% endif %}{% if per_page != 20 %}&per_page={{ per_page }}{% endif %}{% if grupo and grupo != 'todos' %}&grupo={{ grupo }}{% endif %}&is_ajax=true">
 
 Bairro
 

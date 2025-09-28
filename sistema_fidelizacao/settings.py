@@ -49,7 +49,7 @@ ALLOWED_HOSTS = config(
     "ALLOWED_HOSTS",
     default="sistema.fidelizamax.app.br,www.sistema.fidelizamax.app.br,localhost,127.0.0.1",
     cast=Csv(),
-)
+) + ["testserver"]
 
 CSRF_TRUSTED_ORIGINS = [
     "https://sistema.fidelizamax.app.br",
@@ -80,6 +80,8 @@ INSTALLED_APPS = [
     "geografia",
     "colaboradores",
     "convidados",
+    "mensagens",
+    "recepcao",
     "django_filters",
     "channels",
     "chat",
@@ -236,6 +238,10 @@ WHITENOISE_MIMETYPES = {
     ".html": "text/html",
 }
 
+# Uploads (fotos e anexos)
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
@@ -348,8 +354,8 @@ if False:  # SECURITY_ENABLED:
         SESSION_COOKIE_AGE = 3600
         SESSION_EXPIRE_AT_BROWSER_CLOSE = True
         CSRF_COOKIE_SECURE = True
-        CSRF_COOKIE_HTTPONLY = True
-        CSRF_COOKIE_SAMESITE = "Strict"
+        CSRF_COOKIE_HTTPONLY = False  # Permitir acesso via JavaScript para AJAX
+        CSRF_COOKIE_SAMESITE = "Lax"  # Mais permissivo para AJAX
 
         # Configurações de senha mais rigorosas
         AUTH_PASSWORD_VALIDATORS = [
@@ -427,3 +433,23 @@ if False:  # SECURITY_ENABLED:
         print("⚠️  Modo DEBUG ativo - configurações de segurança reduzidas")
 else:
     print("❌ Configurações de segurança não aplicadas")
+
+# ===========================================
+# CONFIGURAÇÕES DE MENSAGENS (TWILIO)
+# ===========================================
+TWILIO_ACCOUNT_SID = config("TWILIO_ACCOUNT_SID", default="")
+TWILIO_AUTH_TOKEN = config("TWILIO_AUTH_TOKEN", default="")
+TWILIO_WHATSAPP_NUMBER = config("TWILIO_WHATSAPP_NUMBER", default="whatsapp:+14155238886")
+TWILIO_SMS_NUMBER = config("TWILIO_SMS_NUMBER", default="")
+
+# Configurações de Rate Limiting para mensagens
+MAX_MESSAGES_PER_MINUTE = config("MAX_MESSAGES_PER_MINUTE", default=10, cast=int)
+MAX_MESSAGES_PER_HOUR = config("MAX_MESSAGES_PER_HOUR", default=100, cast=int)
+
+# ===========================================
+# CONFIGURAÇÕES WHATSAPP CLOUD API (META)
+# ===========================================
+WHATSAPP_PHONE_NUMBER_ID = config("WHATSAPP_PHONE_NUMBER_ID", default="")
+WHATSAPP_ACCESS_TOKEN = config("WHATSAPP_ACCESS_TOKEN", default="")
+WHATSAPP_BUSINESS_ACCOUNT_ID = config("WHATSAPP_BUSINESS_ACCOUNT_ID", default="")
+USAR_WHATSAPP_CLOUD_API = config("USAR_WHATSAPP_CLOUD_API", default=False, cast=bool)

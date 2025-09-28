@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Gerenciar Templates{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="card-title h3 mb-0">Gerenciar Templates</h1>
+            <a href="{% url 'aniversariantes' %}" class="btn btn-primary">
+                <i class="bi bi-arrow-left"></i> Voltar para Aniversariantes
+            </a>
+        </div>
+        
+        <!-- Formulário para criar template -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Criar Novo Template</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="nome" class="form-label">Nome do Template:</label>
+                                <input type="text" class="form-control" id="nome" name="nome" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="tipo_mensagem" class="form-label">Tipo de Mensagem:</label>
+                                <select class="form-select" id="tipo_mensagem" name="tipo_mensagem" required>
+                                    <option value="">Selecione o tipo</option>
+                                    {% for value, label in tipos_mensagem %}
+                                        <option value="{{ value }}">{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="conteudo" class="form-label">Conteúdo do Template:</label>
+                        <textarea class="form-control" id="conteudo" name="conteudo" rows="4" 
+                                  placeholder="Digite o conteúdo do template... Use {nome} para o nome da pessoa e {idade} para a idade" required></textarea>
+                        <small class="form-text text-muted">
+                            Use <code>{nome}</code> para o nome da pessoa e <code>{idade}</code> para a idade
+                        </small>
+                    </div>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-plus"></i> Criar Template
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Lista de templates existentes -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Templates Existentes</h5>
+            </div>
+            <div class="card-body">
+                {% if templates %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Tipo</th>
+                                    <th>Conteúdo</th>
+                                    <th>Criado em</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for template in templates %}
+                                <tr>
+                                    <td><strong>{{ template.nome }}</strong></td>
+                                    <td>
+                                        {% if template.tipo_mensagem == 'sms' %}
+                                            <span class="badge bg-info">SMS</span>
+                                        {% else %}
+                                            <span class="badge bg-success">WhatsApp</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="text-truncate d-inline-block" style="max-width: 300px;" 
+                                              title="{{ template.conteudo }}">
+                                            {{ template.conteudo|truncatechars:100 }}
+                                        </span>
+                                    </td>
+                                    <td>{{ template.criado_em|date:"d/m/Y H:i" }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" 
+                                                onclick="editarTemplate({{ template.id }})">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" 
+                                                onclick="excluirTemplate({{ template.id }})">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">Nenhum template criado ainda.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function editarTemplate(id) {
+    // Implementar edição de template
+    alert('Funcionalidade de edição será implementada em breve!');
+}
+
+function excluirTemplate(id) {
+    if (confirm('Tem certeza que deseja excluir este template?')) {
+        // Implementar exclusão de template
+        alert('Funcionalidade de exclusão será implementada em breve!');
+    }
+}
+</script>
+{% endblock %}

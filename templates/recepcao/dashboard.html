@@ -1,0 +1,640 @@
+{% extends 'recepcao/base_recepcao.html' %}
+{% block content %}
+<div class="row g-3">
+  <div class="col-12 mb-3">
+    <div class="row row-cols-2 row-cols-md-4 row-cols-lg-5 g-3 align-items-stretch">
+      <!-- Aguardando -->
+      <div class="col">
+        <div class="rec-card h-100">
+          <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between">
+              <div>
+                <div class="text-muted small">Aguardando</div>
+                <div class="fs-4 fw-bold"><span id="card-aguardando">{{ kpis.aguardando|default:0 }}</span></div>
+              </div>
+              <i class="bi bi-hourglass-split fs-2 text-primary"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Em atendimento -->
+      <div class="col">
+        <div class="rec-card h-100">
+          <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between">
+              <div>
+                <div class="text-muted small">Em atendimento</div>
+                <div class="fs-4 fw-bold"><span id="card-em-atendimento">{{ kpis.em_atendimento|default:0 }}</span></div>
+              </div>
+              <i class="bi bi-person-workspace fs-2 text-info"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Atendidos -->
+      <div class="col">
+        <div class="rec-card h-100">
+          <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between">
+              <div>
+                <div class="text-muted small">Atendidos</div>
+                <div class="fs-4 fw-bold"><span id="card-atendidos">{{ kpis.concluidos_hoje|default:0 }}</span></div>
+              </div>
+              <i class="bi bi-check2-circle fs-2 text-success"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cancelados -->
+      <div class="col">
+        <div class="rec-card h-100">
+          <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between">
+              <div>
+                <div class="text-muted small">Cancelados</div>
+                <div class="fs-4 fw-bold"><span id="card-cancelados">{{ kpis.cancelados_hoje|default:0 }}</span></div>
+              </div>
+              <i class="bi bi-x-octagon fs-2 text-danger"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ✅ Novo Card: Total de Horas de Atendimento -->
+      <div class="col">
+        <div class="rec-card h-100">
+          <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between">
+              <div>
+                <div class="text-muted small">Horas de atendimento</div>
+                <div class="fs-4 fw-bold">
+                  <span id="card-horas">{{ kpis.total_horas|default:"0h 00m" }}</span>
+                </div>
+              </div>
+              <i class="bi bi-clock-history fs-2 text-warning"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+  <div class="col-12">
+    <div class="rec-card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div>
+            <div class="rec-section-title">Fila & Atendimento <span class="subtitle d-none d-md-inline">acompanhamento em tempo real</span></div>
+            <div class="rec-section-sep"></div>
+          </div>
+          <div>
+            <a id="btn-chamar-proximo" class="btn btn-sm btn-outline-secondary me-2" href="{% url 'recepcao:chamar_proximo' %}">Chamar próximo</a>
+            <a class="btn btn-sm btn-primary" href="{% url 'recepcao:dashboard' %}">Atualizar</a>
+          </div>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-12 col-md-6">
+            <div class="rec-card">
+              <div class="card-body">
+                <div class="rec-section-title">Aguardando <span class="subtitle">(<span id="kpi-aguardando">{{ kpis.aguardando|default:0 }}</span>)</span></div>
+                <div class="rec-section-sep"></div>
+                <div class="table-responsive" style="max-height:420px; overflow-y:auto">
+                  <table class="table table-sm table-striped mb-0">
+                    <thead>
+                      <tr>
+                        <th>Chegada</th>
+                        <th>Visitante</th>
+                        <th>Atendente</th>
+                        <th>Status</th>
+                        <th>Espera</th>
+                        <th class="text-center">Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody id="tbody-aguardando">
+                      {% for a in aguardando %}
+                      <tr data-id="{{ a.id }}" data-chegada="{{ a.horario_chegada|date:'c' }}" data-inicio="{{ a.inicio_atendimento|date:'c' }}" data-fim="{{ a.fim_atendimento|date:'c' }}" data-demanda-resumo="{{ a.demanda_resumo|default:''|escapejs }}" data-demanda-detalhes="{{ a.demanda_detalhes|default:''|escapejs }}">
+                          <td>{{ a.horario_chegada|date:'d/m H:i' }}</td>
+                          <td>{{ a.visitante.nome }}</td>
+                          <td>{{ a.atendente.nome|default:'(a definir)' }}</td>
+                          <td>
+                            {% if a.status == 'aguardando' %}
+                              <span class="badge bg-warning text-dark">{{ a.get_status_display }}</span>
+                            {% elif a.status == 'em_atendimento' %}
+                              <span class="badge bg-success">{{ a.get_status_display }}</span>
+                            {% elif a.status == 'cancelado' %}
+                              <span class="badge bg-danger">{{ a.get_status_display }}</span>
+                            {% else %}
+                              <span class="badge bg-primary">{{ a.get_status_display }}</span>
+                            {% endif %}
+                          </td>
+                          <td><span class="badge bg-secondary" data-ts="{{ a.horario_chegada|date:'c' }}">00:00</span></td>
+                          <td class="text-center align-middle" style="white-space:nowrap">
+                            <div class="d-flex justify-content-center align-items-center" role="group">
+                              <form method="post" action="{% url 'recepcao:atendimento_cancelar' a.id %}" class="form-cancel">{% csrf_token %}<button class="btn btn-sm btn-outline-danger" title="Desistir"><i class="bi bi-x-circle"></i></button></form>
+                              <form method="post" action="{% url 'recepcao:atendimento_iniciar' a.id %}" class="form-iniciar">{% csrf_token %}<button class="btn btn-sm btn-outline-success" title="Iniciar"><i class="bi bi-play-fill"></i></button></form>
+                              <a class="btn btn-sm btn-outline-secondary" href="{% url 'recepcao:atendimento_detail' a.id %}" title="Detalhes"><i class="bi bi-box-arrow-up-right"></i></a>
+                            </div>
+                          </td>
+                        </tr>
+                      {% empty %}
+                        <tr><td colspan="6" class="text-muted">Sem pessoas aguardando.</td></tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <div class="rec-card">
+              <div class="card-body">
+                <div class="rec-section-title">Em Atendimento <span class="subtitle">(<span id="kpi-em-atendimento">{{ kpis.em_atendimento|default:0 }}</span>)</span></div>
+                <div class="rec-section-sep"></div>
+                <div class="table-responsive" style="max-height:420px; overflow-y:auto">
+                  <table class="table table-sm table-striped mb-0">
+                    <thead>
+                      <tr>
+                        <th>Início</th>
+                        <th>Visitante</th>
+                        <th>Atendente</th>
+                        <th>Status</th>
+                        <th class="text-center align-middle">Tempo</th>
+                        <th class="text-center align-middle">Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody id="tbody-em-atendimento">
+                      {% for a in em_atendimento %}
+                        <tr data-id="{{ a.id }}" data-chegada="{{ a.horario_chegada|date:'c' }}" data-inicio="{{ a.inicio_atendimento|date:'c' }}" data-fim="{{ a.fim_atendimento|date:'c' }}" data-demanda-resumo="{{ a.demanda_resumo|default:''|escapejs }}" data-demanda-detalhes="{{ a.demanda_detalhes|default:''|escapejs }}">
+                          <td>{{ a.inicio_atendimento|date:'d/m H:i' }}</td>
+                          <td>{{ a.visitante.nome }}</td>
+                          <td>{{ a.atendente.nome|default:'(a definir)' }}</td>
+                          <td>
+                            {% if a.status == 'aguardando' %}
+                              <span class="badge bg-warning text-dark">{{ a.get_status_display }}</span>
+                            {% elif a.status == 'em_atendimento' %}
+                              <span class="badge bg-success">{{ a.get_status_display }}</span>
+                            {% elif a.status == 'cancelado' %}
+                              <span class="badge bg-danger">{{ a.get_status_display }}</span>
+                            {% else %}
+                              <span class="badge bg-primary">{{ a.get_status_display }}</span>
+                            {% endif %}
+                          </td>
+                          <td><span class="badge bg-secondary" data-ts="{{ a.inicio_atendimento|date:'c' }}">00:00</span></td>
+                          <td class="text-center align-middle" style="white-space:nowrap">
+                            <div class="d-flex justify-content-center align-items-center">
+                              <form method="post" action="{% url 'recepcao:atendimento_encerrar' a.id %}" class="form-encerrar">{% csrf_token %}
+                                <button class="btn btn-sm btn-outline-primary me-1" title="Concluir"><i class="bi bi-check2-circle"></i></button>
+                              </form>
+                              <a class="btn btn-sm btn-outline-secondary" href="{% url 'recepcao:atendimento_detail' a.id %}" title="Detalhes"><i class="bi bi-box-arrow-up-right"></i></a>
+                            </div>
+                          </td>
+                        </tr>
+                      {% empty %}
+                        <tr><td colspan="7" class="text-muted">Sem atendimentos em andamento.</td></tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12 mt-3">
+            <div class="rec-section-title">Atendimentos recentes <span class="subtitle">({{ atendimentos_recentes|length }})</span></div>
+            <div class="rec-section-sep"></div>
+            <div class="table-responsive">
+              <table id="lista-recente" class="table table-sm table-striped mb-0">
+                <thead>
+                  <tr>
+                    <th>Chegada</th>
+                    <th>Início</th>
+                    <th>Fim</th>
+                    <th>Visitante</th>
+                    <th>Atendente</th>
+                    <th>Status</th>
+                    <th class="text-center align-middle">Total</th>
+                    <th class="text-center align-middle">Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for r in atendimentos_recentes %}
+                    <tr data-id="recent-{{ r.id }}">
+                      <td>{{ r.horario_chegada|default:''|date:'d/m H:i' }}</td>
+                      <td>{{ r.inicio_atendimento|default:''|date:'d/m H:i' }}</td>
+                      <td>{{ r.fim_atendimento|default:''|date:'d/m H:i' }}</td>
+                      <td>{{ r.visitante_nome }}</td>
+                      <td>{{ r.atendente_nome }}</td>
+                      <td>
+                        {% if r.status == 'cancelado' %}
+                          <span class="badge bg-danger">{{ r.status_display }}</span>
+                        {% elif r.status == 'concluido' %}
+                          <span class="badge bg-primary">{{ r.status_display }}</span>
+                        {% else %}
+                          <span class="badge bg-secondary">{{ r.status_display }}</span>
+                        {% endif %}
+                      </td>
+                      <td class="text-center align-middle">{{ r.total_display }}</td>
+                      <td class="text-center align-middle"><a class="btn btn-sm btn-outline-secondary" href="{% url 'recepcao:atendimento_detail' r.id %}" title="Detalhes"><i class="bi bi-box-arrow-up-right"></i></a></td>
+                    </tr>
+                  {% empty %}
+                    <tr><td colspan="8" class="text-muted">Sem atendimentos recentes.</td></tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+          <div class="col-12 mt-3">
+            <div class="rec-section-title">Status dos Atendentes</div>
+            <div class="rec-section-sep"></div>
+            <div class="row g-2">
+              {% for at in atendentes_status %}
+                <div class="col-auto">
+                  <div class="badge rounded-pill px-3 py-2 {% if at.ocupado %}bg-danger text-white{% else %}bg-success text-white{% endif %}" title="{{ at.nome }}">
+                    {{ at.nome }} {% if at.ocupado %} (Ocupado) {% else %} (Livre) {% endif %}
+                  </div>
+                </div>
+              {% empty %}
+                <div class="col-12 text-muted">Nenhum atendente cadastrado.</div>
+              {% endfor %}
+            </div>
+          </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+{% block extra_js %}
+<script>
+  (function(){
+    const root = document.documentElement;
+    const isDark = (root.getAttribute('data-bs-theme') === 'dark');
+    const textColor = isDark ? '#e5e7eb' : '#111827';
+    const gridColor = isDark ? 'rgba(229,231,235,0.15)' : 'rgba(17,24,39,0.1)';
+
+    const labels7d = {{ chart_7d_labels|default:'[]'|safe }};
+    const serieChegadas = {{ chart_7d_chegadas|default:'[]'|safe }};
+    const serieConcluidos = {{ chart_7d_concluidos|default:'[]'|safe }};
+    const statusLabels = {{ status_labels|default:'[]'|safe }};
+    const statusData = {{ status_data|default:'[]'|safe }};
+    const atendentesLabels = {{ atendentes_labels|default:'[]'|safe }};
+    const atendentesData = {{ atendentes_data|default:'[]'|safe }};
+
+    if (window.Chart) {
+      const ctx7d = document.getElementById('chart7d');
+      if (ctx7d) new Chart(ctx7d, {
+        type: 'line',
+        data: {
+          labels: labels7d,
+          datasets: [
+            { label: 'Chegadas', data: serieChegadas, tension: 0.35, fill: true, backgroundColor: 'rgba(59,130,246,0.15)', borderColor: '#3b82f6', borderWidth: 2, pointRadius: 3 },
+            { label: 'Concluídos', data: serieConcluidos, tension: 0.35, fill: false, borderColor: '#10b981', borderWidth: 2, pointRadius: 3 }
+          ]
+        },
+        options: {
+          plugins: { legend: { labels: { color: textColor } } },
+          scales: {
+            x: { grid: { color: gridColor }, ticks: { color: textColor } },
+            y: { grid: { color: gridColor }, ticks: { color: textColor }, beginAtZero: true }
+          }
+        }
+      });
+
+      const ctxStatus = document.getElementById('chartStatus');
+      if (ctxStatus) new Chart(ctxStatus, {
+        type: 'doughnut',
+        data: {
+          labels: statusLabels,
+          datasets: [{ data: statusData, backgroundColor: ['#f59e0b','#0ea5e9','#10b981','#ef4444'] }]
+        },
+        options: { plugins: { legend: { position: 'bottom', labels: { color: textColor } } } }
+      });
+
+      const ctxAt = document.getElementById('chartAtendentes');
+      if (ctxAt) new Chart(ctxAt, {
+        type: 'bar',
+        data: { labels: atendentesLabels, datasets: [{ label: 'Concluídos', data: atendentesData, backgroundColor: '#6366f1' }] },
+        options: {
+          plugins: { legend: { labels: { color: textColor } } },
+          scales: {
+            x: { grid: { color: gridColor }, ticks: { color: textColor } },
+            y: { grid: { color: gridColor }, ticks: { color: textColor }, beginAtZero: true }
+          }
+        }
+      });
+    }
+  })();
+</script>
+<script>
+  // WebSocket notify para sincronização entre clientes (fila)
+  (function(){
+    try{
+      const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const url = `${protocol}//${location.host}/ws/notify/`;
+      const sock = new WebSocket(url);
+      sock.onopen = () => console.log('Notify socket conectado (fila)');
+      sock.onmessage = (ev) => {
+        try{
+          const d = JSON.parse(ev.data);
+          if(d.type === 'recepcao_update'){
+            handleActionResponse({ok:true, action:d.action, id:d.id, inicio:d.inicio, fim:d.fim, visitante_nome:d.visitante, atendente:d.atendente, kpis:d.kpis, event_uuid:d.event_uuid, chegada:d.chegada, demanda_resumo:d.demanda_resumo, demanda_detalhes:d.demanda_detalhes, _source:'ws'});
+          }
+        }catch(err){ console.error('Erro ao processar notify:', err); }
+      };
+      sock.onclose = () => console.log('Notify socket fechado (fila)');
+    }catch(e){
+      console.warn('WS notify não disponível', e);
+    }
+  })();
+</script>
+<script>
+  // Atualiza badges de tempo e faz chamadas AJAX para ações sem reload
+  (function(){
+    function fmtElapsed(iso){
+      if(!iso) return '00:00';
+      const then = new Date(iso);
+      const now = new Date();
+      let diff = Math.floor((now - then)/1000);
+      const hours = Math.floor(diff/3600); diff = diff%3600;
+      const mins = Math.floor(diff/60); const secs = diff%60;
+      if(hours>0) return String(hours).padStart(2,'0')+':'+String(mins).padStart(2,'0')+':'+String(secs).padStart(2,'0');
+      return String(mins).padStart(2,'0')+':'+String(secs).padStart(2,'0');
+    }
+
+    function updateAllBadges(){
+      document.querySelectorAll('[data-ts]').forEach(function(el){
+        const iso = el.getAttribute('data-ts');
+        el.textContent = fmtElapsed(iso);
+      });
+    }
+
+    // Inicializa e seta interval
+    updateAllBadges();
+    setInterval(updateAllBadges, 10000);
+
+    const encerrarUrlTpl = "{% url 'recepcao:atendimento_encerrar' 0 %}";
+    const csrfTokenValue = (document.querySelector('[name=csrfmiddlewaretoken]')||{}).value || '';
+
+    // AJAX helper
+    function postAction(url, cb){
+      fetch(url, {method:'POST', headers:{'X-Requested-With':'XMLHttpRequest','X-CSRFToken': (document.querySelector('[name=csrfmiddlewaretoken]')||{}).value || ''}})
+        .then(r=>r.json())
+        .then(function(data){
+          // Passe event_uuid ao handler para deduplicação imediata (antes do WS chegar)
+          if(data && data.ok){ cb(Object.assign({}, data)); } else { cb(data); }
+        })
+        .catch(e=>console.error(e));
+    }
+    // Chamar próximo via AJAX
+    document.addEventListener('click', function(e){
+      const a = e.target.closest('#btn-chamar-proximo');
+      if(!a) return;
+      e.preventDefault();
+      const url = a.getAttribute('href');
+      if(!url) return;
+      postAction(url, function(data){
+        if(data && data.ok){
+          handleActionResponse(data);
+        } else {
+          try{ showToast(data && data.message ? data.message : 'Ninguém aguardando.', 'warning'); }catch(err){}
+        }
+      });
+    });
+
+    // Dedupe processed events (avoid double-processing AJAX + WS)
+    const _processedEvents = new Set();
+
+    // Atualiza o DOM sem reload com base no retorno JSON das actions
+    function handleActionResponse(data){
+      if(!data || !data.ok) return;
+      const key = data.event_uuid ? data.event_uuid : `${data.action}:${data.id}`;
+      const alreadyProcessed = _processedEvents.has(key);
+      if(!alreadyProcessed){
+        _processedEvents.add(key);
+        // expire depois de 20s
+        setTimeout(()=>_processedEvents.delete(key), 20000);
+      }
+
+      const k = data.kpis || {};
+      if(k.aguardando !== undefined){
+        const el = document.getElementById('kpi-aguardando'); if(el) el.textContent = k.aguardando;
+        const card = document.getElementById('card-aguardando'); if(card) card.textContent = k.aguardando;
+      }
+      if(k.em_atendimento !== undefined){
+        const el = document.getElementById('kpi-em-atendimento'); if(el) el.textContent = k.em_atendimento;
+        const card = document.getElementById('card-em-atendimento'); if(card) card.textContent = k.em_atendimento;
+      }
+      if(k.concluidos_hoje !== undefined){ const c = document.getElementById('card-atendidos'); if(c) c.textContent = k.concluidos_hoje; }
+      if(k.cancelados !== undefined){ const c = document.getElementById('card-cancelados'); if(c) c.textContent = k.cancelados; }
+
+      // mover a linha entre listas conforme action
+      const id = data.id;
+      if(!alreadyProcessed && data.action === 'iniciar'){
+        // procurar row no tbody aguardando
+        const row = document.querySelector(`#tbody-aguardando tr[data-id='${id}']`);
+        if(row){
+          // atualizar badge timestamp para inicio
+          const badge = row.querySelector('[data-ts]');
+          if(badge && data.inicio) badge.setAttribute('data-ts', data.inicio);
+          // atualizar status badge visual
+          const statusBadge = row.querySelector('td:nth-child(4) .badge');
+          if(statusBadge){ statusBadge.className = 'badge bg-success'; statusBadge.textContent = 'Em atendimento'; }
+          // substituir ações para somente 'Concluir' e mover para em atendimento (tbody)
+          const actionsCell = row.querySelector('td:last-child');
+          if(actionsCell){
+            const url = encerrarUrlTpl.replace('/0/', `/${id}/`);
+            const detalheUrl = `{% url 'recepcao:atendimento_detail' 0 %}`.replace('/0/', `/${id}/`);
+            actionsCell.innerHTML = `<div class="d-flex justify-content-center align-items-center">`
+              + `<form method=\"post\" action=\"${url}\" class=\"form-encerrar\"><input type=\"hidden\" name=\"csrfmiddlewaretoken\" value=\"${csrfTokenValue}\"><button class=\"btn btn-sm btn-outline-primary me-1\" title=\"Concluir\"><i class=\"bi bi-check2-circle\"></i></button></form>`
+              + `<a class=\"btn btn-sm btn-outline-secondary\" href=\"${detalheUrl}\" title=\"Detalhes\"><i class=\"bi bi-box-arrow-up-right\"></i></a>`
+              + `</div>`;
+          }
+          const target = document.getElementById('tbody-em-atendimento');
+          if(target) target.prepend(row);
+        }
+      } else if(!alreadyProcessed && (data.action === 'encerrar' || data.action === 'cancelar')){
+        // remover da visualização de fila
+        const row = document.querySelector(`[data-id='${id}']`);
+        if(row) row.remove();
+        // adicionar à tabela de recentes se encerrar
+        if(data.action === 'encerrar' || data.action === 'cancelar'){
+          const tb = document.querySelector('#lista-recente tbody');
+            if(tb){
+            // avoid duplicate recent rows by id or by same content
+            const existingById = tb.querySelector(`[data-id='recent-${id}']`);
+            if(!existingById){
+              const chegada = data.chegada || (row ? row.getAttribute('data-chegada') : null);
+              const inicio = data.inicio || (row ? row.getAttribute('data-inicio') : null);
+              const fim = data.fim || (row ? row.getAttribute('data-fim') : null);
+              const chegaTxt = chegada ? new Date(chegada).toLocaleString() : '';
+              const inicioTxt = inicio ? new Date(inicio).toLocaleString() : '';
+              const fimTxt = fim ? new Date(fim).toLocaleString() : '';
+              // id já é único; não inserir se já existir
+              const existsSimilar = Array.from(tb.querySelectorAll('tr')).some(r => r.getAttribute('data-id') === `recent-${id}`);
+              if(!existsSimilar){
+                const tr = document.createElement('tr');
+                tr.setAttribute('data-id', `recent-${id}`);
+                const statusIsCancel = (data.action === 'cancelar');
+                const statusBadge = statusIsCancel ? '<span class="badge bg-danger">Cancelado</span>' : '<span class="badge bg-primary text-white">Concluído</span>';
+                const detalheUrl = `{% url 'recepcao:atendimento_detail' 0 %}`.replace('/0/', `/${id}/`);
+                tr.innerHTML = `<td>${chegaTxt}</td><td>${inicioTxt}</td><td>${fimTxt}</td><td>${data.visitante||data.visitante_nome||'-'}</td><td>${data.atendente||'-'}</td><td>${statusBadge}</td><td>${data.total_display||'-'}</td><td class=\"text-center align-middle\"><a class=\"btn btn-sm btn-outline-secondary\" href=\"${detalheUrl}\" title=\"Ver detalhes\"><i class=\"bi bi-box-arrow-up-right\"></i></a></td>`;
+                tb.prepend(tr);
+              }
+            }
+          }
+        }
+      }
+
+      // Nova chegada: inserir na tabela de Aguardando
+      if(!alreadyProcessed && data.action === 'chegada'){
+        const tb = document.getElementById('tbody-aguardando');
+        if(tb){
+          // cria linha
+          const tr = document.createElement('tr');
+          tr.setAttribute('data-id', `${id}`);
+          tr.setAttribute('data-chegada', data.chegada||'');
+          tr.setAttribute('data-inicio', '');
+          tr.setAttribute('data-fim', '');
+          tr.setAttribute('data-demanda-resumo', (data.demanda_resumo||'').replaceAll('"','&quot;'));
+          tr.setAttribute('data-demanda-detalhes', (data.demanda_detalhes||'').replaceAll('"','&quot;'));
+          tr.innerHTML = `
+            <td>${data.chegada ? new Date(data.chegada).toLocaleString() : ''}</td>
+            <td>${data.visitante_nome || data.visitante || '-'}</td>
+            <td>${data.atendente || '(a definir)'}</td>
+            <td><span class="badge bg-warning text-dark">Aguardando</span></td>
+            <td><span class="badge bg-secondary" data-ts="${data.chegada||''}">00:00</span></td>
+            <td class="text-center align-middle" style="white-space:nowrap">
+              <div class="d-flex justify-content-center align-items-center" role="group">
+                <form method="post" action="${"{% url 'recepcao:atendimento_cancelar' 0 %}".replace('/0/','/'+id+'/')}" class="form-cancel"><input type="hidden" name="csrfmiddlewaretoken" value="${csrfTokenValue}"><button class="btn btn-sm btn-outline-danger" title="Desistir"><i class="bi bi-x-circle"></i></button></form>
+                <form method="post" action="${"{% url 'recepcao:atendimento_iniciar' 0 %}".replace('/0/','/'+id+'/')}" class="form-iniciar"><input type="hidden" name="csrfmiddlewaretoken" value="${csrfTokenValue}"><button class="btn btn-sm btn-outline-success" title="Iniciar"><i class="bi bi-play-fill"></i></button></form>
+                <a class="btn btn-sm btn-outline-secondary" href="${"{% url 'recepcao:atendimento_detail' 0 %}".replace('/0/','/'+id+'/')}" title="Detalhes"><i class="bi bi-box-arrow-up-right"></i></a>
+              </div>
+            </td>
+          `;
+          tb.prepend(tr);
+        }
+      }
+
+      // remove 'empty' placeholder rows in bodies if any real rows exist
+      ['tbody-aguardando','tbody-em-atendimento','lista-recente'].forEach(function(id){
+        const el = document.getElementById(id);
+        if(!el) return;
+        const hasRows = el.querySelectorAll('tr[data-id]').length > 0;
+        // remove any single placeholder row which contains 'Sem'
+        Array.from(el.querySelectorAll('tr')).forEach(r=>{
+          if(!r.hasAttribute('data-id') && r.textContent.trim().toLowerCase().includes('sem')) r.remove();
+        });
+        if(!hasRows){
+          // if none, insert placeholder
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td colspan="6" class="text-muted">Sem registros.</td>`;
+          el.appendChild(tr);
+        }
+      });
+
+      // show toast uma vez: usar a mesma chave de deduplicação
+      try{
+        if(!alreadyProcessed){
+          const actionLabel = data.action === 'iniciar' ? 'Iniciado' : 
+                            (data.action === 'encerrar' ? 'Concluído' : 
+                            (data.action === 'cancelar' ? 'Cancelado' : 
+                            (data.action === 'chegada' ? 'Adicionado à fila' : data.action)));
+          showToast(`${data.visitante || data.visitante_nome || 'Visitante'} — ${actionLabel}`, 'success');
+        }
+      }catch(e){}
+    }
+
+    // Bind forms de ações (delegation) with confirmation and toasts
+    function showToast(message, type='success'){
+      const container = document.querySelector('.toast-container');
+      if(!container) return;
+      const div = document.createElement('div');
+      div.className = `alert alert-${type} alert-dismissible fade show`;
+      div.role = 'alert';
+      div.innerHTML = `${message} <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>`;
+      container.appendChild(div);
+      setTimeout(()=>{ const bs = bootstrap.Alert.getOrCreateInstance(div); bs.close(); }, 4000);
+    }
+
+    document.addEventListener('click', function(e){
+      const btn = e.target.closest('form[action] button');
+      if(!btn) return;
+      const form = btn.closest('form');
+      const action = form.getAttribute('action');
+      if(!action) return;
+      e.preventDefault();
+
+      // Confirmation for cancel
+      if(form.classList.contains('form-cancel')){
+        if(!confirm('Confirma desistir deste visitante?')) return;
+      }
+
+      // build dedupe key (actionName:id) and pre-mark to avoid double-processing
+      let actionName = form.classList.contains('form-iniciar') ? 'iniciar' : (form.classList.contains('form-cancel') ? 'cancelar' : (form.classList.contains('form-encerrar') ? 'encerrar' : null));
+      const m = action.match(/(\d+)\/?$/);
+      const id = m ? m[1] : '';
+      const key = actionName && id ? `${actionName}:${id}` : null;
+      if(key){
+        if(_processedEvents.has(key)) return; // already processing
+        _processedEvents.add(key);
+        setTimeout(()=>_processedEvents.delete(key), 12000);
+      }
+
+      postAction(action, function(data){
+        if(data && data.ok){
+          handleActionResponse(data);
+        } else {
+          showToast('Erro ao executar ação.', 'danger');
+        }
+      });
+
+      // view demand button handler (delegated)
+    });
+
+    document.addEventListener('click', function(e){
+      const btn = e.target.closest('.btn-view-demand');
+      if(!btn) return;
+      const tr = btn.closest('tr');
+      if(!tr) return;
+      const resumo = tr.getAttribute('data-demanda-resumo') || '-';
+      const detalhes = tr.getAttribute('data-demanda-detalhes') || '-';
+      // show modal
+      let modal = document.getElementById('modalViewDemand');
+      if(!modal){
+        modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.id = 'modalViewDemand';
+        modal.tabIndex = -1;
+        modal.innerHTML = `<div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Demanda</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div><div class="modal-body"><p><strong>Resumo:</strong> <span id="vd-resumo"></span></p><p><strong>Detalhes:</strong><br><pre id="vd-detalhes" style="white-space:pre-wrap"></pre></p></div><div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal">Fechar</button></div></div></div>`;
+        document.body.appendChild(modal);
+      }
+      document.getElementById('vd-resumo').textContent = resumo;
+      document.getElementById('vd-detalhes').textContent = detalhes;
+      const el = document.getElementById('modalViewDemand');
+      const bsModal = bootstrap.Modal.getOrCreateInstance(el);
+      // limpeza de backdrops e estado ao fechar (previne tela cinza)
+      el.addEventListener('hidden.bs.modal', function onHidden(){
+        el.removeEventListener('hidden.bs.modal', onHidden);
+        try{
+          document.querySelectorAll('.modal-backdrop').forEach(b=>b.remove());
+          document.body.classList.remove('modal-open');
+          document.body.style.removeProperty('overflow');
+          document.body.style.removeProperty('padding-right');
+        }catch(err){}
+      }, { once: true });
+      bsModal.show();
+    });
+  })();
+</script>
+{% endblock %}
+{% endblock %}
+

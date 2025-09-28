@@ -4,6 +4,16 @@
 {% block title %}SisAps - Editar Colaborador{% endblock %}
 
 {% block content %}
+<style>
+#id_telefone { max-width: 220px; }
+#id_data_nascimento { max-width: 160px; }
+#id_cidade, #id_bairro { max-width: 320px; }
+.select2-container { max-width: 320px !important; }
+.input-group .btn-calendar { border-color: #ced4da; }
+.input-group .btn-calendar i { pointer-events: none; }
+/* Labels acima no formulário */
+#colaborador-form label { display: block; margin-bottom: .25rem; }
+</style>
 <div class="row justify-content-center">
     <div class="col-md-8">
         <div class="card shadow-sm">
@@ -21,8 +31,18 @@
 
                     {% for field in form %}
                         <div class="mb-3">
-                            {{ field.label_tag }}
-                            {{ field }}
+                            {% if field.id_for_label == 'id_data_nascimento' %}
+                                {{ field.label_tag }}
+                                <div class="input-group" style="max-width: 200px;">
+                                    {{ field }}
+                                    <button class="btn btn-outline-secondary btn-calendar" type="button" id="btn-calendar-edit">
+                                        <i class="bi bi-calendar3"></i>
+                                    </button>
+                                </div>
+                            {% else %}
+                                {{ field.label_tag }}
+                                {{ field }}
+                            {% endif %}
                             {% for error in field.errors %}
                                 <div class="invalid-feedback d-block">{{ error }}</div>
                             {% endfor %}
@@ -61,6 +81,7 @@
         const nomeInput = $('#id_nome');
         const nomeAviso = $('#nome-aviso');
         const telefoneInput = $('#id_telefone');
+        const dataNascimentoInput = $('#id_data_nascimento');
         const telefoneAviso = $('#telefone-aviso');
         const pkInput = $('input[name="pk"]');
         let typingTimer;
@@ -75,6 +96,37 @@
         }
 
         telefoneInput.mask('(00) 00000-0000');
+        if (dataNascimentoInput.length) { dataNascimentoInput.mask('00/00/0000'); }
+
+        // Datepicker nativo no ícone
+        const btnCalendar = document.getElementById('btn-calendar-edit');
+        if (btnCalendar && dataNascimentoInput.length) {
+            btnCalendar.addEventListener('click', function() {
+                const input = document.getElementById('id_data_nascimento');
+                if (!input) return;
+                try { dataNascimentoInput.unmask(); } catch(e) {}
+                input.setAttribute('type', 'date');
+                if (input.showPicker) { try { input.showPicker(); } catch(e) { input.focus(); } }
+                else { input.focus(); }
+            });
+            const input = document.getElementById('id_data_nascimento');
+            if (input) {
+                const normalizeBack = function() {
+                    const val = input.value;
+                    if (val && /^\d{4}-\d{2}-\d{2}$/.test(val)) {
+                        const [y,m,d] = val.split('-');
+                        input.setAttribute('type', 'text');
+                        input.value = `${d}/${m}/${y}`;
+                        try { dataNascimentoInput.mask('00/00/0000'); } catch(e) {}
+                        return;
+                    }
+                    input.setAttribute('type', 'text');
+                    try { dataNascimentoInput.mask('00/00/0000'); } catch(e) {}
+                };
+                input.addEventListener('change', normalizeBack);
+                input.addEventListener('blur', normalizeBack);
+            }
+        }
         $('.select2').select2({ placeholder: "Selecione uma opção", allowClear: true, width: '100%' });
 
         function checkNome() {
@@ -111,8 +163,10 @@
         // Lógica do dropdown dinâmico
         const cidadeSelect = $('#id_cidade');
         const bairroSelect = $('#id_bairro');
+        const initialBairro = bairroSelect.val();
         cidadeSelect.on('change', function() {
             const cidadeId = this.value;
+            const selectedBefore = bairroSelect.val();
             bairroSelect.empty().append('<option value="">Carregando...</option>').trigger('change');
             if (cidadeId) {
                 fetch(`/geografia/get-bairros/?cidade_id=${cidadeId}`).then(response => response.json()).then(data => {
@@ -121,7 +175,9 @@
                         const option = new Option(bairro.nome, bairro.id, false, false);
                         bairroSelect.append(option);
                     });
-                    bairroSelect.trigger('change');
+                    const target = initialBairro || selectedBefore;
+                    if (target) { bairroSelect.val(String(target)).trigger('change'); }
+                    else { bairroSelect.trigger('change'); }
                 });
             } else { bairroSelect.empty().append('<option value="">Primeiro, escolha uma cidade</option>').trigger('change'); }
         });

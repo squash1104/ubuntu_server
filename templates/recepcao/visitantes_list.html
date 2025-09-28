@@ -1,0 +1,249 @@
+{% extends 'recepcao/base_recepcao.html' %}
+{% block content %}
+<div class="rec-card">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div>
+        <div class="rec-section-title">Visitantes <span class="subtitle">({{ visitantes|length }})</span></div>
+        <div class="rec-section-sep"></div>
+      </div>
+      <a class="btn btn-sm btn-primary" href="{% url 'recepcao:visitante_create' %}">
+        <i class="bi bi-plus-lg me-1"></i>Novo
+      </a>
+    </div>
+
+    <form method="get" class="mb-4 d-flex" style="gap:.5rem">
+      <input type="text" name="q" value="{{ q|default:'' }}" class="form-control" placeholder="Buscar por nome..." />
+      <input type="hidden" name="sort" value="{{ sort|default:'nome' }}" />
+      <input type="hidden" name="dir" value="{{ dir|default:'asc' }}" />
+      <button class="btn btn-outline-secondary" type="submit">
+        <i class="bi bi-search me-1"></i>Buscar
+      </button>
+    </form>
+
+    <div class="table-responsive">
+      <table class="table table-sm table-striped mb-0">
+        <thead>
+          <tr>
+            <th>
+              <a href="?q={{ q|urlencode }}&sort=nome&dir={% if sort == 'nome' and dir == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+                Nome
+                {% if sort == 'nome' %}<i class="bi bi-caret-{% if dir == 'asc' %}up{% else %}down{% endif %}-fill ms-1"></i>{% endif %}
+              </a>
+            </th>
+            <th>
+              <a href="?q={{ q|urlencode }}&sort=telefone&dir={% if sort == 'telefone' and dir == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+                Telefone
+                {% if sort == 'telefone' %}<i class="bi bi-caret-{% if dir == 'asc' %}up{% else %}down{% endif %}-fill ms-1"></i>{% endif %}
+              </a>
+            </th>
+            <th>
+              <a href="?q={{ q|urlencode }}&sort=funcao&dir={% if sort == 'funcao' and dir == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+                Função
+                {% if sort == 'funcao' %}<i class="bi bi-caret-{% if dir == 'asc' %}up{% else %}down{% endif %}-fill ms-1"></i>{% endif %}
+              </a>
+            </th>
+            <th>
+              <a href="?q={{ q|urlencode }}&sort=municipio&dir={% if sort == 'municipio' and dir == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+                Município
+                {% if sort == 'municipio' %}<i class="bi bi-caret-{% if dir == 'asc' %}up{% else %}down{% endif %}-fill ms-1"></i>{% endif %}
+              </a>
+            </th>
+            <th>
+              <a href="?q={{ q|urlencode }}&sort=email&dir={% if sort == 'email' and dir == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+                Email
+                {% if sort == 'email' %}<i class="bi bi-caret-{% if dir == 'asc' %}up{% else %}down{% endif %}-fill ms-1"></i>{% endif %}
+              </a>
+            </th>
+            <th class="text-center align-middle">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for v in visitantes %}
+          <tr>
+            <td class="align-middle">
+              <span class="fw-medium">{{ v.nome }}</span>
+            </td>
+            <td class="align-middle">
+              {% if v.telefone %}
+                <span>{{ v.telefone }}</span>
+              {% else %}
+                <span class="text-muted">-</span>
+              {% endif %}
+            </td>
+            <td class="align-middle">
+              {% if v.funcao %}
+                <span>{{ v.funcao }}</span>
+              {% else %}
+                <span class="text-muted">-</span>
+              {% endif %}
+            </td>
+            <td class="align-middle">
+              {% if v.municipio %}
+                <span>{{ v.municipio }}</span>
+              {% else %}
+                <span class="text-muted">-</span>
+              {% endif %}
+            </td>
+            <td class="align-middle">
+              {% if v.email %}
+                <span class="small">{{ v.email }}</span>
+              {% else %}
+                <span class="text-muted">-</span>
+              {% endif %}
+            </td>
+            <td class="text-center align-middle" style="white-space:nowrap;">
+              <div class="d-flex justify-content-center align-items-center" role="group">
+                <a class="btn btn-sm btn-outline-secondary me-1" title="Detalhes" href="{% url 'recepcao:visitante_update' v.id %}?view=1">
+                  <i class="bi bi-box-arrow-up-right"></i>
+                </a>
+                <button class="btn btn-sm btn-outline-success me-1" title="Adicionar à fila" data-bs-toggle="modal" data-bs-target="#modalEnfileirar" data-vid="{{ v.id }}" data-vnome="{{ v.nome }}">
+                  <i class="bi bi-plus-lg"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger" title="Remover" data-bs-toggle="modal" data-bs-target="#modalExcluir" data-vid="{{ v.id }}" data-vnome="{{ v.nome }}">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="6" class="text-muted text-center py-4">Nenhum visitante encontrado.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if page_obj %}
+    <nav aria-label="Paginação">
+      <ul class="pagination justify-content-end mb-0">
+        {% if page_obj.has_previous %}
+          <li class="page-item"><a class="page-link" href="?q={{ q|urlencode }}&sort={{ sort }}&dir={{ dir }}&page={{ page_obj.previous_page_number }}">Anterior</a></li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">Anterior</span></li>
+        {% endif %}
+
+        <li class="page-item disabled"><span class="page-link">Página {{ page_obj.number }} de {{ paginator.num_pages }}</span></li>
+
+        {% if page_obj.has_next %}
+          <li class="page-item"><a class="page-link" href="?q={{ q|urlencode }}&sort={{ sort }}&dir={{ dir }}&page={{ page_obj.next_page_number }}">Próxima</a></li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">Próxima</span></li>
+        {% endif %}
+      </ul>
+    </nav>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Modal Enfileirar -->
+<div class="modal fade" id="modalEnfileirar" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Adicionar à fila</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post" id="formEnfileirar">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-2 small text-muted">Visitante: <span id="enfNome"></span></div>
+          <div class="mb-2">
+            <label class="form-label">Atendente</label>
+            <select name="atendente_id" class="form-select">
+              <option value="">(definir depois)</option>
+              {% for u in atendentes %}
+                <option value="{{ u.id }}">{{ u.nome }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Resumo da demanda</label>
+            <input type="text" class="form-control" name="demanda_resumo" />
+          </div>
+          <div>
+            <label class="form-label">Detalhes</label>
+            <textarea class="form-control" name="demanda_detalhes" rows="3"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-success">Adicionar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Excluir -->
+<div class="modal fade" id="modalExcluir" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Remover visitante</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post" id="formExcluir">
+        {% csrf_token %}
+        <div class="modal-body">
+          <p>Tem certeza que deseja remover <strong id="delNome"></strong>?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-danger">Remover</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% block extra_css %}
+<style>
+  /* Garantir cores corretas para tema escuro */
+  [data-bs-theme="dark"] .text-dark {
+    color: #f9fafb !important;
+  }
+  [data-bs-theme="dark"] .table th a {
+    color: #f9fafb !important;
+  }
+  [data-bs-theme="dark"] .table th a:hover {
+    color: #60a5fa !important;
+  }
+  [data-bs-theme="light"] .table th a {
+    color: #111827 !important;
+  }
+  [data-bs-theme="light"] .table th a:hover {
+    color: #3b82f6 !important;
+  }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  (function(){
+    const modalEnf = document.getElementById('modalEnfileirar');
+    if (modalEnf) {
+      modalEnf.addEventListener('show.bs.modal', function (event) {
+        const btn = event.relatedTarget;
+        const vid = btn.getAttribute('data-vid');
+        const vnome = btn.getAttribute('data-vnome');
+        document.getElementById('enfNome').textContent = vnome;
+        const form = document.getElementById('formEnfileirar');
+        form.action = `{% url 'recepcao:visitante_enfileirar' 0 %}`.replace('/0/', `/${vid}/`);
+      });
+    }
+
+    const modalDel = document.getElementById('modalExcluir');
+    if (modalDel) {
+      modalDel.addEventListener('show.bs.modal', function (event) {
+        const btn = event.relatedTarget;
+        const vid = btn.getAttribute('data-vid');
+        const vnome = btn.getAttribute('data-vnome');
+        document.getElementById('delNome').textContent = vnome;
+        const form = document.getElementById('formExcluir');
+        form.action = `{% url 'recepcao:visitante_delete' 0 %}`.replace('/0/', `/${vid}/`);
+      });
+    }
+  })();
+</script>
+{% endblock %}
+{% endblock %}

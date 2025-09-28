@@ -24,6 +24,25 @@ ignore = [
 
 [tool.pytest.ini_options]
 addopts = "-q"
-DJANGO_SETTINGS_MODULE = "core.settings"
+DJANGO_SETTINGS_MODULE = "sistema_fidelizacao.settings"
 python_files = ["tests.py", "test_*.py", "*_tests.py"]
 asyncio_mode = "auto"
+
+[tool.pyright]
+pythonVersion = "3.12"
+venvPath = "."
+venv = ".venv"
+include = ["."]
+exclude = [
+    "**/node_modules",
+    "**/__pycache__",
+    ".venv",
+    "venv",
+    "migrations",
+    "static",
+    "media"
+]
+reportMissingImports = "warning"
+reportMissingTypeStubs = false
+pythonPlatform = "Linux"
+# executionEnvironments removed to avoid TOML parsing issues in CI/editor

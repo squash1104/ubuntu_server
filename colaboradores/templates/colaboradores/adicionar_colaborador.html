@@ -4,6 +4,22 @@
 {% block title %}SisAps - Novo Colaborador{% endblock %}
 
 {% block content %}
+<style>
+/* Larguras compactas para campos específicos */
+#id_telefone { max-width: 220px; }
+#id_data_nascimento { max-width: 160px; }
+#id_cidade, #id_bairro { max-width: 320px; }
+
+/* Ajustes para Select2 respeitar largura do elemento original */
+.select2-container { max-width: 320px !important; }
+
+/* Estilo para ícone de calendário junto ao input */
+.input-group .btn-calendar { border-color: #ced4da; }
+.input-group .btn-calendar i { pointer-events: none; }
+
+/* Labels acima em todos os campos do formulário */
+#colaborador-form label { display: block; margin-bottom: .25rem; }
+</style>
 <div class="row justify-content-center">
     <div class="col-md-8">
         <div class="card shadow-sm">
@@ -11,12 +27,22 @@
                 <h3 class="card-title mb-0">Cadastrar Novo Colaborador</h3>
             </div>
             <div class="card-body">
-                 <form method="post">
+                 <form method="post" id="colaborador-form">
                      {% csrf_token %}
                      {% for field in form %}
                          <div class="mb-3">
-                             {{ field.label_tag }}
-                             {{ field }}
+                             {% if field.id_for_label == 'id_data_nascimento' %}
+                                 {{ field.label_tag }}
+                                 <div class="input-group" style="max-width: 200px;">
+                                     {{ field }}
+                                     <button class="btn btn-outline-secondary btn-calendar" type="button" id="btn-calendar-add">
+                                         <i class="bi bi-calendar3"></i>
+                                     </button>
+                                 </div>
+                             {% else %}
+                                 {{ field.label_tag }}
+                                 {{ field }}
+                             {% endif %}
 
                              {% if field.id_for_label == 'id_nome' %}
                                  <div id="nome-aviso" class="alert alert-danger mt-2" style="display: none;">
@@ -43,7 +69,7 @@
                      {% endfor %}
 
                      <div class="mt-4 border-top pt-3">
-                         <button type="submit" class="btn btn-success">Salvar</button>
+                         <button type="submit" class="btn btn-success" id="btn-salvar">Salvar</button>
                          <a href="{% url 'colaboradores:lista_colaboradores' %}" class="btn btn-secondary">Cancelar</a>
                      </div>
                  </form>
@@ -73,6 +99,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Campos e avisos de Telefone
     const telefoneInput = $('#id_telefone');
+    const dataNascimentoInput = $('#id_data_nascimento');
     const telefoneAviso = $('#telefone-aviso');
 
     let typingTimer;
@@ -96,6 +123,41 @@ document.addEventListener('DOMContentLoaded', function() {
     // =========================================================================
     // Aplica a máscara de telefone
     telefoneInput.mask('(00) 00000-0000');
+    if (dataNascimentoInput.length) { dataNascimentoInput.mask('00/00/0000'); }
+
+    // Abrir datepicker nativo ao clicar no ícone, mantendo máscara dd/mm/aaaa
+    const btnCalendar = document.getElementById('btn-calendar-add');
+    if (btnCalendar && dataNascimentoInput.length) {
+        btnCalendar.addEventListener('click', function() {
+            const input = document.getElementById('id_data_nascimento');
+            if (!input) return;
+            // Suspender máscara antes de abrir o picker
+            try { dataNascimentoInput.unmask(); } catch(e) {}
+            // Alternar para tipo date para abrir o picker
+            input.setAttribute('type', 'date');
+            if (input.showPicker) { try { input.showPicker(); } catch(e) { input.focus(); } }
+            else { input.focus(); }
+        });
+        const input = document.getElementById('id_data_nascimento');
+        if (input) {
+            const normalizeBack = function() {
+                const val = input.value;
+                // Converter aaaa-mm-dd -> dd/mm/aaaa
+                if (val && /^\d{4}-\d{2}-\d{2}$/.test(val)) {
+                    const [y,m,d] = val.split('-');
+                    input.setAttribute('type', 'text');
+                    input.value = `${d}/${m}/${y}`;
+                    try { dataNascimentoInput.mask('00/00/0000'); } catch(e) {}
+                    return;
+                }
+                // Se usuário não escolheu no picker, apenas restaurar tipo e máscara
+                input.setAttribute('type', 'text');
+                try { dataNascimentoInput.mask('00/00/0000'); } catch(e) {}
+            };
+            input.addEventListener('change', normalizeBack);
+            input.addEventListener('blur', normalizeBack);
+        }
+    }
 
     // Inicializa o Select2 nos dropdowns
     $('.select2').select2({

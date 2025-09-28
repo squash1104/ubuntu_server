@@ -23,6 +23,8 @@ from django.contrib.auth import (
 )
 from django.http import HttpResponse
 from django.urls import include, path
+from django.views.generic import TemplateView
+from utils_aniversarios.views import aniversariantes_view
 
 from . import views
 
@@ -76,16 +78,21 @@ urlpatterns = [
     path("mapa-apoiadores/", views.mapa_apoiadores, name="mapa_apoiadores"),
     path("colaboradores/", include("colaboradores.urls", namespace="colaboradores")),
     path("convidados/", include("convidados.urls", namespace="convidados")),
+    path("mensagens/", include("mensagens.urls", namespace="mensagens")),
     path("geografia/", include("geografia.urls")),
+    path("recepcao/", include("recepcao.urls", namespace="recepcao")),
     path("health/", health_check_view),
     path("sobre/", views.sobre, name="sobre"),
     path("chat/", include("chat.urls")),
     path("security/", include("security.urls", namespace="security")),
+	# Página de aniversariantes
+	path('aniversariantes/', aniversariantes_view, name='aniversariantes'),
 ]
 
 # Adicionar URLs para arquivos estáticos
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 # Você também pode adicionar o favicon.ico diretamente aqui para facilitar
 # from django.views.generic.base import RedirectView
 # urlpatterns += [

@@ -17,6 +17,8 @@ class Message(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     read = models.BooleanField(default=False)
     read_at = models.DateTimeField(null=True, blank=True)
+    seen = models.BooleanField(default=False)
+    seen_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         ordering: ClassVar = ["timestamp"]

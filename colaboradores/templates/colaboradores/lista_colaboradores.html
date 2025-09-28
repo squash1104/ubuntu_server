@@ -287,6 +287,14 @@
                                 {% endfor %}
                             </select>
                         </div>
+                        <div class="d-flex align-items-center">
+                            <label for="grupo-select" class="form-label me-2 mb-0">Grupo:</label>
+                            <select id="grupo-select" class="form-select form-select-sm" style="width: auto;" onchange="changeGrupo(this.value)">
+                                <option value="todos" {% if grupo == 'todos' %}selected{% endif %}>Todos</option>
+                                <option value="capital" {% if grupo == 'capital' %}selected{% endif %}>Grupo Capital</option>
+                                <option value="interior" {% if grupo == 'interior' %}selected{% endif %}>Grupo Interior</option>
+                            </select>
+                        </div>
                     </div>
 
                     <hr>
@@ -302,11 +310,11 @@
                             <thead class="table-light">
                                 <tr>
                                     <th>Seq.</th>
-                                    <th><a href="?ordenar_por=nome&direcao={% if ordenar_por == 'nome' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if per_page != 20 %}&per_page={{ per_page }}{% endif %}{% if termo_busca %}&q={{ termo_busca }}{% endif %}">Nome</a></th>
-                                    <th><a href="?ordenar_por=telefone&direcao={% if ordenar_por == 'telefone' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if per_page != 20 %}&per_page={{ per_page }}{% endif %}{% if termo_busca %}&q={{ termo_busca }}{% endif %}">Telefone</a></th>
-                                    <th><a href="?ordenar_por=cidade__nome_cidade&direcao={% if ordenar_por == 'cidade__nome_cidade' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if per_page != 20 %}&per_page={{ per_page }}{% endif %}{% if termo_busca %}&q={{ termo_busca }}{% endif %}">Cidade</a></th>
-                                    <th><a href="?ordenar_por=bairro__nome_bairro&direcao={% if ordenar_por == 'bairro__nome_bairro' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if per_page != 20 %}&per_page={{ per_page }}{% endif %}{% if termo_busca %}&q={{ termo_busca }}{% endif %}">Bairro</a></th>
-                                    <th><a href="?ordenar_por=num_convidados&direcao={% if ordenar_por == 'num_convidados' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if per_page != 20 %}&per_page={{ per_page }}{% endif %}{% if termo_busca %}&q={{ termo_busca }}{% endif %}">Convidados</a></th>
+                                    <th><a href="?ordenar_por=nome&direcao={% if ordenar_por == 'nome' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if per_page != 20 %}&per_page={{ per_page }}{% endif %}{% if termo_busca %}&q={{ termo_busca }}{% endif %}{% if grupo and grupo != 'todos' %}&grupo={{ grupo }}{% endif %}">Nome</a></th>
+                                    <th><a href="?ordenar_por=telefone&direcao={% if ordenar_por == 'telefone' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if per_page != 20 %}&per_page={{ per_page }}{% endif %}{% if termo_busca %}&q={{ termo_busca }}{% endif %}{% if grupo and grupo != 'todos' %}&grupo={{ grupo }}{% endif %}">Telefone</a></th>
+                                    <th><a href="?ordenar_por=cidade__nome_cidade&direcao={% if ordenar_por == 'cidade__nome_cidade' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if per_page != 20 %}&per_page={{ per_page }}{% endif %}{% if termo_busca %}&q={{ termo_busca }}{% endif %}{% if grupo and grupo != 'todos' %}&grupo={{ grupo }}{% endif %}">Cidade</a></th>
+                                    <th><a href="?ordenar_por=bairro__nome_bairro&direcao={% if ordenar_por == 'bairro__nome_bairro' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if per_page != 20 %}&per_page={{ per_page }}{% endif %}{% if termo_busca %}&q={{ termo_busca }}{% endif %}{% if grupo and grupo != 'todos' %}&grupo={{ grupo }}{% endif %}">Bairro</a></th>
+                                    <th><a href="?ordenar_por=num_convidados&direcao={% if ordenar_por == 'num_convidados' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if per_page != 20 %}&per_page={{ per_page }}{% endif %}{% if termo_busca %}&q={{ termo_busca }}{% endif %}{% if grupo and grupo != 'todos' %}&grupo={{ grupo }}{% endif %}">Convidados</a></th>
                                     <th class="text-center">Ações</th>
                                 </tr>
                             </thead>
@@ -383,6 +391,18 @@ function changePerPage(perPage) {
     const urlParams = new URLSearchParams(window.location.search);
     urlParams.set('per_page', perPage);
     urlParams.set('page', '1'); // Voltar para primeira página
+    window.location.href = '?' + urlParams.toString();
+}
+
+// Alterar grupo
+function changeGrupo(grupo) {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (grupo && grupo !== 'todos') {
+        urlParams.set('grupo', grupo);
+    } else {
+        urlParams.delete('grupo');
+    }
+    urlParams.set('page', '1');
     window.location.href = '?' + urlParams.toString();
 }
 

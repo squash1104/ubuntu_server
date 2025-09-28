@@ -5,6 +5,8 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
 
 from .models import Message
 
@@ -242,9 +244,8 @@ def fetch_messages(request, username):
             recipient__username__in=[request.user.username, username],
         ).order_by("timestamp")
 
-        # Marcar mensagens recebidas como lidas
-        mensagens_nao_lidas = mensagens.filter(recipient=request.user, read=False)
-        mensagens_nao_lidas.update(read=True, read_at=timezone.now())
+        # NÃO marcar mensagens como lidas automaticamente
+        # Isso será feito apenas quando o usuário realmente visualizar as mensagens
 
         data = [
             {
@@ -325,8 +326,9 @@ def contatos_status(request):
 
     return JsonResponse(contatos_data, safe=False)
 
-
 @login_required
+@require_http_methods(["POST"])
+@csrf_exempt
 def mark_message_read(request):
     """Endpoint para marcar mensagem como lida"""
     if request.method == "POST":
@@ -366,6 +368,52 @@ def mark_message_read(request):
             return JsonResponse({"error": "JSON inválido"}, status=400)
         except Exception as e:
             print(f"❌ Erro ao marcar mensagem como lida: {e}")
+            return JsonResponse({"error": "Erro interno do servidor"}, status=500)
+
+    return JsonResponse({"error": "Método não permitido"}, status=405)
+
+
+@login_required
+@require_http_methods(["POST"])
+@csrf_exempt
+def mark_messages_read_batch(request):
+    """Endpoint para marcar múltiplas mensagens como lidas de uma vez"""
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            message_ids = data.get("message_ids", [])
+            username = data.get("username")
+
+            if not message_ids:
+                return JsonResponse({"error": "message_ids é obrigatório"}, status=400)
+
+            if not username:
+                return JsonResponse({"error": "username é obrigatório"}, status=400)
+
+            # Marcar mensagens como lidas em lote
+            updated_count = Message.objects.filter(
+                id__in=message_ids,
+                recipient=request.user,
+                sender__username=username,
+                read=False
+            ).update(read=True, read_at=timezone.now())
+
+            print(
+                f"✅ {updated_count} mensagens marcadas como lidas por {request.user.username} da conversa com {username}"
+            )
+
+            return JsonResponse(
+                {
+                    "status": "success",
+                    "updated_count": updated_count,
+                    "message_ids": message_ids,
+                }
+            )
+
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "JSON inválido"}, status=400)
+        except Exception as e:
+            print(f"❌ Erro ao marcar mensagens como lidas: {e}")
             return JsonResponse({"error": "Erro interno do servidor"}, status=500)
 
     return JsonResponse({"error": "Método não permitido"}, status=405)

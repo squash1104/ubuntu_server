@@ -90,6 +90,19 @@ class RelatorioConvidadosForm(forms.Form):
 
 
 class ConvidadoForm(forms.ModelForm):
+    data_nascimento = forms.DateField(
+        required=False,
+        input_formats=["%d/%m/%Y"],
+        widget=forms.DateInput(
+            format="%d/%m/%Y",
+            attrs={
+                "class": "form-control",
+                "placeholder": "dd/mm/aaaa",
+                "data-mask": "00/00/0000",
+            },
+        ),
+        label="Data de Nascimento",
+    )
     # Campos que usam o Select2
     cidade = forms.ModelChoiceField(
         queryset=Cidade.objects.all().order_by("nome_cidade"),
@@ -111,7 +124,7 @@ class ConvidadoForm(forms.ModelForm):
 
     class Meta:
         model = Convidado
-        fields: ClassVar = ["nome", "telefone", "colaborador"]
+        fields: ClassVar = ["nome", "telefone", "data_nascimento", "colaborador"]
         widgets: ClassVar = {
             "nome": forms.TextInput(attrs={"class": "form-control", "id": "id_nome"}),
             "telefone": forms.TextInput(
@@ -122,18 +135,20 @@ class ConvidadoForm(forms.ModelForm):
         labels: ClassVar = {
             "nome": "Nome Completo",
             "telefone": "Telefone",
+            "data_nascimento": "Data de Nascimento",
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["colaborador"].queryset = Colaborador.objects.all()
 
-        if self.instance and self.instance.bairro:
-            self.fields["cidade"].initial = self.instance.bairro.cidade.pk
-            self.fields["bairro"].queryset = Bairro.objects.filter(
-                cidade=self.instance.bairro.cidade
-            ).order_by("nome_bairro")
-            self.fields["bairro"].initial = self.instance.bairro.pk
+        if self.instance and getattr(self.instance, "bairro", None):
+            if self.instance.bairro and self.instance.bairro.cidade:
+                self.fields["cidade"].initial = self.instance.bairro.cidade.pk
+                self.fields["bairro"].queryset = Bairro.objects.filter(
+                    cidade=self.instance.bairro.cidade
+                ).order_by("nome_bairro")
+                self.fields["bairro"].initial = self.instance.bairro.pk
 
         self.fields["nome"].required = True
 

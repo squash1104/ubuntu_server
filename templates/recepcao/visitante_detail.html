@@ -1,0 +1,107 @@
+{% extends 'recepcao/base_recepcao.html' %}
+{% block content %}
+<div class="row align-items-start">
+  <div class="col-12">
+    <div class="rec-card">
+      <div class="card-body pt-2">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h1 class="h5 mb-0">{{ visitante.nome }}</h1>
+          <div class="d-flex" style="gap:.5rem">
+            <a class="btn btn-sm btn-outline-secondary" href="{% url 'recepcao:visitante_update' visitante.id %}">Editar</a>
+            <a class="btn btn-sm btn-outline-info" target="_blank" href="{% url 'recepcao:declaracao_visitante' visitante.id %}">Imprimir declaração</a>
+          </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+          <div class="col-md-3"><strong>Telefone:</strong> {{ visitante.telefone|default:'-' }}</div>
+          <div class="col-md-3"><strong>Função:</strong> {{ visitante.funcao|default:'-' }}</div>
+          <div class="col-md-3"><strong>Município:</strong> {{ visitante.municipio|default:'-' }}</div>
+          <div class="col-md-3"><strong>Email:</strong> {{ visitante.email|default:'-' }}</div>
+        </div>
+
+        <h2 class="h6 mb-2">Atendimentos</h2>
+        <div class="d-flex justify-content-end mb-2">
+          <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalRegistrarVisita">Registrar Visita</button>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>Chegada</th>
+                <th>Status</th>
+                <th>Atendente</th>
+                <th>Com quem falou</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for a in atendimentos %}
+            <tr>
+                <td>{{ a.horario_chegada|date:'d/m/Y H:i' }}</td>
+                <td>
+                  {% if a.status == 'aguardando' %}
+                    <span class="badge bg-warning text-dark">{{ a.get_status_display }}</span>
+                  {% elif a.status == 'em_atendimento' %}
+                    <span class="badge bg-success">{{ a.get_status_display }}</span>
+                  {% elif a.status == 'cancelado' %}
+                    <span class="badge bg-danger">{{ a.get_status_display }}</span>
+                  {% else %}
+                    <span class="badge bg-primary">{{ a.get_status_display }}</span>
+                  {% endif %}
+                </td>
+                <td>{{ a.atendente|default:'-' }}</td>
+                <td>{{ a.demanda_resumo|default:'-' }}</td>
+                <td><a class="btn btn-sm btn-outline-primary" href="{% url 'recepcao:atendimento_detail' a.id %}" title="Abrir"><i class="bi bi-box-arrow-up-right"></i></a></td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="5" class="text-muted">Nenhum atendimento registrado.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Reuse modal Registrar Visita -->
+<div class="modal fade" id="modalRegistrarVisita" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Registrar Visita</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post" id="formRegistrarVisita" action="{% url 'recepcao:visitante_enfileirar' visitante.id %}">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-2 small text-muted">Visitante: <strong>{{ visitante.nome }}</strong></div>
+          <div class="mb-2">
+            <label class="form-label">Atendente</label>
+            <select name="atendente_id" class="form-select">
+              <option value="">(definir depois)</option>
+            {% for u in atendentes %}
+                <option value="{{ u.id }}">{{ u.nome }}</option>
+            {% endfor %}
+            </select>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Resumo da demanda</label>
+            <input type="text" name="demanda_resumo" class="form-control" />
+          </div>
+          <div>
+            <label class="form-label">Detalhes</label>
+            <textarea name="demanda_detalhes" class="form-control" rows="4"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Registrar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+

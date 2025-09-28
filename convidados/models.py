@@ -13,6 +13,8 @@ class Convidado(models.Model):
         max_length=20, blank=True, null=True
     )  # Coluna no DB será 'telefone'
 
+    data_nascimento = models.DateField(null=True, blank=True)
+
     # ForeignKeys para Cidade, Bairro e Colaborador.
     # O Django criará 'cidade_id', 'bairro_id', 'colaborador_id' no DB.
     cidade = models.ForeignKey(Cidade, on_delete=models.SET_NULL, null=True, blank=True)

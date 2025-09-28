@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card shadow-sm">
+  <div class="card-body">
+    <div class="text-center mb-4">
+      <h1 class="h5 mb-1">Declaração de Comparecimento</h1>
+      <div class="text-muted">Gabinete</div>
+    </div>
+    <p>Declaramos para os devidos fins que <strong>{{ visitante.nome }}</strong>,
+       portador do telefone {{ visitante.telefone|default:'-' }}, compareceu a este gabinete
+       na data de {{ agora|date:'d/m/Y' }} às {{ agora|date:'H:i' }}.</p>
+    <p>Município: {{ visitante.municipio|default:'-' }}</p>
+    <p>Esta declaração é emitida a pedido do interessado.</p>
+    <div class="mt-5">
+      <div>__________________________________________</div>
+      <div class="text-muted">Assinatura/Carimbo</div>
+    </div>
+    <div class="mt-4">
+      <button class="btn btn-primary" onclick="window.print()">Imprimir</button>
+    </div>
+  </div>
+</div>
+{% endblock %}

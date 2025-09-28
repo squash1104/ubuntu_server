@@ -1035,6 +1035,21 @@
 
         // Função para abrir chat
         async function openChat(contact) {
+            // Limpar observer anterior se existir
+            if (messageVisibilityObserver) {
+                messageVisibilityObserver.disconnect();
+                messageVisibilityObserver = null;
+            }
+            
+            // Limpar timeout de marcação
+            if (markAsReadTimeout) {
+                clearTimeout(markAsReadTimeout);
+                markAsReadTimeout = null;
+            }
+            
+            // Limpar conjunto de mensagens visíveis
+            visibleUnreadMessages.clear();
+            
             // Remover classe active de todos os contatos
             document.querySelectorAll('#chat-contacts li').forEach(li => {
                 li.classList.remove('active');
@@ -1194,6 +1209,9 @@
 
                 // Scroll para baixo
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                
+                // Inicializar Intersection Observer para mensagens visíveis
+                initializeMessageVisibilityObserver(username);
             } catch (error) {
                 console.error('Erro ao carregar histórico:', error);
             }
@@ -1229,6 +1247,11 @@
             messagesContainer.appendChild(messageDiv);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
+            // Observar nova mensagem se o observer estiver ativo
+            if (messageVisibilityObserver && messageDiv) {
+                messageVisibilityObserver.observe(messageDiv);
+            }
+            
             // Marcar como lida se for mensagem recebida e tiver ID válido
             if (!isOwn && messageId && messageId !== '' && messageId !== null) {
                 markMessageAsRead(messageId);
@@ -1529,7 +1552,111 @@
 
         // === FUNCIONALIDADES DE MENSAGEM LIDA ===
         
-        // Função para marcar mensagem como lida
+        // Variáveis para controle de mensagens visíveis
+        let messageVisibilityObserver = null;
+        let visibleUnreadMessages = new Set();
+        let markAsReadTimeout = null;
+        
+        // Função para inicializar o Intersection Observer
+        function initializeMessageVisibilityObserver(username) {
+            // Limpar observer anterior se existir
+            if (messageVisibilityObserver) {
+                messageVisibilityObserver.disconnect();
+            }
+            
+            const messagesContainer = document.getElementById('chat-messages');
+            if (!messagesContainer) return;
+            
+            // Configuração do Intersection Observer
+            const options = {
+                root: messagesContainer,
+                rootMargin: '0px',
+                threshold: 0.5 // 50% da mensagem deve estar visível
+            };
+            
+            messageVisibilityObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    const messageElement = entry.target;
+                    const messageId = messageElement.getAttribute('data-message-id');
+                    const isOwn = messageElement.classList.contains('sent');
+                    
+                    // Só processar mensagens recebidas (não próprias) com ID válido
+                    if (!isOwn && messageId && messageId !== '') {
+                        if (entry.isIntersecting) {
+                            // Mensagem ficou visível
+                            visibleUnreadMessages.add(messageId);
+                            console.log('👁️ Mensagem visível:', messageId);
+                        } else {
+                            // Mensagem saiu de vista
+                            visibleUnreadMessages.delete(messageId);
+                        }
+                    }
+                });
+                
+                // Marcar mensagens visíveis como lidas com debounce
+                scheduleMarkAsRead(username);
+            }, options);
+            
+            // Observar todas as mensagens existentes
+            const messageElements = messagesContainer.querySelectorAll('.message-container');
+            messageElements.forEach(element => {
+                messageVisibilityObserver.observe(element);
+            });
+        }
+        
+        // Função para agendar marcação como lida (com debounce)
+        function scheduleMarkAsRead(username) {
+            // Cancelar timeout anterior
+            if (markAsReadTimeout) {
+                clearTimeout(markAsReadTimeout);
+            }
+            
+            // Agendar nova marcação após 1 segundo de inatividade
+            markAsReadTimeout = setTimeout(() => {
+                markVisibleMessagesAsRead(username);
+            }, 1000);
+        }
+        
+        // Função para marcar mensagens visíveis como lidas em lote
+        async function markVisibleMessagesAsRead(username) {
+            if (visibleUnreadMessages.size === 0) return;
+            
+            const messageIds = Array.from(visibleUnreadMessages);
+            console.log('📖 Marcando mensagens visíveis como lidas:', messageIds.length, 'mensagens');
+            
+            try {
+                const response = await fetch('/chat/mark_read_batch/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        message_ids: messageIds,
+                        username: username
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                if (data.status === 'success') {
+                    console.log('✅ Mensagens marcadas como lidas:', data.updated_count);
+                    // Limpar conjunto de mensagens visíveis
+                    visibleUnreadMessages.clear();
+                    // Enviar evento de visto via WebSocket
+                    sendSeenEvent();
+                } else {
+                    console.warn('⚠️ Falha ao marcar mensagens como lidas:', data);
+                }
+            } catch (error) {
+                console.error('❌ Erro ao marcar mensagens como lidas:', error);
+            }
+        }
+        
+        // Função para marcar mensagem como lida (mantida para compatibilidade)
         function markMessageAsRead(messageId) {
             // Só marcar como lida se tiver um ID válido
             if (!messageId || messageId === '') {
