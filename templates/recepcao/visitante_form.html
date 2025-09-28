@@ -1,225 +1,722 @@
 {% extends 'recepcao/base_recepcao.html' %}
+{% load recepcao_extras %}
 {% block content %}
 <div class="row align-items-start">
-  <div class="col-12 col-lg-12">
+  <div class="col-12">
     <div class="rec-card">
       <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <h1 class="h5 mb-0">
+        <!-- Cabeçalho -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h1 class="h4 mb-1">
+              {% if visitante %}
+                {% if view_mode %}
+                  <i class="bi bi-person-circle text-primary me-2"></i>Detalhes do visitante
+                {% else %}
+                  <i class="bi bi-pencil-square text-warning me-2"></i>Editar visitante
+                {% endif %}
+              {% else %}
+                <i class="bi bi-person-plus text-success me-2"></i>Novo visitante
+              {% endif %}
+            </h1>
             {% if visitante %}
-              {% if view_mode %}Detalhes do visitante{% else %}Editar visitante{% endif %}
-            {% else %}
-              Novo visitante
+              <div class="text-muted small">
+                <i class="bi bi-calendar3 me-1"></i>Cadastrado em {{ visitante.criado_em|date:"d/m/Y H:i" }}
+                {% if visitante.criado_por %}
+                  por <strong>{{ visitante.criado_por.get_full_name|default:visitante.criado_por.username }}</strong>
+                {% endif %}
+                {% if visitante.atendimentos.count > 0 %}
+                  <span class="ms-3">
+                    <i class="bi bi-clock-history me-1"></i>{{ visitante.atendimentos.count }} visita{{ visitante.atendimentos.count|pluralize }}
+                  </span>
+                {% endif %}
+              </div>
             {% endif %}
-          </h1>
+          </div>
+          {% if not view_mode %}
+            <div class="d-flex gap-2">
+              <button type="submit" form="formVisitante" class="btn btn-primary">
+                <i class="bi bi-check-lg me-1"></i>Salvar
+              </button>
+              <a href="{% url 'recepcao:visitantes_list' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Voltar
+              </a>
+            </div>
+          {% else %}
+            <div class="d-flex gap-2">
+              <a href="{% url 'recepcao:visitante_update' visitante.id %}" class="btn btn-primary">
+                <i class="bi bi-pencil me-1"></i>Editar
+              </a>
+              <a href="{% url 'recepcao:visitantes_list' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Voltar
+              </a>
+            </div>
+          {% endif %}
         </div>
-        {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
 
-        {% if visitante and visitante.foto %}
-          <div class="mb-3">
-            <img src="{{ visitante.foto.url }}" alt="Foto do visitante" class="img-thumbnail" style="max-height:160px" />
+        {% if error %}
+          <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>{{ error }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
           </div>
         {% endif %}
 
-        <ul class="nav nav-tabs" role="tablist">
-          <li class="nav-item" role="presentation">
-            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-geral" type="button" role="tab">Geral</button>
-          </li>
-          <li class="nav-item" role="presentation">
-            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-nova" type="button" role="tab">Nova Visita/Demanda</button>
-          </li>
-          <li class="nav-item" role="presentation">
-            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-historico" type="button" role="tab">Histórico</button>
-          </li>
-        </ul>
+        <!-- Layout com foto à esquerda -->
+        <div class="row g-4 mb-3">
+          <!-- Foto do visitante -->
+          <div class="col-md-3">
+            <div class="text-center">
+              {% if visitante and visitante.foto %}
+                <img src="{{ visitante.foto.url }}" 
+                     alt="Foto do visitante" 
+                     class="img-thumbnail visitante-photo" 
+                     style="width: 150px; height: 150px; object-fit: cover; border-radius: 8px;" />
+              {% else %}
+                <div class="photo-placeholder d-flex align-items-center justify-content-center" 
+                     style="width: 150px; height: 150px; border-radius: 8px; margin: 0 auto;">
+                  <i class="bi bi-person text-muted" style="font-size: 3rem;"></i>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+          
+          <!-- Navegação por abas -->
+          <div class="col-md-9">
+            <ul class="nav nav-tabs nav-fill" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active d-flex align-items-center justify-content-center" 
+                        data-bs-toggle="tab" 
+                        data-bs-target="#tab-geral" 
+                        type="button" 
+                        role="tab">
+                  <i class="bi bi-person-lines-fill me-2"></i>Dados Gerais
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link d-flex align-items-center justify-content-center" 
+                        data-bs-toggle="tab" 
+                        data-bs-target="#tab-visita" 
+                        type="button" 
+                        role="tab">
+                  <i class="bi bi-calendar-plus me-2"></i>Nova Visita
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link d-flex align-items-center justify-content-center" 
+                        data-bs-toggle="tab" 
+                        data-bs-target="#tab-historico" 
+                        type="button" 
+                        role="tab">
+                  <i class="bi bi-clock-history me-2"></i>Histórico
+                  {% if visitante and visitante.atendimentos.count > 0 %}
+                    <span class="badge bg-primary ms-2">{{ visitante.atendimentos.count }}</span>
+                  {% endif %}
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
 
-        <form method="post" enctype="multipart/form-data">
+        <!-- Mensagens de erro -->
+        {% if error %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+          <i class="bi bi-exclamation-triangle me-2"></i>
+          <strong>Erro:</strong> {{ error }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endif %}
+
+        <!-- Formulário principal -->
+        <form id="formVisitante" method="post" enctype="multipart/form-data">
           {% csrf_token %}
-          <div class="tab-content pt-3">
+          <div class="tab-content">
+            <!-- Aba: Dados Gerais -->
             <div class="tab-pane fade show active" id="tab-geral" role="tabpanel">
-              <div class="row g-3">
+              <div class="row g-4">
+                <!-- Seção: Informações Pessoais -->
+                <div class="col-12">
+                  <div class="rec-section-title mb-3">
+                    <i class="bi bi-person me-2"></i>Informações Pessoais
+                    <div class="rec-section-sep"></div>
+                  </div>
+                </div>
+                
                 <div class="col-md-6">
-                  <label class="form-label">Nome</label>
-                  <input type="text" name="nome" class="form-control" value="{{ visitante.nome|default:'' }}" {% if view_mode %}readonly{% endif %} required />
+                  <label class="form-label fw-medium">
+                    <i class="bi bi-person me-1"></i>Nome Completo <span class="text-danger">*</span>
+                  </label>
+                  <input type="text" 
+                         name="nome" 
+                         class="form-control form-control-lg" 
+                         value="{{ visitante.nome|default:'' }}" 
+                         placeholder="Digite o nome completo"
+                         {% if view_mode %}readonly{% endif %} 
+                         required />
                 </div>
+                
                 <div class="col-md-3">
-                  <label class="form-label">Telefone</label>
-                  <input type="text" name="telefone" id="telefone" class="form-control" value="{{ visitante.telefone|default:'' }}" placeholder="(xx) xxxxx-xxxx" {% if view_mode %}readonly{% endif %} />
+                  <label class="form-label fw-medium">
+                    <i class="bi bi-telephone me-1"></i>Telefone
+                  </label>
+                  <input type="text" 
+                         name="telefone" 
+                         id="telefone" 
+                         class="form-control form-control-lg" 
+                         value="{{ visitante.telefone|default:'' }}" 
+                         placeholder="(xx) xxxxx-xxxx" 
+                         {% if view_mode %}readonly{% endif %} />
                 </div>
+                
                 <div class="col-md-3">
-                  <label class="form-label">Função</label>
-                  <input type="text" name="funcao" class="form-control" value="{{ visitante.funcao|default:'' }}" {% if view_mode %}readonly{% endif %} />
+                  <label class="form-label fw-medium">
+                    <i class="bi bi-briefcase me-1"></i>Função/Cargo
+                  </label>
+                  <input type="text" 
+                         name="funcao" 
+                         class="form-control form-control-lg" 
+                         value="{{ visitante.funcao|default:'' }}" 
+                         placeholder="Ex: Advogado, Empresário..."
+                         {% if view_mode %}readonly{% endif %} />
                 </div>
+
+                <!-- Seção: Localização e Contato -->
+                <div class="col-12 mt-4">
+                  <div class="rec-section-title mb-3">
+                    <i class="bi bi-geo-alt me-2"></i>Localização e Contato
+                    <div class="rec-section-sep"></div>
+                  </div>
+                </div>
+                
                 <div class="col-md-4">
-                  <label class="form-label">Município</label>
+                  <label class="form-label fw-medium">
+                    <i class="bi bi-building me-1"></i>Município
+                  </label>
                   {% if view_mode %}
-                    <input type="text" name="municipio" class="form-control" value="{{ visitante.municipio|default:'' }}" readonly />
+                    <input type="text" 
+                           name="municipio" 
+                           class="form-control form-control-lg" 
+                           value="{{ visitante.municipio|default:'' }}" 
+                           readonly />
                   {% else %}
                     {% if cidades_mt %}
-                      <select name="municipio" class="form-select">
-                        <option value="">Selecione...</option>
+                      <select name="municipio" class="form-select form-select-lg">
+                        <option value="">Selecione o município...</option>
                         {% for c in cidades_mt %}
                           <option value="{{ c.nome_cidade }}" {% if visitante.municipio == c.nome_cidade %}selected{% endif %}>{{ c.nome_cidade }}</option>
                         {% endfor %}
                       </select>
                     {% else %}
-                      <input type="text" name="municipio" class="form-control" value="{{ visitante.municipio|default:'' }}" />
+                      <input type="text" 
+                             name="municipio" 
+                             class="form-control form-control-lg" 
+                             value="{{ visitante.municipio|default:'' }}" 
+                             placeholder="Digite o município" />
                     {% endif %}
                   {% endif %}
                 </div>
+                
                 <div class="col-md-4">
-                  <label class="form-label">Email</label>
-                  <input type="email" name="email" class="form-control" value="{{ visitante.email|default:'' }}" {% if view_mode %}readonly{% endif %} />
+                  <label class="form-label fw-medium">
+                    <i class="bi bi-envelope me-1"></i>E-mail
+                  </label>
+                  <input type="email" 
+                         name="email" 
+                         class="form-control form-control-lg" 
+                         value="{{ visitante.email|default:'' }}" 
+                         placeholder="exemplo@email.com"
+                         {% if view_mode %}readonly{% endif %} />
                 </div>
+                
                 <div class="col-md-4">
-                  <label class="form-label">Data de Nascimento</label>
-                  <input type="date" name="data_nascimento" class="form-control" value="{{ visitante.data_nascimento|date:'Y-m-d' }}" {% if view_mode %}readonly{% endif %} />
+                  <label class="form-label fw-medium">
+                    <i class="bi bi-calendar3 me-1"></i>Data de Nascimento
+                  </label>
+                  <input type="date" 
+                         name="data_nascimento" 
+                         class="form-control form-control-lg" 
+                         value="{{ visitante.data_nascimento|date:'Y-m-d' }}" 
+                         {% if view_mode %}readonly{% endif %} />
                 </div>
+
+                <!-- Seção: Foto (apenas para edição) -->
+                {% if not view_mode %}
+                <div class="col-12 mt-4">
+                  <div class="rec-section-title mb-3">
+                    <i class="bi bi-camera me-2"></i>Foto do Visitante
+                    <div class="rec-section-sep"></div>
+                  </div>
+                </div>
+                
+                <div class="col-12">
+                  <div class="row align-items-center">
+                    <div class="col-md-3">
+                      {% if visitante and visitante.foto %}
+                        <img src="{{ visitante.foto.url }}" 
+                             alt="Foto atual" 
+                             class="img-thumbnail rounded-circle d-block mx-auto" 
+                             style="width: 100px; height: 100px; object-fit: cover;" />
+                      {% else %}
+                        <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto" 
+                             style="width: 100px; height: 100px;">
+                          <i class="bi bi-person text-muted" style="font-size: 2rem;"></i>
+                        </div>
+                      {% endif %}
+                    </div>
+                    <div class="col-md-9">
+                      <label class="form-label fw-medium">
+                        <i class="bi bi-upload me-1"></i>Selecionar Foto
+                      </label>
+                      <input type="file" 
+                             name="foto" 
+                             class="form-control" 
+                             accept="image/*" />
+                      <div class="form-text">Formatos aceitos: JPG, PNG, GIF. Tamanho máximo: 5MB</div>
+                    </div>
+                  </div>
+                </div>
+                {% endif %}
               </div>
             </div>
 
-            <div class="tab-pane fade" id="tab-nova" role="tabpanel">
+            <!-- Aba: Nova Visita/Demanda -->
+            <div class="tab-pane fade" id="tab-visita" role="tabpanel">
               {% if view_mode %}
-                <p class="text-muted">Para registrar uma nova demanda, clique em Editar.</p>
+                <div class="text-center py-5">
+                  <i class="bi bi-lock text-muted" style="font-size: 3rem;"></i>
+                  <h5 class="text-muted mt-3">Modo de Visualização</h5>
+                  <p class="text-muted">Para registrar uma nova demanda, clique em <strong>Editar</strong> no cabeçalho.</p>
+                  <a href="{% url 'recepcao:visitante_update' visitante.id %}" class="btn btn-primary">
+                    <i class="bi bi-pencil me-1"></i>Editar Visitante
+                  </a>
+                </div>
               {% else %}
-              <div class="row g-3">
-                <div class="col-md-6">
-                  <label class="form-label">Resumo da demanda</label>
-                  <input type="text" name="demanda_resumo" class="form-control" />
+                <div class="row g-4">
+                  <!-- Seção: Informações da Visita -->
+                  <div class="col-12">
+                    <div class="rec-section-title mb-3">
+                      <i class="bi bi-calendar-plus me-2"></i>Registrar Nova Visita
+                      <div class="rec-section-sep"></div>
+                    </div>
+                    <div class="alert alert-info">
+                      <i class="bi bi-info-circle me-2"></i>
+                      <strong>Dica:</strong> Preencha os dados da visita abaixo. Você pode salvar apenas o visitante ou salvar e já enfileirar para atendimento.
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label class="form-label fw-medium">
+                      <i class="bi bi-chat-text me-1"></i>Resumo da Demanda <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" 
+                           name="demanda_resumo" 
+                           class="form-control form-control-lg" 
+                           placeholder="Ex: Consulta jurídica, Reunião de negócios..."
+                           required />
+                    <div class="form-text">Descreva brevemente o motivo da visita</div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label class="form-label fw-medium">
+                      <i class="bi bi-person-badge me-1"></i>Atendente Responsável
+                    </label>
+                    <select name="atendente_id" class="form-select form-select-lg">
+                      <option value="">Selecione o atendente...</option>
+                      {% for u in atendentes %}
+                        <option value="{{ u.id }}">{{ u.nome }}</option>
+                      {% endfor %}
+                    </select>
+                    <div class="form-text">Deixe em branco para definir depois</div>
+                  </div>
+
+                  <div class="col-12">
+                    <label class="form-label fw-medium">
+                      <i class="bi bi-file-text me-1"></i>Detalhes da Demanda
+                    </label>
+                    <textarea name="demanda_detalhes" 
+                              class="form-control" 
+                              rows="5" 
+                              placeholder="Descreva com mais detalhes o que o visitante precisa..."></textarea>
+                    <div class="form-text">Informações adicionais que podem ajudar no atendimento</div>
+                  </div>
+
+                  <!-- Seção: Ações -->
+                  <div class="col-12">
+                    <div class="rec-section-title mb-3">
+                      <i class="bi bi-gear me-2"></i>Ações
+                      <div class="rec-section-sep"></div>
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="d-flex flex-wrap gap-3">
+                      {% if visitante %}
+                        <button type="button" 
+                                class="btn btn-outline-primary btn-lg" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#modalRegistrarVisita">
+                          <i class="bi bi-calendar-plus me-2"></i>Registrar Visita
+                        </button>
+                      {% else %}
+                        <button type="button" 
+                                class="btn btn-outline-secondary btn-lg" 
+                                disabled 
+                                title="Salve o visitante primeiro">
+                          <i class="bi bi-calendar-plus me-2"></i>Registrar Visita
+                        </button>
+                      {% endif %}
+                      
+                      <button type="submit" 
+                              name="enfileirar" 
+                              value="1" 
+                              class="btn btn-success btn-lg">
+                        <i class="bi bi-arrow-right-circle me-2"></i>Salvar e Enfileirar
+                      </button>
+                      
+                      <button type="submit" 
+                              class="btn btn-primary btn-lg">
+                        <i class="bi bi-check-lg me-2"></i>Apenas Salvar
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <div class="col-md-6">
-                  <label class="form-label">Atendente</label>
-                  <select name="atendente_id" class="form-select">
-                    <option value="">(definir depois)</option>
-                    {% for u in atendentes %}
-                      <option value="{{ u.id }}">{{ u.nome }}</option>
-                    {% endfor %}
-                  </select>
-                </div>
-                <div class="col-12">
-                  <label class="form-label">Detalhes</label>
-                  <textarea name="demanda_detalhes" class="form-control" rows="4"></textarea>
-                </div>
-                <div class="col-12 d-flex" style="gap:.5rem">
-                  {% if visitante %}
-                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalRegistrarVisita">Registrar Visita</button>
-                  {% else %}
-                    <button type="button" class="btn btn-outline-secondary" disabled title="Salve o visitante primeiro">Registrar Visita</button>
-                  {% endif %}
-                  <button class="btn btn-outline-success" name="enfileirar" value="1">Salvar e Enfileirar</button>
-                </div>
-              </div>
               {% endif %}
             </div>
 
+            <!-- Aba: Histórico -->
             <div class="tab-pane fade" id="tab-historico" role="tabpanel">
               {% if visitante %}
-              <div class="table-responsive">
-                <table class="table table-striped">
-                  <thead>
-                    <tr>
-                      <th>Chegada</th>
-                      <th>Status</th>
-                      <th>Atendente</th>
-                      <th>Demanda</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {% for a in visitante.atendimentos.all %}
-                    <tr>
-                      <td>{{ a.horario_chegada|date:'d/m/Y H:i' }}</td>
-                      <td>
-                        {% if a.status == 'aguardando' %}
-                          <span class="badge bg-warning text-dark">{{ a.get_status_display }}</span>
-                        {% elif a.status == 'em_atendimento' %}
-                          <span class="badge bg-success">{{ a.get_status_display }}</span>
-                        {% elif a.status == 'cancelado' %}
-                          <span class="badge bg-danger">{{ a.get_status_display }}</span>
-                        {% else %}
-                          <span class="badge bg-primary">{{ a.get_status_display }}</span>
+                <div class="row g-4">
+                  <!-- Cabeçalho do Histórico -->
+                  <div class="col-12">
+                    <div class="rec-section-title mb-3">
+                      <i class="bi bi-clock-history me-2"></i>Histórico de Visitas
+                      <div class="rec-section-sep"></div>
+                    </div>
+                    
+                    <!-- Estatísticas rápidas -->
+                    <div class="row g-3 mb-4">
+                      <div class="col-md-3">
+                        <div class="rec-card text-center">
+                          <div class="card-body py-3">
+                            <i class="bi bi-calendar-check text-success fs-4"></i>
+                            <div class="fw-bold fs-5">{{ atendimentos_concluidos|default:0 }}</div>
+                            <div class="text-muted small">Concluídas</div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="rec-card text-center">
+                          <div class="card-body py-3">
+                            <i class="bi bi-clock text-warning fs-4"></i>
+                            <div class="fw-bold fs-5">{{ atendimentos_aguardando|default:0 }}</div>
+                            <div class="text-muted small">Aguardando</div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="rec-card text-center">
+                          <div class="card-body py-3">
+                            <i class="bi bi-person-check text-info fs-4"></i>
+                            <div class="fw-bold fs-5">{{ atendimentos_em_atendimento|default:0 }}</div>
+                            <div class="text-muted small">Em Atendimento</div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="rec-card text-center">
+                          <div class="card-body py-3">
+                            <i class="bi bi-x-circle text-danger fs-4"></i>
+                            <div class="fw-bold fs-5">{{ atendimentos_cancelados|default:0 }}</div>
+                            <div class="text-muted small">Canceladas</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Lista de Atendimentos -->
+                  <div class="col-12">
+                    {% if visitante.atendimentos.all %}
+                      <div class="table-responsive">
+                        <table class="table table-hover">
+                          <thead class="table-light">
+                            <tr>
+                              <th class="fw-medium">
+                                <i class="bi bi-calendar3 me-1"></i>Data/Hora
+                              </th>
+                              <th class="fw-medium">
+                                <i class="bi bi-flag me-1"></i>Status
+                              </th>
+                              <th class="fw-medium">
+                                <i class="bi bi-person-badge me-1"></i>Atendente
+                              </th>
+                              <th class="fw-medium">
+                                <i class="bi bi-chat-text me-1"></i>Demanda
+                              </th>
+                              <th class="fw-medium">
+                                <i class="bi bi-clock me-1"></i>Duração
+                              </th>
+                              <th class="fw-medium text-center">
+                                <i class="bi bi-gear me-1"></i>Ações
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {% for a in visitante.atendimentos.all %}
+                            <tr>
+                              <td class="align-middle">
+                                <div class="fw-medium">{{ a.horario_chegada|date:'d/m/Y' }}</div>
+                                <div class="text-muted small">{{ a.horario_chegada|date:'H:i' }}</div>
+                              </td>
+                              <td class="align-middle">
+                                {% if a.status == 'aguardando' %}
+                                  <span class="badge bg-warning text-dark fs-6">
+                                    <i class="bi bi-clock me-1"></i>{{ a.get_status_display }}
+                                  </span>
+                                {% elif a.status == 'em_atendimento' %}
+                                  <span class="badge bg-info fs-6">
+                                    <i class="bi bi-person-check me-1"></i>{{ a.get_status_display }}
+                                  </span>
+                                {% elif a.status == 'cancelado' %}
+                                  <span class="badge bg-danger fs-6">
+                                    <i class="bi bi-x-circle me-1"></i>{{ a.get_status_display }}
+                                  </span>
+                                {% else %}
+                                  <span class="badge bg-success fs-6">
+                                    <i class="bi bi-check-circle me-1"></i>{{ a.get_status_display }}
+                                  </span>
+                                {% endif %}
+                              </td>
+                              <td class="align-middle">
+                                {% if a.atendente %}
+                                  <div class="d-flex align-items-center">
+                                    <i class="bi bi-person-circle text-primary me-2"></i>
+                                    <span>{{ a.atendente.nome }}</span>
+                                  </div>
+                                {% else %}
+                                  <span class="text-muted">-</span>
+                                {% endif %}
+                              </td>
+                              <td class="align-middle">
+                                {% if a.demanda_resumo %}
+                                  <div class="fw-medium">{{ a.demanda_resumo|truncatechars:30 }}</div>
+                                  {% if a.demanda_resumo|length > 30 %}
+                                    <div class="text-muted small" title="{{ a.demanda_resumo }}">...</div>
+                                  {% endif %}
+                                {% else %}
+                                  <span class="text-muted">-</span>
+                                {% endif %}
+                              </td>
+                              <td class="align-middle">
+                                {% if a.fim_atendimento and a.inicio_atendimento %}
+                                  <span class="fw-medium text-success">
+                                    {{ a.inicio_atendimento|duration_format:a.fim_atendimento }}
+                                  </span>
+                                {% elif a.inicio_atendimento and not a.fim_atendimento %}
+                                  <span class="fw-medium text-info">
+                                    <i class="bi bi-clock me-1"></i>Em andamento
+                                  </span>
+                                {% else %}
+                                  <span class="text-muted">-</span>
+                                {% endif %}
+                              </td>
+                              <td class="align-middle text-center">
+                                <a class="btn btn-sm btn-outline-primary" 
+                                   href="{% url 'recepcao:atendimento_detail' a.id %}" 
+                                   title="Ver detalhes">
+                                  <i class="bi bi-eye"></i>
+                                </a>
+                              </td>
+                            </tr>
+                            {% endfor %}
+                          </tbody>
+                        </table>
+                      </div>
+                    {% else %}
+                      <div class="text-center py-5">
+                        <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                        <h5 class="text-muted mt-3">Nenhuma visita registrada</h5>
+                        <p class="text-muted">Este visitante ainda não possui histórico de atendimentos.</p>
+                        {% if not view_mode %}
+                          <a href="#tab-visita" class="btn btn-primary" onclick="document.querySelector('[data-bs-target=\"#tab-visita\"]').click()">
+                            <i class="bi bi-plus-circle me-1"></i>Registrar Primeira Visita
+                          </a>
                         {% endif %}
-                      </td>
-                      <td>{{ a.atendente|default:'-' }}</td>
-                      <td>{{ a.demanda_resumo|default:'-' }}</td>
-                      <td><a class="btn btn-sm btn-outline-primary" href="{% url 'recepcao:atendimento_detail' a.id %}" title="Abrir"><i class="bi bi-box-arrow-up-right"></i></a></td>
-                    </tr>
-                    {% empty %}
-                    <tr><td colspan="5" class="text-muted">Sem histórico.</td></tr>
-                    {% endfor %}
-                  </tbody>
-                </table>
-              </div>
+                      </div>
+                    {% endif %}
+                  </div>
+                </div>
               {% else %}
-              <p class="text-muted">Salve o visitante para ver o histórico.</p>
+                <div class="text-center py-5">
+                  <i class="bi bi-person-plus text-muted" style="font-size: 3rem;"></i>
+                  <h5 class="text-muted mt-3">Visitante não salvo</h5>
+                  <p class="text-muted">Salve o visitante primeiro para visualizar o histórico de visitas.</p>
+                </div>
               {% endif %}
             </div>
           </div>
-
-          {% if not view_mode %}
-          <div class="mt-3 d-flex" style="gap:.5rem">
-            <button class="btn btn-primary" type="submit">Salvar</button>
-            <a class="btn btn-light" href="{% url 'recepcao:visitantes_list' %}">Voltar</a>
-          </div>
-          {% else %}
-          <div class="mt-3 d-flex" style="gap:.5rem">
-            <a class="btn btn-primary" href="{% url 'recepcao:visitante_update' visitante.id %}">
-              <i class="bi bi-pencil me-1"></i>Editar
-            </a>
-            <a class="btn btn-light" href="{% url 'recepcao:visitantes_list' %}">
-              <i class="bi bi-arrow-left me-1"></i>Voltar
-            </a>
-          </div>
-          {% endif %}
         </form>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Modal Registrar Visita (reutilizável) -->
+<!-- Modal Registrar Visita -->
 <div class="modal fade" id="modalRegistrarVisita" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Registrar Visita</h5>
+        <h5 class="modal-title">
+          <i class="bi bi-calendar-plus me-2"></i>Registrar Nova Visita
+        </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <form method="post" id="formRegistrarVisita" action="{% if visitante %}{% url 'recepcao:visitante_enfileirar' visitante.id %}{% else %}#{% endif %}">
         {% csrf_token %}
         <div class="modal-body">
-          <div class="mb-2 small text-muted">Visitante: <strong>{{ visitante.nome|default:'-' }}</strong></div>
-          <div class="mb-2">
-            <label class="form-label">Atendente</label>
-            <select name="atendente_id" class="form-select">
-              <option value="">(definir depois)</option>
-              {% for u in atendentes %}
-                <option value="{{ u.id }}">{{ u.nome }}</option>
-              {% endfor %}
-            </select>
+          <!-- Informações do Visitante -->
+          <div class="alert alert-info mb-4">
+            <div class="d-flex align-items-center">
+              <i class="bi bi-person-circle text-primary me-3" style="font-size: 2rem;"></i>
+              <div>
+                <h6 class="mb-1">Visitante: <strong>{{ visitante.nome|default:'-' }}</strong></h6>
+                <div class="text-muted small">
+                  {% if visitante.telefone %}{{ visitante.telefone }} • {% endif %}
+                  {% if visitante.municipio %}{{ visitante.municipio }}{% endif %}
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="mb-2">
-            <label class="form-label">Resumo da demanda</label>
-            <input type="text" name="demanda_resumo" class="form-control" />
-          </div>
-          <div>
-            <label class="form-label">Detalhes</label>
-            <textarea name="demanda_detalhes" class="form-control" rows="4"></textarea>
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-medium">
+                <i class="bi bi-person-badge me-1"></i>Atendente Responsável
+              </label>
+              <select name="atendente_id" class="form-select">
+                <option value="">Selecione o atendente...</option>
+                {% for u in atendentes %}
+                  <option value="{{ u.id }}">{{ u.nome }}</option>
+                {% endfor %}
+              </select>
+              <div class="form-text">Deixe em branco para definir depois</div>
+            </div>
+            
+            <div class="col-md-6">
+              <label class="form-label fw-medium">
+                <i class="bi bi-chat-text me-1"></i>Resumo da Demanda <span class="text-danger">*</span>
+              </label>
+              <input type="text" 
+                     name="demanda_resumo" 
+                     class="form-control" 
+                     placeholder="Ex: Consulta jurídica, Reunião de negócios..."
+                     required />
+            </div>
+            
+            <div class="col-12">
+              <label class="form-label fw-medium">
+                <i class="bi bi-file-text me-1"></i>Detalhes da Demanda
+              </label>
+              <textarea name="demanda_detalhes" 
+                        class="form-control" 
+                        rows="4" 
+                        placeholder="Descreva com mais detalhes o que o visitante precisa..."></textarea>
+              <div class="form-text">Informações adicionais que podem ajudar no atendimento</div>
+            </div>
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
-          <button type="submit" class="btn btn-primary">Registrar</button>
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle me-1"></i>Cancelar
+          </button>
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check-lg me-1"></i>Registrar Visita
+          </button>
         </div>
       </form>
     </div>
   </div>
 </div>
 
+{% block extra_css %}
+<style>
+  /* Foto do visitante */
+  .visitante-photo {
+    border: 2px solid #dee2e6;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+  }
+  
+  .visitante-photo:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  [data-bs-theme="dark"] .visitante-photo {
+    border-color: #4a5568;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  }
+  
+  [data-bs-theme="dark"] .visitante-photo:hover {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+  }
+  
+  /* Placeholder da foto */
+  .photo-placeholder {
+    border: 2px dashed #dee2e6;
+    transition: all 0.3s ease;
+  }
+  
+  [data-bs-theme="dark"] .photo-placeholder {
+    border-color: #4a5568;
+    background-color: #2d3748;
+  }
+  
+  /* Melhorias nas abas */
+  .nav-tabs {
+    border-bottom: 2px solid #dee2e6;
+    margin-bottom: 0;
+  }
+  
+  [data-bs-theme="dark"] .nav-tabs {
+    border-bottom-color: #4a5568;
+  }
+  
+  .nav-tabs .nav-link {
+    border: none;
+    border-radius: 0;
+    padding: 12px 20px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+  
+  .nav-tabs .nav-link:hover {
+    border-color: transparent;
+    background-color: rgba(0, 123, 255, 0.1);
+  }
+  
+  .nav-tabs .nav-link.active {
+    background-color: #fff;
+    border-color: #dee2e6 #dee2e6 #fff;
+    color: #495057;
+  }
+  
+  [data-bs-theme="dark"] .nav-tabs .nav-link:hover {
+    background-color: rgba(59, 130, 246, 0.1);
+  }
+  
+  [data-bs-theme="dark"] .nav-tabs .nav-link.active {
+    background-color: #1a202c;
+    border-color: #4a5568 #4a5568 #1a202c;
+    color: #e2e8f0;
+  }
+</style>
+{% endblock %}
+
 {% block extra_js %}
 <script>
   (function(){
-    // Máscara para telefone
+    // Apenas máscara para telefone - sem outras validações
     const telefoneInput = document.getElementById('telefone');
     if (telefoneInput && !telefoneInput.readOnly) {
       telefoneInput.addEventListener('input', function(e) {
@@ -254,6 +751,58 @@
           }
         }
       }
+    }
+
+    // Preview da foto
+    const fotoInput = document.querySelector('input[name="foto"]');
+    if (fotoInput) {
+      fotoInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            const preview = document.querySelector('.foto-preview');
+            if (preview) {
+              preview.src = e.target.result;
+            }
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+
+    // Tooltips para botões
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    // Debug: verificar se o botão de salvar está funcionando
+    const salvarBtn = document.querySelector('button[form="formVisitante"]');
+    if (salvarBtn) {
+      console.log('Botão de salvar encontrado:', salvarBtn);
+      salvarBtn.addEventListener('click', function(e) {
+        console.log('Botão de salvar clicado!');
+        // Forçar o envio do formulário
+        const form = document.getElementById('formVisitante');
+        if (form) {
+          console.log('Enviando formulário...');
+          form.submit();
+        }
+      });
+    } else {
+      console.log('Botão de salvar não encontrado!');
+    }
+
+    // Debug: verificar se o formulário está funcionando
+    const form = document.getElementById('formVisitante');
+    if (form) {
+      console.log('Formulário encontrado:', form);
+      form.addEventListener('submit', function(e) {
+        console.log('Formulário sendo submetido...');
+      });
+    } else {
+      console.log('Formulário não encontrado!');
     }
   })();
 </script>

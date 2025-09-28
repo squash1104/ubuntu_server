@@ -540,8 +540,36 @@ def visitantes_list(request):
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
     atendentes = Attendente.objects.all().order_by("nome")
+
+    # Adicionar estatísticas de atendimentos para cada visitante
+    visitantes_com_stats = []
+    for visitante in page_obj.object_list:
+        # Calcular estatísticas de atendimentos
+        atendimentos_stats = {
+            "concluidos": visitante.atendimentos.filter(
+                status=AtendimentoStatus.CONCLUIDO
+            ).count(),
+            "aguardando": visitante.atendimentos.filter(
+                status=AtendimentoStatus.AGUARDANDO
+            ).count(),
+            "em_atendimento": visitante.atendimentos.filter(
+                status=AtendimentoStatus.EM_ATENDIMENTO
+            ).count(),
+            "cancelados": visitante.atendimentos.filter(
+                status=AtendimentoStatus.CANCELADO
+            ).count(),
+        }
+
+        # Adicionar as estatísticas como atributos do visitante
+        visitante.atendimentos_concluidos = atendimentos_stats["concluidos"]
+        visitante.atendimentos_aguardando = atendimentos_stats["aguardando"]
+        visitante.atendimentos_em_atendimento = atendimentos_stats["em_atendimento"]
+        visitante.atendimentos_cancelados = atendimentos_stats["cancelados"]
+
+        visitantes_com_stats.append(visitante)
+
     ctx = {
-        "visitantes": page_obj.object_list,
+        "visitantes": visitantes_com_stats,
         "page_obj": page_obj,
         "paginator": paginator,
         "q": q,
@@ -642,40 +670,81 @@ def visitante_delete(request, pk: int):
 @user_passes_test(is_recepcionista)
 def visitante_create(request):
     if request.method == "POST":
-        nome = request.POST.get("nome")
-        if not nome:
+        try:
+            nome = request.POST.get("nome", "").strip()
+            if not nome:
+                cidades_mt = Cidade.objects.filter(uf_cidade__iexact="MT").order_by(
+                    "nome_cidade"
+                )
+                atendentes = Attendente.objects.all().order_by("nome")
+                return render(
+                    request,
+                    "recepcao/visitante_form.html",
+                    {
+                        "error": "Informe o nome do visitante.",
+                        "cidades_mt": cidades_mt,
+                        "atendentes": atendentes,
+                    },
+                )
+
+            # Criar o visitante
+            visitante = Visitante.objects.create(
+                nome=nome,
+                telefone=request.POST.get("telefone") or None,
+                funcao=request.POST.get("funcao") or None,
+                municipio=request.POST.get("municipio") or None,
+                email=request.POST.get("email") or None,
+                data_nascimento=request.POST.get("data_nascimento") or None,
+                criado_por=request.user,
+            )
+
+            # Enfileirar direto, se solicitado
+            if request.POST.get("enfileirar") == "1":
+                atendente = None
+                atendente_id = request.POST.get("atendente_id")
+                if atendente_id:
+                    try:
+                        atendente = Attendente.objects.get(pk=int(atendente_id))
+                    except Exception:
+                        atendente = None
+
+                # Criar demanda se fornecida
+                demanda_resumo = request.POST.get("demanda_resumo", "").strip()
+                demanda_detalhes = request.POST.get("demanda_detalhes", "").strip()
+
+                Atendimento.objects.create(
+                    visitante=visitante,
+                    recepcionista=request.user,
+                    atendente=atendente,
+                    status=AtendimentoStatus.AGUARDANDO,
+                    demanda_resumo=demanda_resumo or None,
+                    demanda_detalhes=demanda_detalhes or None,
+                )
+
+            # Redirecionar para a lista de visitantes
+            return redirect("recepcao:visitantes_list")
+
+        except Exception as e:
+            # Log do erro para debug
+            import logging
+
+            logger = logging.getLogger(__name__)
+            logger.error(f"Erro ao criar visitante: {e!s}")
+
             cidades_mt = Cidade.objects.filter(uf_cidade__iexact="MT").order_by(
                 "nome_cidade"
             )
+            atendentes = Attendente.objects.all().order_by("nome")
             return render(
                 request,
                 "recepcao/visitante_form.html",
-                {"error": "Informe o nome.", "cidades_mt": cidades_mt},
+                {
+                    "error": f"Erro ao salvar visitante: {e!s}",
+                    "cidades_mt": cidades_mt,
+                    "atendentes": atendentes,
+                },
             )
-        visitante = Visitante.objects.create(
-            nome=nome,
-            telefone=request.POST.get("telefone") or None,
-            funcao=request.POST.get("funcao") or None,
-            municipio=request.POST.get("municipio") or None,
-            email=request.POST.get("email") or None,
-            data_nascimento=request.POST.get("data_nascimento") or None,
-        )
-        # Enfileirar direto, se solicitado
-        if request.POST.get("enfileirar") == "1":
-            atendente = None
-            atendente_id = request.POST.get("atendente_id")
-            if atendente_id:
-                try:
-                    atendente = Attendente.objects.get(pk=int(atendente_id))
-                except Exception:
-                    atendente = None
-            Atendimento.objects.create(
-                visitante=visitante,
-                recepcionista=request.user,
-                atendente=atendente,
-                status=AtendimentoStatus.AGUARDANDO,
-            )
-        return redirect("recepcao:visitante_detail", pk=visitante.pk)
+
     cidades_mt = Cidade.objects.filter(uf_cidade__iexact="MT").order_by("nome_cidade")
     atendentes = Attendente.objects.all().order_by("nome")
     return render(
@@ -719,9 +788,31 @@ def visitante_update(request, pk: int):
         if request.FILES.get("foto"):
             visitante.foto = request.FILES["foto"]
         visitante.save()
-        return redirect("recepcao:visitante_update", pk=visitante.pk)
+        from django.urls import reverse
+
+        return redirect(
+            reverse("recepcao:visitante_update", kwargs={"pk": visitante.pk})
+            + "?view=1"
+        )
     cidades_mt = Cidade.objects.filter(uf_cidade__iexact="MT").order_by("nome_cidade")
     atendentes = Attendente.objects.all().order_by("nome")
+
+    # Calcular estatísticas de atendimentos para o histórico
+    atendimentos_stats = {
+        "concluidos": visitante.atendimentos.filter(
+            status=AtendimentoStatus.CONCLUIDO
+        ).count(),
+        "aguardando": visitante.atendimentos.filter(
+            status=AtendimentoStatus.AGUARDANDO
+        ).count(),
+        "em_atendimento": visitante.atendimentos.filter(
+            status=AtendimentoStatus.EM_ATENDIMENTO
+        ).count(),
+        "cancelados": visitante.atendimentos.filter(
+            status=AtendimentoStatus.CANCELADO
+        ).count(),
+    }
+
     return render(
         request,
         "recepcao/visitante_form.html",
@@ -730,6 +821,10 @@ def visitante_update(request, pk: int):
             "view_mode": view_mode,
             "cidades_mt": cidades_mt,
             "atendentes": atendentes,
+            "atendimentos_concluidos": atendimentos_stats["concluidos"],
+            "atendimentos_aguardando": atendimentos_stats["aguardando"],
+            "atendimentos_em_atendimento": atendimentos_stats["em_atendimento"],
+            "atendimentos_cancelados": atendimentos_stats["cancelados"],
         },
     )
 
@@ -744,6 +839,16 @@ def atendentes(request):
             nome = request.POST.get("nome")
             if nome:
                 Attendente.objects.create(nome=nome)
+        elif action == "update":
+            uid = request.POST.get("user_id")
+            nome = request.POST.get("nome")
+            if uid and nome:
+                try:
+                    a = Attendente.objects.get(pk=int(uid))
+                    a.nome = nome
+                    a.save()
+                except Exception:
+                    pass
         elif action == "remove":
             uid = request.POST.get("user_id")
             try:
@@ -754,7 +859,29 @@ def atendentes(request):
         return redirect("recepcao:atendentes")
 
     atendentes_qs = Attendente.objects.all().order_by("nome")
-    return render(request, "recepcao/atendentes.html", {"atendentes": atendentes_qs})
+
+    # Adicionar estatísticas de atendimentos para cada atendente
+    atendentes_com_stats = []
+    for atendente in atendentes_qs:
+        # Calcular estatísticas de atendimentos
+        atendimentos_stats = {
+            "concluidos": Atendimento.objects.filter(
+                atendente=atendente, status=AtendimentoStatus.CONCLUIDO
+            ).count(),
+            "em_andamento": Atendimento.objects.filter(
+                atendente=atendente, status=AtendimentoStatus.EM_ATENDIMENTO
+            ).count(),
+        }
+
+        # Adicionar as estatísticas como atributos do atendente
+        atendente.atendimentos_concluidos = atendimentos_stats["concluidos"]
+        atendente.atendimentos_em_andamento = atendimentos_stats["em_andamento"]
+
+        atendentes_com_stats.append(atendente)
+
+    return render(
+        request, "recepcao/atendentes.html", {"atendentes": atendentes_com_stats}
+    )
 
 
 @login_required
@@ -1107,8 +1234,134 @@ def declaracao_visitante(request, pk: int):
 @login_required
 @user_passes_test(is_recepcionista)
 def relatorios(request):
-    # Placeholder simples; métricas serão implementadas na próxima etapa
-    return render(request, "recepcao/relatorios.html")
+    from datetime import datetime, timedelta
+
+    from django.db.models import Avg, Count, Q
+    from django.utils import timezone
+
+    # Período padrão: últimos 30 dias
+    hoje = timezone.now().date()
+    inicio_mes = hoje.replace(day=1)
+    inicio_30_dias = hoje - timedelta(days=30)
+
+    # Filtros de data (se fornecidos)
+    data_inicio = request.GET.get("data_inicio", inicio_30_dias.strftime("%Y-%m-%d"))
+    data_fim = request.GET.get("data_fim", hoje.strftime("%Y-%m-%d"))
+
+    try:
+        dt_inicio = datetime.strptime(data_inicio, "%Y-%m-%d").date()
+        dt_fim = datetime.strptime(data_fim, "%Y-%m-%d").date()
+    except:
+        dt_inicio = inicio_30_dias
+        dt_fim = hoje
+
+    # Filtro de atendimentos no período
+    atendimentos_periodo = Atendimento.objects.filter(
+        horario_chegada__date__gte=dt_inicio, horario_chegada__date__lte=dt_fim
+    )
+
+    # 1. Resumo Geral
+    total_atendimentos = atendimentos_periodo.count()
+    concluidos = atendimentos_periodo.filter(status=AtendimentoStatus.CONCLUIDO).count()
+    cancelados = atendimentos_periodo.filter(status=AtendimentoStatus.CANCELADO).count()
+    em_andamento = atendimentos_periodo.filter(
+        status=AtendimentoStatus.EM_ATENDIMENTO
+    ).count()
+    aguardando = atendimentos_periodo.filter(
+        status=AtendimentoStatus.AGUARDANDO
+    ).count()
+
+    # 2. Tempos médios (apenas para atendimentos concluídos)
+    atendimentos_concluidos = atendimentos_periodo.filter(
+        status=AtendimentoStatus.CONCLUIDO,
+        inicio_atendimento__isnull=False,
+        fim_atendimento__isnull=False,
+    )
+
+    # Calcular tempo médio de espera
+    espera_expr = ExpressionWrapper(
+        F("inicio_atendimento") - F("horario_chegada"), output_field=DurationField()
+    )
+
+    # Calcular tempo médio de atendimento
+    atendimento_expr = ExpressionWrapper(
+        F("fim_atendimento") - F("inicio_atendimento"), output_field=DurationField()
+    )
+
+    tempo_medio_espera = atendimentos_concluidos.aggregate(avg_espera=Avg(espera_expr))[
+        "avg_espera"
+    ]
+
+    tempo_medio_atendimento = atendimentos_concluidos.aggregate(
+        avg_atendimento=Avg(atendimento_expr)
+    )["avg_atendimento"]
+
+    # 3. Atendimentos por atendente
+    por_atendente = (
+        atendimentos_periodo.filter(atendente__isnull=False)
+        .values("atendente__nome")
+        .annotate(
+            total=Count("id"),
+            concluidos=Count("id", filter=Q(status=AtendimentoStatus.CONCLUIDO)),
+            cancelados=Count("id", filter=Q(status=AtendimentoStatus.CANCELADO)),
+            tempo_medio_at=Avg(
+                atendimento_expr, filter=Q(status=AtendimentoStatus.CONCLUIDO)
+            ),
+            tempo_medio_esp=Avg(
+                espera_expr, filter=Q(status=AtendimentoStatus.CONCLUIDO)
+            ),
+        )
+        .order_by("-total")
+    )
+
+    # 4. Atendimentos por dia (últimos 30 dias)
+    atendimentos_por_dia = []
+    for i in range(30):
+        data = hoje - timedelta(days=i)
+        qtd = atendimentos_periodo.filter(horario_chegada__date=data).count()
+        atendimentos_por_dia.append({"data": data.strftime("%d/%m"), "quantidade": qtd})
+    atendimentos_por_dia.reverse()
+
+    # 5. Top 5 visitantes mais frequentes
+    top_visitantes = (
+        atendimentos_periodo.values("visitante__nome", "visitante__id")
+        .annotate(total_visitas=Count("id"))
+        .order_by("-total_visitas")[:5]
+    )
+
+    # 6. Horários de maior movimento
+    horarios_movimento = []
+    for hora in range(8, 18):  # 8h às 17h
+        qtd = atendimentos_periodo.filter(horario_chegada__hour=hora).count()
+        horarios_movimento.append({"hora": f"{hora:02d}:00", "quantidade": qtd})
+
+    # Função para formatar duração
+    def fmt_td(td):
+        if not td:
+            return "00h00m"
+        total_seconds = int(td.total_seconds())
+        hours = total_seconds // 3600
+        minutes = (total_seconds % 3600) // 60
+        return f"{hours:02d}h{minutes:02d}m"
+
+    context = {
+        "data_inicio": data_inicio,
+        "data_fim": data_fim,
+        "total_atendimentos": total_atendimentos,
+        "concluidos": concluidos,
+        "cancelados": cancelados,
+        "em_andamento": em_andamento,
+        "aguardando": aguardando,
+        "tempo_medio_espera": fmt_td(tempo_medio_espera),
+        "tempo_medio_atendimento": fmt_td(tempo_medio_atendimento),
+        "por_atendente": por_atendente,
+        "atendimentos_por_dia": atendimentos_por_dia,
+        "top_visitantes": top_visitantes,
+        "horarios_movimento": horarios_movimento,
+        "fmt_td": fmt_td,
+    }
+
+    return render(request, "recepcao/relatorios.html", context)
 
 
 # Create your views here.

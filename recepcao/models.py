@@ -12,6 +12,14 @@ class Visitante(models.Model):
     foto = models.ImageField(upload_to="recepcao/fotos/", blank=True, null=True)
     criado_em = models.DateTimeField(auto_now_add=True)
     atualizado_em = models.DateTimeField(auto_now=True)
+    criado_por = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="visitantes_criados",
+        verbose_name="Criado por",
+    )
 
     def __str__(self) -> str:
         return self.nome

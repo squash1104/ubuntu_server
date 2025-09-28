@@ -1,173 +1,374 @@
 {% extends 'recepcao/base_recepcao.html' %}
 {% block content %}
-<div class="rec-card">
-  <div class="card-body">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <div>
-        <div class="rec-section-title">Visitantes <span class="subtitle">({{ visitantes|length }})</span></div>
-        <div class="rec-section-sep"></div>
-      </div>
-      <a class="btn btn-sm btn-primary" href="{% url 'recepcao:visitante_create' %}">
-        <i class="bi bi-plus-lg me-1"></i>Novo
-      </a>
-    </div>
+<div class="row">
+  <div class="col-12">
+    <div class="rec-card">
+      <div class="card-body">
+        <!-- Cabeçalho -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h1 class="h4 mb-1">
+              <i class="bi bi-people text-primary me-2"></i>Lista de Visitantes
+            </h1>
+            <div class="text-muted small">
+              <i class="bi bi-person-check me-1"></i>{{ paginator.count }} visitante{{ paginator.count|pluralize }} cadastrado{{ paginator.count|pluralize }}
+              {% if q %}
+                <span class="ms-3">
+                  <i class="bi bi-search me-1"></i>Filtrado por: "{{ q }}"
+                </span>
+              {% endif %}
+            </div>
+          </div>
+          <div class="d-flex gap-2">
+            <a class="btn btn-primary" href="{% url 'recepcao:visitante_create' %}">
+              <i class="bi bi-person-plus me-1"></i>Novo Visitante
+            </a>
+            <button class="btn btn-outline-secondary" onclick="window.location.reload()" title="Atualizar">
+              <i class="bi bi-arrow-clockwise"></i>
+            </button>
+          </div>
+        </div>
 
-    <form method="get" class="mb-4 d-flex" style="gap:.5rem">
-      <input type="text" name="q" value="{{ q|default:'' }}" class="form-control" placeholder="Buscar por nome..." />
-      <input type="hidden" name="sort" value="{{ sort|default:'nome' }}" />
-      <input type="hidden" name="dir" value="{{ dir|default:'asc' }}" />
-      <button class="btn btn-outline-secondary" type="submit">
-        <i class="bi bi-search me-1"></i>Buscar
-      </button>
-    </form>
-
-    <div class="table-responsive">
-      <table class="table table-sm table-striped mb-0">
-        <thead>
-          <tr>
-            <th>
-              <a href="?q={{ q|urlencode }}&sort=nome&dir={% if sort == 'nome' and dir == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
-                Nome
-                {% if sort == 'nome' %}<i class="bi bi-caret-{% if dir == 'asc' %}up{% else %}down{% endif %}-fill ms-1"></i>{% endif %}
-              </a>
-            </th>
-            <th>
-              <a href="?q={{ q|urlencode }}&sort=telefone&dir={% if sort == 'telefone' and dir == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
-                Telefone
-                {% if sort == 'telefone' %}<i class="bi bi-caret-{% if dir == 'asc' %}up{% else %}down{% endif %}-fill ms-1"></i>{% endif %}
-              </a>
-            </th>
-            <th>
-              <a href="?q={{ q|urlencode }}&sort=funcao&dir={% if sort == 'funcao' and dir == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
-                Função
-                {% if sort == 'funcao' %}<i class="bi bi-caret-{% if dir == 'asc' %}up{% else %}down{% endif %}-fill ms-1"></i>{% endif %}
-              </a>
-            </th>
-            <th>
-              <a href="?q={{ q|urlencode }}&sort=municipio&dir={% if sort == 'municipio' and dir == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
-                Município
-                {% if sort == 'municipio' %}<i class="bi bi-caret-{% if dir == 'asc' %}up{% else %}down{% endif %}-fill ms-1"></i>{% endif %}
-              </a>
-            </th>
-            <th>
-              <a href="?q={{ q|urlencode }}&sort=email&dir={% if sort == 'email' and dir == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
-                Email
-                {% if sort == 'email' %}<i class="bi bi-caret-{% if dir == 'asc' %}up{% else %}down{% endif %}-fill ms-1"></i>{% endif %}
-              </a>
-            </th>
-            <th class="text-center align-middle">Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for v in visitantes %}
-          <tr>
-            <td class="align-middle">
-              <span class="fw-medium">{{ v.nome }}</span>
-            </td>
-            <td class="align-middle">
-              {% if v.telefone %}
-                <span>{{ v.telefone }}</span>
-              {% else %}
-                <span class="text-muted">-</span>
-              {% endif %}
-            </td>
-            <td class="align-middle">
-              {% if v.funcao %}
-                <span>{{ v.funcao }}</span>
-              {% else %}
-                <span class="text-muted">-</span>
-              {% endif %}
-            </td>
-            <td class="align-middle">
-              {% if v.municipio %}
-                <span>{{ v.municipio }}</span>
-              {% else %}
-                <span class="text-muted">-</span>
-              {% endif %}
-            </td>
-            <td class="align-middle">
-              {% if v.email %}
-                <span class="small">{{ v.email }}</span>
-              {% else %}
-                <span class="text-muted">-</span>
-              {% endif %}
-            </td>
-            <td class="text-center align-middle" style="white-space:nowrap;">
-              <div class="d-flex justify-content-center align-items-center" role="group">
-                <a class="btn btn-sm btn-outline-secondary me-1" title="Detalhes" href="{% url 'recepcao:visitante_update' v.id %}?view=1">
-                  <i class="bi bi-box-arrow-up-right"></i>
-                </a>
-                <button class="btn btn-sm btn-outline-success me-1" title="Adicionar à fila" data-bs-toggle="modal" data-bs-target="#modalEnfileirar" data-vid="{{ v.id }}" data-vnome="{{ v.nome }}">
-                  <i class="bi bi-plus-lg"></i>
-                </button>
-                <button class="btn btn-sm btn-outline-danger" title="Remover" data-bs-toggle="modal" data-bs-target="#modalExcluir" data-vid="{{ v.id }}" data-vnome="{{ v.nome }}">
-                  <i class="bi bi-trash"></i>
-                </button>
+        <!-- Barra de Pesquisa e Filtros -->
+        <div class="row g-3 mb-4">
+          <div class="col-md-8">
+            <form method="get" class="d-flex gap-2">
+              <div class="input-group">
+                <span class="input-group-text">
+                  <i class="bi bi-search"></i>
+                </span>
+                <input type="text" 
+                       name="q" 
+                       value="{{ q|default:'' }}" 
+                       class="form-control form-control-lg" 
+                       placeholder="Buscar por nome, telefone, função ou município..." />
+                <input type="hidden" name="sort" value="{{ sort|default:'nome' }}" />
+                <input type="hidden" name="dir" value="{{ dir|default:'asc' }}" />
               </div>
-            </td>
-          </tr>
-          {% empty %}
-          <tr><td colspan="6" class="text-muted text-center py-4">Nenhum visitante encontrado.</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
+              <button class="btn btn-primary btn-lg" type="submit">
+                <i class="bi bi-search me-1"></i>Buscar
+              </button>
+              {% if q %}
+                <a href="{% url 'recepcao:visitantes_list' %}" class="btn btn-outline-secondary btn-lg">
+                  <i class="bi bi-x-circle me-1"></i>Limpar
+                </a>
+              {% endif %}
+            </form>
+          </div>
+          <div class="col-md-4">
+            <div class="d-flex gap-2">
+              <div class="dropdown">
+                <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                  <i class="bi bi-sort-alpha-down me-1"></i>Ordenar
+                </button>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" href="?q={{ q|urlencode }}&sort=nome&dir=asc">Nome A-Z</a></li>
+                  <li><a class="dropdown-item" href="?q={{ q|urlencode }}&sort=nome&dir=desc">Nome Z-A</a></li>
+                  <li><a class="dropdown-item" href="?q={{ q|urlencode }}&sort=municipio&dir=asc">Município A-Z</a></li>
+                  <li><a class="dropdown-item" href="?q={{ q|urlencode }}&sort=municipio&dir=desc">Município Z-A</a></li>
+                  <li><a class="dropdown-item" href="?q={{ q|urlencode }}&sort=created_at&dir=desc">Mais Recentes</a></li>
+                  <li><a class="dropdown-item" href="?q={{ q|urlencode }}&sort=created_at&dir=asc">Mais Antigos</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lista de Visitantes em Tabela -->
+        {% if visitantes %}
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th class="fw-medium" style="width: 60px;">
+                    <i class="bi bi-image me-1"></i>Foto
+                  </th>
+                  <th class="fw-medium">
+                    <i class="bi bi-person me-1"></i>Visitante
+                  </th>
+                  <th class="fw-medium">
+                    <i class="bi bi-telephone me-1"></i>Contato
+                  </th>
+                  <th class="fw-medium">
+                    <i class="bi bi-briefcase me-1"></i>Função
+                  </th>
+                  <th class="fw-medium">
+                    <i class="bi bi-geo-alt me-1"></i>Localização
+                  </th>
+                  <th class="fw-medium text-center">
+                    <i class="bi bi-graph-up me-1"></i>Estatísticas
+                  </th>
+                  <th class="fw-medium text-center" style="width: 200px;">
+                    <i class="bi bi-gear me-1"></i>Ações
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for v in visitantes %}
+                <tr class="visitante-row">
+                  <!-- Foto -->
+                  <td class="align-middle text-center">
+                    {% if v.foto %}
+                      <img src="{{ v.foto.url }}" 
+                           alt="Foto de {{ v.nome }}" 
+                           class="rounded-circle visitante-photo" />
+                    {% else %}
+                      <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto visitante-photo">
+                        <i class="bi bi-person text-muted"></i>
+                      </div>
+                    {% endif %}
+                  </td>
+                  
+                  <!-- Nome e Email -->
+                  <td class="align-middle">
+                    <div class="fw-bold text-primary">{{ v.nome }}</div>
+                    {% if v.email %}
+                      <div class="text-muted small">
+                        <i class="bi bi-envelope me-1"></i>{{ v.email|truncatechars:30 }}
+                      </div>
+                    {% endif %}
+                  </td>
+                  
+                  <!-- Telefone -->
+                  <td class="align-middle">
+                    {% if v.telefone %}
+                      <div class="d-flex align-items-center">
+                        <i class="bi bi-telephone text-muted me-2"></i>
+                        <span>{{ v.telefone }}</span>
+                      </div>
+                    {% else %}
+                      <span class="text-muted">-</span>
+                    {% endif %}
+                  </td>
+                  
+                  <!-- Função -->
+                  <td class="align-middle">
+                    {% if v.funcao %}
+                      <span>{{ v.funcao }}</span>
+                    {% else %}
+                      <span class="text-muted">-</span>
+                    {% endif %}
+                  </td>
+                  
+                  <!-- Município -->
+                  <td class="align-middle">
+                    {% if v.municipio %}
+                      <div class="d-flex align-items-center">
+                        <i class="bi bi-geo-alt text-muted me-2"></i>
+                        <span>{{ v.municipio }}</span>
+                      </div>
+                    {% else %}
+                      <span class="text-muted">-</span>
+                    {% endif %}
+                  </td>
+                  
+                  <!-- Estatísticas -->
+                  <td class="align-middle text-center">
+                    <div class="d-flex justify-content-center gap-2">
+                      <div class="text-center stats-mini">
+                        <div class="fw-bold text-success">{{ v.atendimentos_concluidos|default:0 }}</div>
+                        <div class="text-muted small">Concl.</div>
+                      </div>
+                      <div class="text-center stats-mini">
+                        <div class="fw-bold text-warning">{{ v.atendimentos_aguardando|default:0 }}</div>
+                        <div class="text-muted small">Aguard.</div>
+                      </div>
+                      <div class="text-center stats-mini">
+                        <div class="fw-bold text-info">{{ v.atendimentos_em_atendimento|default:0 }}</div>
+                        <div class="text-muted small">Atend.</div>
+                      </div>
+                      <div class="text-center stats-mini">
+                        <div class="fw-bold text-danger">{{ v.atendimentos_cancelados|default:0 }}</div>
+                        <div class="text-muted small">Canc.</div>
+                      </div>
+                    </div>
+                  </td>
+                  
+                  <!-- Ações -->
+                  <td class="align-middle text-center">
+                    <div class="d-flex justify-content-center gap-1">
+                      <a href="{% url 'recepcao:visitante_update' v.id %}?view=1" 
+                         class="btn btn-sm btn-outline-primary btn-action" 
+                         title="Ver detalhes">
+                        <i class="bi bi-eye"></i>
+                      </a>
+                      <a href="{% url 'recepcao:visitante_update' v.id %}" 
+                         class="btn btn-sm btn-outline-secondary btn-action" 
+                         title="Editar">
+                        <i class="bi bi-pencil"></i>
+                      </a>
+                      <button class="btn btn-sm btn-success btn-action" 
+                              data-bs-toggle="modal" 
+                              data-bs-target="#modalEnfileirar" 
+                              data-vid="{{ v.id }}" 
+                              data-vnome="{{ v.nome }}"
+                              title="Adicionar à fila">
+                        <i class="bi bi-plus-lg"></i>
+                      </button>
+                      <button class="btn btn-sm btn-outline-danger btn-action" 
+                              data-bs-toggle="modal" 
+                              data-bs-target="#modalExcluir" 
+                              data-vid="{{ v.id }}" 
+                              data-vnome="{{ v.nome }}"
+                              title="Remover">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <!-- Estado Vazio -->
+          <div class="text-center py-5 empty-state">
+            <i class="bi bi-people text-muted" style="font-size: 4rem;"></i>
+            <h5 class="text-muted mt-3">
+              {% if q %}
+                Nenhum visitante encontrado
+              {% else %}
+                Nenhum visitante cadastrado
+              {% endif %}
+            </h5>
+            <p class="text-muted">
+              {% if q %}
+                Tente ajustar os termos de busca ou <a href="{% url 'recepcao:visitantes_list' %}">limpar os filtros</a>.
+              {% else %}
+                Comece cadastrando o primeiro visitante.
+              {% endif %}
+            </p>
+            <a href="{% url 'recepcao:visitante_create' %}" class="btn btn-primary btn-lg">
+              <i class="bi bi-person-plus me-1"></i>Cadastrar Primeiro Visitante
+            </a>
+          </div>
+        {% endif %}
+
+        <!-- Paginação -->
+        {% if page_obj and page_obj.has_other_pages %}
+        <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+          <div class="text-muted small">
+            <i class="bi bi-info-circle me-1"></i>
+            Mostrando {{ page_obj.start_index }} a {{ page_obj.end_index }} de {{ paginator.count }} visitante{{ paginator.count|pluralize }}
+          </div>
+          <nav aria-label="Paginação de visitantes">
+            <ul class="pagination pagination-sm mb-0">
+              {% if page_obj.has_previous %}
+                <li class="page-item">
+                  <a class="page-link" href="?q={{ q|urlencode }}&sort={{ sort }}&dir={{ dir }}&page=1" title="Primeira página">
+                    <i class="bi bi-chevron-double-left"></i>
+                  </a>
+                </li>
+                <li class="page-item">
+                  <a class="page-link" href="?q={{ q|urlencode }}&sort={{ sort }}&dir={{ dir }}&page={{ page_obj.previous_page_number }}" title="Página anterior">
+                    <i class="bi bi-chevron-left"></i>
+                  </a>
+                </li>
+              {% endif %}
+              
+              {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                  <li class="page-item active">
+                    <span class="page-link">{{ num }}</span>
+                  </li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                  <li class="page-item">
+                    <a class="page-link" href="?q={{ q|urlencode }}&sort={{ sort }}&dir={{ dir }}&page={{ num }}">{{ num }}</a>
+                  </li>
+                {% endif %}
+              {% endfor %}
+              
+              {% if page_obj.has_next %}
+                <li class="page-item">
+                  <a class="page-link" href="?q={{ q|urlencode }}&sort={{ sort }}&dir={{ dir }}&page={{ page_obj.next_page_number }}" title="Próxima página">
+                    <i class="bi bi-chevron-right"></i>
+                  </a>
+                </li>
+                <li class="page-item">
+                  <a class="page-link" href="?q={{ q|urlencode }}&sort={{ sort }}&dir={{ dir }}&page={{ paginator.num_pages }}" title="Última página">
+                    <i class="bi bi-chevron-double-right"></i>
+                  </a>
+                </li>
+              {% endif %}
+            </ul>
+          </nav>
+        </div>
+        {% endif %}
+      </div>
     </div>
-
-    {% if page_obj %}
-    <nav aria-label="Paginação">
-      <ul class="pagination justify-content-end mb-0">
-        {% if page_obj.has_previous %}
-          <li class="page-item"><a class="page-link" href="?q={{ q|urlencode }}&sort={{ sort }}&dir={{ dir }}&page={{ page_obj.previous_page_number }}">Anterior</a></li>
-        {% else %}
-          <li class="page-item disabled"><span class="page-link">Anterior</span></li>
-        {% endif %}
-
-        <li class="page-item disabled"><span class="page-link">Página {{ page_obj.number }} de {{ paginator.num_pages }}</span></li>
-
-        {% if page_obj.has_next %}
-          <li class="page-item"><a class="page-link" href="?q={{ q|urlencode }}&sort={{ sort }}&dir={{ dir }}&page={{ page_obj.next_page_number }}">Próxima</a></li>
-        {% else %}
-          <li class="page-item disabled"><span class="page-link">Próxima</span></li>
-        {% endif %}
-      </ul>
-    </nav>
-    {% endif %}
+  </div>
+</div>
   </div>
 </div>
 
 <!-- Modal Enfileirar -->
 <div class="modal fade" id="modalEnfileirar" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Adicionar à fila</h5>
+        <h5 class="modal-title">
+          <i class="bi bi-plus-circle text-success me-2"></i>Adicionar à Fila de Atendimento
+        </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <form method="post" id="formEnfileirar">
         {% csrf_token %}
         <div class="modal-body">
-          <div class="mb-2 small text-muted">Visitante: <span id="enfNome"></span></div>
-          <div class="mb-2">
-            <label class="form-label">Atendente</label>
-            <select name="atendente_id" class="form-select">
-              <option value="">(definir depois)</option>
-              {% for u in atendentes %}
-                <option value="{{ u.id }}">{{ u.nome }}</option>
-              {% endfor %}
-            </select>
+          <!-- Informações do Visitante -->
+          <div class="alert alert-info mb-4">
+            <div class="d-flex align-items-center">
+              <i class="bi bi-person-circle text-primary me-3" style="font-size: 2rem;"></i>
+              <div>
+                <h6 class="mb-1">Visitante: <strong id="enfNome"></strong></h6>
+                <div class="text-muted small">Será adicionado à fila de atendimento</div>
+              </div>
+            </div>
           </div>
-          <div class="mb-2">
-            <label class="form-label">Resumo da demanda</label>
-            <input type="text" class="form-control" name="demanda_resumo" />
-          </div>
-          <div>
-            <label class="form-label">Detalhes</label>
-            <textarea class="form-control" name="demanda_detalhes" rows="3"></textarea>
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-medium">
+                <i class="bi bi-person-badge me-1"></i>Atendente Responsável
+              </label>
+              <select name="atendente_id" class="form-select">
+                <option value="">Selecione o atendente...</option>
+                {% for u in atendentes %}
+                  <option value="{{ u.id }}">{{ u.nome }}</option>
+                {% endfor %}
+              </select>
+              <div class="form-text">Deixe em branco para definir depois</div>
+            </div>
+            
+            <div class="col-md-6">
+              <label class="form-label fw-medium">
+                <i class="bi bi-chat-text me-1"></i>Resumo da Demanda <span class="text-danger">*</span>
+              </label>
+              <input type="text" 
+                     class="form-control" 
+                     name="demanda_resumo" 
+                     placeholder="Ex: Consulta jurídica, Reunião de negócios..."
+                     required />
+            </div>
+            
+            <div class="col-12">
+              <label class="form-label fw-medium">
+                <i class="bi bi-file-text me-1"></i>Detalhes da Demanda
+              </label>
+              <textarea class="form-control" 
+                        name="demanda_detalhes" 
+                        rows="4" 
+                        placeholder="Descreva com mais detalhes o que o visitante precisa..."></textarea>
+              <div class="form-text">Informações adicionais que podem ajudar no atendimento</div>
+            </div>
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
-          <button type="submit" class="btn btn-success">Adicionar</button>
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle me-1"></i>Cancelar
+          </button>
+          <button type="submit" class="btn btn-success">
+            <i class="bi bi-check-lg me-1"></i>Adicionar à Fila
+          </button>
         </div>
       </form>
     </div>
@@ -179,17 +380,35 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Remover visitante</h5>
+        <h5 class="modal-title">
+          <i class="bi bi-exclamation-triangle text-warning me-2"></i>Confirmar Exclusão
+        </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <form method="post" id="formExcluir">
         {% csrf_token %}
         <div class="modal-body">
-          <p>Tem certeza que deseja remover <strong id="delNome"></strong>?</p>
+          <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <strong>Atenção!</strong> Esta ação não pode ser desfeita.
+          </div>
+          <p class="mb-3">Tem certeza que deseja remover o visitante <strong id="delNome"></strong>?</p>
+          <div class="bg-light p-3 rounded">
+            <h6 class="mb-2">O que será removido:</h6>
+            <ul class="mb-0 small text-muted">
+              <li>Dados pessoais do visitante</li>
+              <li>Histórico de atendimentos</li>
+              <li>Fotos e documentos anexos</li>
+            </ul>
+          </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
-          <button type="submit" class="btn btn-danger">Remover</button>
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle me-1"></i>Cancelar
+          </button>
+          <button type="submit" class="btn btn-danger">
+            <i class="bi bi-trash me-1"></i>Confirmar Exclusão
+          </button>
         </div>
       </form>
     </div>
@@ -198,22 +417,197 @@
 
 {% block extra_css %}
 <style>
-  /* Garantir cores corretas para tema escuro */
-  [data-bs-theme="dark"] .text-dark {
-    color: #f9fafb !important;
+  /* Tabela de visitantes */
+  .table-hover tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.05);
+    transform: scale(1.01);
+    transition: all 0.2s ease;
   }
-  [data-bs-theme="dark"] .table th a {
-    color: #f9fafb !important;
+  
+  [data-bs-theme="dark"] .table-hover tbody tr:hover {
+    background-color: rgba(59, 130, 246, 0.1);
   }
-  [data-bs-theme="dark"] .table th a:hover {
-    color: #60a5fa !important;
+  
+  /* Cabeçalho da tabela */
+  .table thead th {
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #6c757d;
+    background-color: #f8f9fa;
   }
-  [data-bs-theme="light"] .table th a {
-    color: #111827 !important;
+  
+  [data-bs-theme="dark"] .table thead th {
+    border-bottom-color: #4a5568;
+    color: #e2e8f0;
+    background-color: #2d3748;
   }
-  [data-bs-theme="light"] .table th a:hover {
-    color: #3b82f6 !important;
+  
+  /* Linhas da tabela */
+  .visitante-row {
+    transition: all 0.2s ease;
   }
+  
+  .visitante-row:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  
+  [data-bs-theme="dark"] .visitante-row:hover {
+    box-shadow: 0 2px 8px rgba(255,255,255,0.1);
+  }
+  
+  /* Estatísticas compactas */
+  .stats-mini {
+    min-width: 40px;
+    text-align: center;
+  }
+  
+  .stats-mini .fw-bold {
+    font-size: 0.875rem;
+    line-height: 1.2;
+  }
+  
+  .stats-mini .small {
+    font-size: 0.7rem;
+    line-height: 1;
+  }
+  
+  /* Botões de ação */
+  .btn-action {
+    transition: all 0.2s ease;
+    border-radius: 6px;
+    padding: 0.375rem 0.5rem;
+  }
+  
+  .btn-action:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  /* Dropdown de ações */
+  .dropdown-toggle::after {
+    display: none;
+  }
+  
+  .dropdown-menu {
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border: 1px solid #dee2e6;
+  }
+  
+  [data-bs-theme="dark"] .dropdown-menu {
+    background-color: #2d3748;
+    border-color: #4a5568;
+  }
+  
+  /* Badges de função */
+  .badge {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 6px;
+  }
+  
+  /* Fotos dos visitantes */
+  .visitante-photo {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border: 2px solid #dee2e6;
+  }
+  
+  [data-bs-theme="dark"] .visitante-photo {
+    border-color: #4a5568;
+  }
+  
+  /* Estado vazio */
+  .empty-state {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 2px dashed #dee2e6;
+    border-radius: 12px;
+  }
+  
+  [data-bs-theme="dark"] .empty-state {
+    background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+    border-color: #4a5568;
+  }
+  
+  /* Paginação melhorada */
+  .pagination .page-link {
+    border-radius: 6px;
+    margin: 0 2px;
+    border: 1px solid #dee2e6;
+    transition: all 0.2s ease;
+  }
+  
+  .pagination .page-item.active .page-link {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    border-color: #007bff;
+  }
+  
+  .pagination .page-link:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  [data-bs-theme="dark"] .pagination .page-link {
+    border-color: #4a5568;
+    background-color: #2d3748;
+    color: #e2e8f0;
+  }
+  
+  [data-bs-theme="dark"] .pagination .page-item.active .page-link {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    border-color: #3b82f6;
+  }
+  
+  /* Responsividade da tabela */
+  @media (max-width: 768px) {
+    .table-responsive {
+      font-size: 0.875rem;
+    }
+    
+    .btn-action {
+      padding: 0.25rem 0.375rem;
+      font-size: 0.75rem;
+    }
+    
+    .stats-mini {
+      min-width: 30px;
+    }
+    
+    .stats-mini .fw-bold {
+      font-size: 0.75rem;
+    }
+    
+    .stats-mini .small {
+      font-size: 0.65rem;
+    }
+  }
+  
+  /* Animações de entrada */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .visitante-row {
+    animation: fadeInUp 0.3s ease-out;
+  }
+  
+  .visitante-row:nth-child(1) { animation-delay: 0.05s; }
+  .visitante-row:nth-child(2) { animation-delay: 0.1s; }
+  .visitante-row:nth-child(3) { animation-delay: 0.15s; }
+  .visitante-row:nth-child(4) { animation-delay: 0.2s; }
+  .visitante-row:nth-child(5) { animation-delay: 0.25s; }
+  .visitante-row:nth-child(6) { animation-delay: 0.3s; }
 </style>
 {% endblock %}
 

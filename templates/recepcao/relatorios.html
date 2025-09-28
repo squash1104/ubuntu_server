@@ -1,10 +1,696 @@
 {% extends 'recepcao/base_recepcao.html' %}
+{% load recepcao_extras %}
 {% block content %}
-<div class="rec-card">
-  <div class="card-body">
-    <h1 class="h5 mb-3">Relatórios da Recepção</h1>
-    <p class="text-muted">Em breve: tempo médio de espera, tempo médio de atendimento, volume por atendente e por período.</p>
+<div class="row align-items-start">
+  <div class="col-12">
+    <div class="rec-card">
+      <div class="card-body">
+        <!-- Cabeçalho -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h1 class="h4 mb-1">
+              <i class="bi bi-graph-up text-primary me-2"></i>Relatórios da Recepção
+            </h1>
+            <div class="text-muted small">
+              <i class="bi bi-calendar3 me-1"></i>Período: {{ data_inicio|date:"d/m/Y" }} a {{ data_fim|date:"d/m/Y" }}
+            </div>
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalFiltros">
+              <i class="bi bi-funnel me-1"></i>Filtros
+            </button>
+            <button class="btn btn-outline-success" onclick="imprimirRelatorio()">
+              <i class="bi bi-printer me-1"></i>Imprimir
+            </button>
+            <button class="btn btn-outline-info" onclick="exportarPDF()">
+              <i class="bi bi-file-earmark-pdf me-1"></i>Exportar PDF
+            </button>
+            <a href="{% url 'recepcao:dashboard' %}" class="btn btn-outline-secondary">
+              <i class="bi bi-arrow-left me-1"></i>Voltar
+            </a>
+          </div>
+        </div>
+
+        <!-- Filtros de Data -->
+        <div class="rec-card mb-4">
+          <div class="card-body">
+            <h6 class="card-title mb-3">
+              <i class="bi bi-funnel me-2"></i>Filtros de Relatório
+            </h6>
+            <div class="row g-3">
+              <div class="col-md-3">
+                <label class="form-label fw-medium">
+                  <i class="bi bi-calendar-date me-1"></i>Data Início
+                </label>
+                <input type="date" class="form-control" id="dataInicio" value="{{ data_inicio }}">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label fw-medium">
+                  <i class="bi bi-calendar-date me-1"></i>Data Fim
+                </label>
+                <input type="date" class="form-control" id="dataFim" value="{{ data_fim }}">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label fw-medium">
+                  <i class="bi bi-person me-1"></i>Atendente
+                </label>
+                <select class="form-select" id="filtroAtendente">
+                  <option value="">Todos os atendentes</option>
+                  {% for at in por_atendente %}
+                    <option value="{{ at.atendente__nome }}">{{ at.atendente__nome }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label fw-medium">
+                  <i class="bi bi-gear me-1"></i>Ações
+                </label>
+                <div class="d-flex gap-2">
+                  <button class="btn btn-primary flex-fill" onclick="aplicarFiltros()">
+                    <i class="bi bi-search me-1"></i>Aplicar
+                  </button>
+                  <button class="btn btn-outline-secondary" onclick="limparFiltros()">
+                    <i class="bi bi-arrow-clockwise me-1"></i>Limpar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- KPIs Principais -->
+        <div class="row g-3 mb-4">
+          <div class="col-md-3">
+            <div class="rec-card text-center">
+              <div class="card-body py-3">
+                <i class="bi bi-people text-primary fs-4"></i>
+                <div class="fw-bold fs-5">{{ total_atendimentos }}</div>
+                <div class="text-muted small">Total de Atendimentos</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="rec-card text-center">
+              <div class="card-body py-3">
+                <i class="bi bi-check-circle text-success fs-4"></i>
+                <div class="fw-bold fs-5">{{ concluidos }}</div>
+                <div class="text-muted small">Concluídos</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="rec-card text-center">
+              <div class="card-body py-3">
+                <i class="bi bi-clock text-warning fs-4"></i>
+                <div class="fw-bold fs-5">{{ tempo_medio_espera }}</div>
+                <div class="text-muted small">Tempo Médio de Espera</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="rec-card text-center">
+              <div class="card-body py-3">
+                <i class="bi bi-stopwatch text-info fs-4"></i>
+                <div class="fw-bold fs-5">{{ tempo_medio_atendimento }}</div>
+                <div class="text-muted small">Tempo Médio de Atendimento</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gráficos e Tabelas -->
+        <div class="row g-4">
+          <!-- Gráfico de Atendimentos por Dia -->
+          <div class="col-lg-8">
+            <div class="rec-card">
+              <div class="card-body">
+                <h5 class="card-title">
+                  <i class="bi bi-bar-chart me-2"></i>Atendimentos por Dia (Últimos 30 dias)
+                </h5>
+                <canvas id="graficoAtendimentosDia" height="100"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Top Visitantes -->
+          <div class="col-lg-4">
+            <div class="rec-card">
+              <div class="card-body">
+                <h5 class="card-title">
+                  <i class="bi bi-trophy me-2"></i>Top 5 Visitantes Mais Frequentes
+                </h5>
+                {% if top_visitantes %}
+                  <div class="list-group list-group-flush">
+                    {% for visitante in top_visitantes %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                      <div>
+                        <div class="fw-medium">{{ visitante.visitante__nome|truncatechars:20 }}</div>
+                        <div class="text-muted small">{{ visitante.total_visitas }} visita{{ visitante.total_visitas|pluralize }}</div>
+                      </div>
+                      <span class="badge bg-primary rounded-pill">{{ visitante.total_visitas }}</span>
+                    </div>
+                    {% endfor %}
+                  </div>
+                {% else %}
+                  <div class="text-center text-muted py-3">
+                    <i class="bi bi-inbox fs-1"></i>
+                    <p class="mt-2">Nenhum dado disponível</p>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <!-- Desempenho por Atendente -->
+          <div class="col-lg-8">
+            <div class="rec-card">
+              <div class="card-body">
+                <h5 class="card-title">
+                  <i class="bi bi-person-check me-2"></i>Desempenho por Atendente
+                </h5>
+                {% if por_atendente %}
+                  <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                      <thead class="table-light">
+                        <tr>
+                          <th class="fw-medium">Atendente</th>
+                          <th class="fw-medium text-center">Total</th>
+                          <th class="fw-medium text-center">Concluídos</th>
+                          <th class="fw-medium text-center">Cancelados</th>
+                          <th class="fw-medium text-center">Tempo Médio</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for at in por_atendente %}
+                        <tr>
+                          <td class="align-middle">
+                            <div class="d-flex align-items-center">
+                              <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                   style="width: 32px; height: 32px;">
+                                <i class="bi bi-person text-white small"></i>
+                              </div>
+                              <span class="fw-medium">{{ at.atendente__nome|default:"-" }}</span>
+                            </div>
+                          </td>
+                          <td class="align-middle text-center">
+                            <span class="badge bg-primary">{{ at.total }}</span>
+                          </td>
+                          <td class="align-middle text-center">
+                            <span class="badge bg-success">{{ at.concluidos }}</span>
+                          </td>
+                          <td class="align-middle text-center">
+                            <span class="badge bg-danger">{{ at.cancelados }}</span>
+                          </td>
+                          <td class="align-middle text-center">
+                            <span class="text-muted small">{{ at.tempo_medio_at|fmt_td }}</span>
+                          </td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                {% else %}
+                  <div class="text-center text-muted py-4">
+                    <i class="bi bi-person-x fs-1"></i>
+                    <p class="mt-2">Nenhum atendente com dados no período</p>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <!-- Horários de Maior Movimento -->
+          <div class="col-lg-4">
+            <div class="rec-card">
+              <div class="card-body">
+                <h5 class="card-title">
+                  <i class="bi bi-clock me-2"></i>Horários de Maior Movimento
+                </h5>
+                <canvas id="graficoHorarios" height="200"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Distribuição por Status -->
+          <div class="col-lg-6">
+            <div class="rec-card">
+              <div class="card-body">
+                <h5 class="card-title">
+                  <i class="bi bi-pie-chart me-2"></i>Distribuição por Status
+                </h5>
+                <canvas id="graficoStatus" height="200"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Resumo Detalhado -->
+          <div class="col-lg-6">
+            <div class="rec-card">
+              <div class="card-body">
+                <h5 class="card-title">
+                  <i class="bi bi-list-check me-2"></i>Resumo Detalhado
+                </h5>
+                <div class="row g-3">
+                  <div class="col-6">
+                    <div class="text-center">
+                      <div class="fw-bold text-success fs-4">{{ concluidos }}</div>
+                      <div class="text-muted small">Concluídos</div>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="text-center">
+                      <div class="fw-bold text-danger fs-4">{{ cancelados }}</div>
+                      <div class="text-muted small">Cancelados</div>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="text-center">
+                      <div class="fw-bold text-warning fs-4">{{ em_andamento }}</div>
+                      <div class="text-muted small">Em Andamento</div>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="text-center">
+                      <div class="fw-bold text-info fs-4">{{ aguardando }}</div>
+                      <div class="text-muted small">Aguardando</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
+
+<!-- Área de Impressão (oculta por padrão) -->
+<div id="areaImpressao" class="d-none">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-12">
+        <!-- Cabeçalho do Relatório -->
+        <div class="text-center mb-4">
+          <h2 class="h4 mb-1">Relatório de Atendimentos - Recepção</h2>
+          <p class="text-muted">Período: <span id="periodoImpressao"></span></p>
+          <p class="text-muted">Gerado em: <span id="dataGeracao"></span></p>
+        </div>
+        
+        <!-- KPIs para Impressão -->
+        <div class="row g-3 mb-4">
+          <div class="col-3">
+            <div class="text-center border p-3">
+              <div class="fw-bold fs-5" id="totalImpressao">{{ total_atendimentos }}</div>
+              <div class="text-muted small">Total de Atendimentos</div>
+            </div>
+          </div>
+          <div class="col-3">
+            <div class="text-center border p-3">
+              <div class="fw-bold fs-5" id="concluidosImpressao">{{ concluidos }}</div>
+              <div class="text-muted small">Concluídos</div>
+            </div>
+          </div>
+          <div class="col-3">
+            <div class="text-center border p-3">
+              <div class="fw-bold fs-5" id="tempoEsperaImpressao">{{ tempo_medio_espera }}</div>
+              <div class="text-muted small">Tempo Médio de Espera</div>
+            </div>
+          </div>
+          <div class="col-3">
+            <div class="text-center border p-3">
+              <div class="fw-bold fs-5" id="tempoAtendimentoImpressao">{{ tempo_medio_atendimento }}</div>
+              <div class="text-muted small">Tempo Médio de Atendimento</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Tabela de Atendentes para Impressão -->
+        <div class="mb-4">
+          <h5 class="mb-3">Desempenho por Atendente</h5>
+          <table class="table table-bordered">
+            <thead class="table-light">
+              <tr>
+                <th>Atendente</th>
+                <th class="text-center">Total</th>
+                <th class="text-center">Concluídos</th>
+                <th class="text-center">Cancelados</th>
+                <th class="text-center">Tempo Médio</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaAtendentesImpressao">
+              {% for at in por_atendente %}
+              <tr>
+                <td>{{ at.atendente__nome|default:"-" }}</td>
+                <td class="text-center">{{ at.total }}</td>
+                <td class="text-center">{{ at.concluidos }}</td>
+                <td class="text-center">{{ at.cancelados }}</td>
+                <td class="text-center">{{ at.tempo_medio_at|fmt_td }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        
+        <!-- Top Visitantes para Impressão -->
+        <div class="mb-4">
+          <h5 class="mb-3">Top 5 Visitantes Mais Frequentes</h5>
+          <table class="table table-bordered">
+            <thead class="table-light">
+              <tr>
+                <th>Visitante</th>
+                <th class="text-center">Total de Visitas</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaVisitantesImpressao">
+              {% for visitante in top_visitantes %}
+              <tr>
+                <td>{{ visitante.visitante__nome }}</td>
+                <td class="text-center">{{ visitante.total_visitas }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        
+        <!-- Resumo por Status -->
+        <div class="mb-4">
+          <h5 class="mb-3">Resumo por Status</h5>
+          <div class="row">
+            <div class="col-3">
+              <div class="text-center border p-3">
+                <div class="fw-bold fs-5">{{ concluidos }}</div>
+                <div class="text-muted small">Concluídos</div>
+              </div>
+            </div>
+            <div class="col-3">
+              <div class="text-center border p-3">
+                <div class="fw-bold fs-5">{{ cancelados }}</div>
+                <div class="text-muted small">Cancelados</div>
+              </div>
+            </div>
+            <div class="col-3">
+              <div class="text-center border p-3">
+                <div class="fw-bold fs-5">{{ em_andamento }}</div>
+                <div class="text-muted small">Em Andamento</div>
+              </div>
+            </div>
+            <div class="col-3">
+              <div class="text-center border p-3">
+                <div class="fw-bold fs-5">{{ aguardando }}</div>
+                <div class="text-muted small">Aguardando</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Cards de relatórios */
+  .rec-card {
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+  }
+  
+  .rec-card:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+  }
+  
+  [data-bs-theme="dark"] .rec-card {
+    border-color: #4a5568;
+    background-color: #1a202c;
+  }
+  
+  /* Tabela de relatórios */
+  .table-hover tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.05);
+  }
+  
+  [data-bs-theme="dark"] .table-hover tbody tr:hover {
+    background-color: rgba(59, 130, 246, 0.1);
+  }
+  
+  /* Cabeçalho da tabela */
+  .table thead th {
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #6c757d;
+    background-color: #f8f9fa;
+  }
+  
+  [data-bs-theme="dark"] .table thead th {
+    border-bottom-color: #4a5568;
+    color: #e2e8f0;
+    background-color: #2d3748;
+  }
+  
+  /* Estilos para impressão */
+  @media print {
+    body * {
+      visibility: hidden;
+    }
+    
+    #areaImpressao, #areaImpressao * {
+      visibility: visible;
+    }
+    
+    #areaImpressao {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+    }
+    
+    .btn, .rec-card:not(#areaImpressao .rec-card) {
+      display: none !important;
+    }
+    
+    .table {
+      font-size: 12px;
+    }
+    
+    .table th, .table td {
+      padding: 8px;
+      border: 1px solid #000;
+    }
+    
+    .border {
+      border: 1px solid #000 !important;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  (function(){
+    // Dados dos gráficos
+    const dadosAtendimentosDia = {{ atendimentos_por_dia|safe }};
+    const dadosHorarios = {{ horarios_movimento|safe }};
+    const dadosStatus = {
+      concluidos: {{ concluidos }},
+      cancelados: {{ cancelados }},
+      em_andamento: {{ em_andamento }},
+      aguardando: {{ aguardando }}
+    };
+    
+    // Configuração do Chart.js
+    Chart.defaults.font.family = "'Inter', sans-serif";
+    Chart.defaults.color = '#6c757d';
+    
+    // Gráfico de Atendimentos por Dia
+    const ctxAtendimentosDia = document.getElementById('graficoAtendimentosDia');
+    if (ctxAtendimentosDia) {
+      new Chart(ctxAtendimentosDia, {
+        type: 'line',
+        data: {
+          labels: dadosAtendimentosDia.map(d => d.data),
+          datasets: [{
+            label: 'Atendimentos',
+            data: dadosAtendimentosDia.map(d => d.quantidade),
+            borderColor: '#0d6efd',
+            backgroundColor: 'rgba(13, 110, 253, 0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                stepSize: 1
+              }
+            }
+          }
+        }
+      });
+    }
+    
+    // Gráfico de Horários
+    const ctxHorarios = document.getElementById('graficoHorarios');
+    if (ctxHorarios) {
+      new Chart(ctxHorarios, {
+        type: 'bar',
+        data: {
+          labels: dadosHorarios.map(d => d.hora),
+          datasets: [{
+            label: 'Atendimentos',
+            data: dadosHorarios.map(d => d.quantidade),
+            backgroundColor: 'rgba(13, 110, 253, 0.8)',
+            borderColor: '#0d6efd',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                stepSize: 1
+              }
+            }
+          }
+        }
+      });
+    }
+    
+    // Gráfico de Status
+    const ctxStatus = document.getElementById('graficoStatus');
+    if (ctxStatus) {
+      new Chart(ctxStatus, {
+        type: 'doughnut',
+        data: {
+          labels: ['Concluídos', 'Cancelados', 'Em Andamento', 'Aguardando'],
+          datasets: [{
+            data: [dadosStatus.concluidos, dadosStatus.cancelados, dadosStatus.em_andamento, dadosStatus.aguardando],
+            backgroundColor: [
+              '#198754',
+              '#dc3545',
+              '#ffc107',
+              '#0dcaf0'
+            ],
+            borderWidth: 2,
+            borderColor: '#fff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom'
+            }
+          }
+        }
+      });
+    }
+    
+    // Função para aplicar filtros
+    window.aplicarFiltros = function() {
+      const dataInicio = document.getElementById('dataInicio').value;
+      const dataFim = document.getElementById('dataFim').value;
+      const atendente = document.getElementById('filtroAtendente').value;
+      
+      if (dataInicio && dataFim) {
+        const url = new URL(window.location);
+        url.searchParams.set('data_inicio', dataInicio);
+        url.searchParams.set('data_fim', dataFim);
+        if (atendente) {
+          url.searchParams.set('atendente', atendente);
+        }
+        window.location.href = url.toString();
+      } else {
+        alert('Por favor, selecione as datas de início e fim.');
+      }
+    };
+    
+    // Função para limpar filtros
+    window.limparFiltros = function() {
+      document.getElementById('dataInicio').value = '';
+      document.getElementById('dataFim').value = '';
+      document.getElementById('filtroAtendente').value = '';
+      window.location.href = window.location.pathname;
+    };
+    
+    // Função para imprimir relatório
+    window.imprimirRelatorio = function() {
+      // Atualizar dados da área de impressão
+      const dataInicio = document.getElementById('dataInicio').value;
+      const dataFim = document.getElementById('dataFim').value;
+      const agora = new Date().toLocaleString('pt-BR');
+      
+      document.getElementById('periodoImpressao').textContent = 
+        `${dataInicio ? new Date(dataInicio).toLocaleDateString('pt-BR') : 'N/A'} a ${dataFim ? new Date(dataFim).toLocaleDateString('pt-BR') : 'N/A'}`;
+      document.getElementById('dataGeracao').textContent = agora;
+      
+      // Mostrar área de impressão
+      const areaImpressao = document.getElementById('areaImpressao');
+      areaImpressao.classList.remove('d-none');
+      
+      // Ocultar elementos não necessários para impressão
+      const elementosOcultar = document.querySelectorAll('.btn, .rec-card:not(#areaImpressao .rec-card)');
+      elementosOcultar.forEach(el => el.style.display = 'none');
+      
+      // Imprimir
+      window.print();
+      
+      // Restaurar elementos após impressão
+      setTimeout(() => {
+        areaImpressao.classList.add('d-none');
+        elementosOcultar.forEach(el => el.style.display = '');
+      }, 1000);
+    };
+    
+    // Função para exportar PDF (simulada)
+    window.exportarPDF = function() {
+      // Simular exportação PDF
+      alert('Funcionalidade de exportação PDF será implementada em breve.\nPor enquanto, use a função de impressão e salve como PDF.');
+      
+      // Alternativa: abrir em nova janela para impressão
+      const dataInicio = document.getElementById('dataInicio').value;
+      const dataFim = document.getElementById('dataFim').value;
+      const url = new URL(window.location);
+      url.searchParams.set('data_inicio', dataInicio);
+      url.searchParams.set('data_fim', dataFim);
+      url.searchParams.set('print', '1');
+      
+      window.open(url.toString(), '_blank');
+    };
+    
+    // Tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+  })();
+</script>
 {% endblock %}
 
