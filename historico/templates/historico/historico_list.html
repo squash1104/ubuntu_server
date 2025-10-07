@@ -1,0 +1,418 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-body">
+        <!-- Cabeçalho estilo recepção -->
+        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-3">
+          <div class="mb-2 mb-sm-0">
+            <div class="rec-section-title">
+              Histórico do Sistema 
+              {% if page_obj %}
+                <span class="subtitle d-none d-sm-inline">({{ page_obj.paginator.count }} total - Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }})</span>
+                <span class="subtitle d-inline d-sm-none">({{ page_obj.paginator.count }} - Pág. {{ page_obj.number }}/{{ page_obj.paginator.num_pages }})</span>
+              {% endif %}
+            </div>
+            <div class="rec-section-sep"></div>
+          </div>
+          <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center" style="gap: 0.5rem;">
+            <div class="text-muted small">
+              {% if data_inicio_str or data_fim_str %}
+                <span class="d-none d-sm-inline">{{ data_inicio_str|default:"-" }} - {{ data_fim_str|default:"-" }}</span>
+                <span class="d-inline d-sm-none">{{ data_inicio_str|default:"-"|slice:":5" }} - {{ data_fim_str|default:"-"|slice:":5" }}</span>
+              {% else %}
+                <span class="d-none d-sm-inline">Sem filtro de data</span>
+                <span class="d-inline d-sm-none">Sem data</span>
+              {% endif %}
+            </div>
+            <button class="btn btn-sm btn-outline-secondary" onclick="window.location.href='{% url 'historico:historico_list' %}'" style="display: {% if data_inicio_str or data_fim_str or acao_filtro or tipo_objeto_filtro or usuario_filtro %}inline-block{% else %}none{% endif %};">
+              <i class="bi bi-x-circle me-1"></i><span class="d-none d-sm-inline">Limpar Filtro</span><span class="d-inline d-sm-none">Limpar</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="card mb-4">
+          <div class="card-body">
+            <h6 class="card-title mb-3">
+              <i class="bi bi-funnel me-2"></i>Filtros
+            </h6>
+            <form method="get" class="row g-3">
+              <div class="col-md-2">
+                <label class="form-label fw-medium">Data Início</label>
+                <input type="date" class="form-control" name="data_inicio" value="{{ filtros.data_inicio }}">
+              </div>
+              <div class="col-md-2">
+                <label class="form-label fw-medium">Data Fim</label>
+                <input type="date" class="form-control" name="data_fim" value="{{ filtros.data_fim }}">
+              </div>
+              <div class="col-md-2">
+                <label class="form-label fw-medium">Ação</label>
+                <select class="form-select" name="acao">
+                  <option value="">Todas as ações</option>
+                  {% for value, label in opcoes_acao %}
+                    <option value="{{ value }}" {% if filtros.acao == value %}selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label fw-medium">Tipo de Objeto</label>
+                <select class="form-select" name="tipo_objeto">
+                  <option value="">Todos os tipos</option>
+                  {% for value, label in opcoes_tipo_objeto %}
+                    <option value="{{ value }}" {% if filtros.tipo_objeto == value %}selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label fw-medium">Usuário</label>
+                <input type="text" class="form-control" name="usuario" value="{{ filtros.usuario }}" placeholder="Nome do usuário">
+              </div>
+              <div class="col-md-2">
+                <label class="form-label fw-medium">Busca</label>
+                <input type="text" class="form-control" name="busca" value="{{ filtros.busca }}" placeholder="Buscar...">
+              </div>
+              <div class="col-12">
+                <div class="d-flex gap-2">
+                  <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search me-1"></i>Aplicar Filtros
+                  </button>
+                  <a href="{% url 'historico:historico_list' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-clockwise me-1"></i>Limpar
+                  </a>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Lista de Histórico dentro de card-body no estilo recepção -->
+        <div class="card">
+          <div class="card-body">
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-3">
+              <div class="mb-2 mb-sm-0">
+                <div class="rec-section-title">
+                  Registros do Histórico 
+                  {% if page_obj %}
+                    <span class="subtitle d-none d-sm-inline">({{ page_obj.paginator.count }} total - Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }})</span>
+                    <span class="subtitle d-inline d-sm-none">({{ page_obj.paginator.count }} - Pág. {{ page_obj.number }}/{{ page_obj.paginator.num_pages }})</span>
+                  {% endif %}
+                </div>
+                <div class="rec-section-sep"></div>
+              </div>
+              <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center" style="gap: 0.5rem;">
+                <div class="text-muted small">
+                  <span class="d-none d-sm-inline">{{ data_inicio_str|default:"-" }} - {{ data_fim_str|default:"-" }}</span>
+                  <span class="d-inline d-sm-none">{{ data_inicio_str|default:"-"|slice:":5" }} - {{ data_fim_str|default:"-"|slice:":5" }}</span>
+                </div>
+                <a class="btn btn-sm btn-outline-secondary" href="{% url 'historico:historico_list' %}" style="display: {% if data_inicio_str or data_fim_str or acao_filtro or tipo_objeto_filtro or usuario_filtro %}inline-block{% else %}none{% endif %};">
+                  <i class="bi bi-x-circle me-1"></i><span class="d-none d-sm-inline">Limpar Filtro</span><span class="d-inline d-sm-none">Limpar</span>
+                </a>
+              </div>
+            </div>
+
+        {% if page_obj %}
+          <div class="table-responsive">
+            <table class="table table-sm table-striped mb-0">
+              <thead>
+                <tr>
+                  <th class="d-none d-md-table-cell">Data/Hora</th>
+                  <th>Ação</th>
+                  <th>Descrição</th>
+                  <th class="d-none d-sm-table-cell">Usuário</th>
+                  <th class="text-center align-middle">Detalhes</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for historico in page_obj %}
+                <tr>
+                  <td class="align-middle d-none d-md-table-cell">{{ historico.data_hora|date:"d/m H:i" }}</td>
+                  <td class="align-middle">
+                    <span class="badge bg-{{ historico.acao_color }}">{{ historico.get_acao_display }}</span>
+                  </td>
+                  <td class="align-middle">
+                    <div class="d-flex flex-column">
+                      <span class="fw-medium">{{ historico.descricao|truncatechars:60 }}</span>
+                      <small class="text-muted d-md-none">{{ historico.data_hora|date:"d/m H:i" }}</small>
+                    </div>
+                  </td>
+                  <td class="align-middle d-none d-sm-table-cell">
+                    {% if historico.usuario %}
+                      {{ historico.usuario.get_full_name|default:historico.usuario.username }}
+                    {% else %}
+                      <span class="text-muted">Sistema</span>
+                    {% endif %}
+                  </td>
+                  <td class="text-center align-middle">
+                    <a class="btn btn-sm btn-outline-secondary" href="{% url 'historico:historico_detail' historico.pk %}" title="Ver detalhes">
+                      <i class="bi bi-box-arrow-up-right"></i>
+                    </a>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Paginação dentro do card -->
+          {% if page_obj.has_other_pages %}
+          <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center mt-3">
+            <div class="text-muted small mb-2 mb-sm-0">
+              <span class="d-none d-sm-inline">Mostrando {{ page_obj.start_index }} a {{ page_obj.end_index }} de {{ page_obj.paginator.count }} registros</span>
+              <span class="d-inline d-sm-none">{{ page_obj.start_index }}-{{ page_obj.end_index }} de {{ page_obj.paginator.count }}</span>
+            </div>
+            <nav aria-label="Paginação de histórico">
+              <ul class="pagination pagination-sm mb-0">
+                {% if page_obj.has_previous %}
+                  <li class="page-item">
+                    <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}" title="Página anterior">
+                      <i class="bi bi-chevron-left"></i>
+                    </a>
+                  </li>
+                {% endif %}
+                {% for num in page_obj.paginator.page_range %}
+                  {% if page_obj.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                  {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item"><a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ num }}">{{ num }}</a></li>
+                  {% endif %}
+                {% endfor %}
+                {% if page_obj.has_next %}
+                  <li class="page-item">
+                    <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}" title="Próxima página">
+                      <i class="bi bi-chevron-right"></i>
+                    </a>
+                  </li>
+                  <li class="page-item">
+                    <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.paginator.num_pages }}" title="Última página">
+                      <i class="bi bi-chevron-double-right"></i>
+                    </a>
+                  </li>
+                {% endif %}
+              </ul>
+            </nav>
+          </div>
+          {% endif %}
+        {% else %}
+          <!-- Estado Vazio -->
+          <div class="text-center py-5">
+            <i class="bi bi-clock-history text-muted" style="font-size: 4rem;"></i>
+            <h5 class="text-muted mt-3">Nenhum registro encontrado</h5>
+            <p class="text-muted">
+              {% if filtros.data_inicio or filtros.data_fim or filtros.acao or filtros.tipo_objeto or filtros.usuario or filtros.busca %}
+                Tente ajustar os filtros ou <a href="{% url 'historico:historico_list' %}">limpar todos os filtros</a>.
+              {% else %}
+                Ainda não há registros de histórico no sistema.
+              {% endif %}
+            </p>
+          </div>
+        {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  .table-hover tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.05);
+  }
+  
+  .table thead th {
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #6c757d;
+    background-color: #f8f9fa;
+  }
+  
+  .badge {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.75rem;
+  }
+  
+  .pagination .page-link {
+    border-radius: 6px;
+    margin: 0 2px;
+    border: 1px solid #dee2e6;
+    transition: all 0.2s ease;
+  }
+  
+  .pagination .page-item.active .page-link {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    border-color: #007bff;
+  }
+  
+  .pagination .page-link:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  /* Animação para novos registros */
+  @keyframes fadeInSlide {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .novo-registro {
+    animation: fadeInSlide 0.5s ease-out;
+    background-color: rgba(40, 167, 69, 0.1);
+  }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Conectar ao WebSocket do histórico
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.host}/ws/historico/`;
+    
+    let socket = null;
+    let reconnectAttempts = 0;
+    const maxReconnectAttempts = 5;
+    
+    function conectarWebSocket() {
+        try {
+            socket = new WebSocket(wsUrl);
+            
+            socket.onopen = function(e) {
+                console.log('WebSocket do histórico conectado');
+                reconnectAttempts = 0;
+            };
+            
+            socket.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                
+                if (data.type === 'novo_registro') {
+                    adicionarNovoRegistro(data.historico);
+                }
+            };
+            
+            socket.onerror = function(error) {
+                console.error('Erro no WebSocket do histórico:', error);
+            };
+            
+            socket.onclose = function(event) {
+                console.log('WebSocket do histórico desconectado');
+                
+                // Tentar reconectar
+                if (reconnectAttempts < maxReconnectAttempts) {
+                    reconnectAttempts++;
+                    console.log(`Tentando reconectar (${reconnectAttempts}/${maxReconnectAttempts})...`);
+                    setTimeout(conectarWebSocket, 3000 * reconnectAttempts);
+                }
+            };
+        } catch (error) {
+            console.error('Erro ao conectar WebSocket:', error);
+        }
+    }
+    
+    function adicionarNovoRegistro(historico) {
+        // Verifica se estamos na primeira página e sem filtros (para não bagunçar a paginação)
+        const currentPage = {{ page_obj.number }};
+        const hasFilters = {% if filtros.data_inicio or filtros.data_fim or filtros.acao or filtros.tipo_objeto or filtros.usuario or filtros.busca %}true{% else %}false{% endif %};
+        
+        // Só adiciona se estiver na primeira página e sem filtros
+        if (currentPage === 1 && !hasFilters) {
+            const tbody = document.querySelector('.table tbody');
+            if (!tbody) return;
+            
+            // Mapear cores das badges
+            const badgeColors = {
+                'CRIAR': 'success',
+                'EDITAR': 'warning',
+                'EXCLUIR': 'danger',
+                'VISUALIZAR': 'info',
+                'ENFILEIRAR': 'primary',
+                'INICIAR_ATENDIMENTO': 'primary',
+                'CONCLUIR_ATENDIMENTO': 'success',
+                'CANCELAR_ATENDIMENTO': 'danger',
+                'LOGIN': 'info',
+                'LOGOUT': 'secondary'
+            };
+            
+            const badgeColor = badgeColors[historico.acao_valor] || 'secondary';
+            
+            // Criar nova linha
+            const novaLinha = document.createElement('tr');
+            novaLinha.className = 'novo-registro';
+            novaLinha.innerHTML = `
+                <td class="align-middle d-none d-md-table-cell">${historico.data_hora}</td>
+                <td class="align-middle">
+                    <span class="badge bg-${badgeColor}">${historico.acao}</span>
+                </td>
+                <td class="align-middle">
+                    <div class="d-flex flex-column">
+                        <span class="fw-medium">${historico.descricao.length > 60 ? historico.descricao.substring(0, 60) + '...' : historico.descricao}</span>
+                        <small class="text-muted d-md-none">${historico.data_hora}</small>
+                    </div>
+                </td>
+                <td class="align-middle d-none d-sm-table-cell">${historico.usuario}</td>
+                <td class="text-center align-middle">
+                    <a class="btn btn-sm btn-outline-secondary" href="{% url 'historico:historico_list' %}${historico.id}/" title="Ver detalhes">
+                        <i class="bi bi-box-arrow-up-right"></i>
+                    </a>
+                </td>
+            `;
+            
+            // Inserir no topo da tabela
+            tbody.insertBefore(novaLinha, tbody.firstChild);
+            
+            // Remover a classe de animação após a animação terminar
+            setTimeout(() => {
+                novaLinha.classList.remove('novo-registro');
+            }, 2000);
+            
+            // Atualizar contador
+            atualizarContador();
+            
+            // Se a tabela tiver mais de 25 linhas, remover a última
+            if (tbody.children.length > 25) {
+                tbody.removeChild(tbody.lastChild);
+            }
+        }
+    }
+    
+    function atualizarContador() {
+        const contadorDesktop = document.getElementById('historico-count');
+        const contadorMobile = document.getElementById('historico-count-mobile');
+        
+        if (contadorDesktop) {
+            const currentCount = parseInt(contadorDesktop.textContent.match(/\d+/)[0]) || 0;
+            const newCount = currentCount + 1;
+            contadorDesktop.textContent = `(${newCount} total - Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }})`;
+        }
+        
+        if (contadorMobile) {
+            const currentCount = parseInt(contadorMobile.textContent.match(/\d+/)[0]) || 0;
+            const newCount = currentCount + 1;
+            contadorMobile.textContent = `(${newCount} - Pág. {{ page_obj.number }}/{{ page_obj.paginator.num_pages }})`;
+        }
+    }
+    
+    // Conectar ao WebSocket
+    conectarWebSocket();
+    
+    // Fechar conexão ao sair da página
+    window.addEventListener('beforeunload', function() {
+        if (socket) {
+            socket.close();
+        }
+    });
+});
+</script>
+{% endblock %}
+

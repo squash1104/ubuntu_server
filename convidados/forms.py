@@ -124,7 +124,14 @@ class ConvidadoForm(forms.ModelForm):
 
     class Meta:
         model = Convidado
-        fields: ClassVar = ["nome", "telefone", "data_nascimento", "colaborador"]
+        fields: ClassVar = [
+            "nome",
+            "telefone",
+            "data_nascimento",
+            "cidade",
+            "bairro",
+            "colaborador",
+        ]
         widgets: ClassVar = {
             "nome": forms.TextInput(attrs={"class": "form-control", "id": "id_nome"}),
             "telefone": forms.TextInput(
@@ -142,7 +149,19 @@ class ConvidadoForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields["colaborador"].queryset = Colaborador.objects.all()
 
-        if self.instance and getattr(self.instance, "bairro", None):
+        # Lógica para preencher o dropdown de bairros dinamicamente
+        # Se uma cidade foi selecionada (e o formulário foi submetido)
+        if "cidade" in self.data:
+            try:
+                cidade_id = int(self.data.get("cidade"))
+                # Filtra os bairros pela cidade selecionada
+                self.fields["bairro"].queryset = Bairro.objects.filter(
+                    cidade_id=cidade_id
+                ).order_by("nome_bairro")
+            except (ValueError, TypeError):
+                # Se houver erro na conversão do ID da cidade, não filtra os bairros
+                pass
+        elif self.instance and getattr(self.instance, "bairro", None):
             if self.instance.bairro and self.instance.bairro.cidade:
                 self.fields["cidade"].initial = self.instance.bairro.cidade.pk
                 self.fields["bairro"].queryset = Bairro.objects.filter(

@@ -4,71 +4,99 @@
   <div class="col-12 mb-3">
     <div class="rec-card">
       <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <div>
+        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center mb-3">
+          <div class="mb-3 mb-lg-0">
             <div class="rec-section-title">Dashboard da Recepção <span class="subtitle d-none d-md-inline">análise histórica e relatórios</span></div>
             <div class="rec-section-sep"></div>
           </div>
-          <div class="d-flex flex-wrap align-items-center" style="gap:.5rem">
-            <div class="btn-group" role="group" aria-label="Presets">
-              <a class="btn btn-sm {% if kpis.preset == 'today' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="?preset=today">Hoje</a>
-              <a class="btn btn-sm {% if kpis.preset == 'last7' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="?preset=last7">Últimos 7</a>
-              <a class="btn btn-sm {% if kpis.preset == 'last30' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="?preset=last30">Últimos 30</a>
-              <a class="btn btn-sm {% if kpis.preset == 'month' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="?preset=month">Mês atual</a>
-              <a class="btn btn-sm {% if kpis.preset == 'all' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="?preset=all">Desde o início</a>
+          
+          <!-- Filtros responsivos -->
+          <div class="w-100 w-lg-auto">
+            <!-- Presets para mobile -->
+            <div class="d-block d-lg-none mb-3">
+              <div class="btn-group w-100" role="group" aria-label="Presets">
+                <a class="btn btn-sm {% if kpis.preset == 'today' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="?preset=today">Hoje</a>
+                <a class="btn btn-sm {% if kpis.preset == 'last7' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="?preset=last7">7d</a>
+                <a class="btn btn-sm {% if kpis.preset == 'last30' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="?preset=last30">30d</a>
+                <a class="btn btn-sm {% if kpis.preset == 'month' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="?preset=month">Mês</a>
+                <a class="btn btn-sm {% if kpis.preset == 'all' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="?preset=all">Tudo</a>
+              </div>
             </div>
-            <form method="get" class="d-flex align-items-center ms-2" style="gap:.5rem">
-              <input type="date" name="ini" class="form-control form-control-sm" value="{{ kpis.periodo_ini }}" />
-              <input type="date" name="fim" class="form-control form-control-sm" value="{{ kpis.periodo_fim }}" />
-              <button class="btn btn-sm btn-secondary" type="submit">Aplicar</button>
+            
+            <!-- Presets para desktop -->
+            <div class="d-none d-lg-block mb-3">
+              <div class="btn-group" role="group" aria-label="Presets">
+                <a class="btn btn-sm {% if kpis.preset == 'today' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="?preset=today">Hoje</a>
+                <a class="btn btn-sm {% if kpis.preset == 'last7' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="?preset=last7">Últimos 7</a>
+                <a class="btn btn-sm {% if kpis.preset == 'last30' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="?preset=last30">Últimos 30</a>
+                <a class="btn btn-sm {% if kpis.preset == 'month' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="?preset=month">Mês atual</a>
+                <a class="btn btn-sm {% if kpis.preset == 'all' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="?preset=all">Desde o início</a>
+              </div>
+            </div>
+            
+            <!-- Formulário de datas personalizadas -->
+            <form method="get" class="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center" style="gap:.5rem">
+              <div class="d-flex flex-column flex-sm-row" style="gap:.5rem">
+                <input type="date" name="ini" class="form-control form-control-sm" value="{{ kpis.periodo_ini }}" placeholder="Data início" />
+                <input type="date" name="fim" class="form-control form-control-sm" value="{{ kpis.periodo_fim }}" placeholder="Data fim" />
+              </div>
+              <button class="btn btn-sm btn-secondary" type="submit">
+                <i class="bi bi-search d-sm-none"></i>
+                <span class="d-none d-sm-inline">Aplicar</span>
+              </button>
             </form>
           </div>
         </div>
 
         <!-- KPIs -->
-        <div class="row g-3 mb-3">
+        <div class="row g-2 g-lg-3 mb-3">
           <div class="col-6 col-lg-2">
             <div class="rec-card h-100 text-center">
-              <div class="card-body">
-                <i class="bi bi-clock-history text-primary fs-3 mb-2"></i>
-                <div class="text-muted small">Tempo médio espera</div>
-                <div class="fs-4 fw-bold">{{ kpis.avg_espera }}</div>
+              <div class="card-body py-2 py-lg-3">
+                <i class="bi bi-clock-history text-primary fs-4 fs-lg-3 mb-1 mb-lg-2"></i>
+                <div class="text-muted small d-none d-sm-block">Tempo médio espera</div>
+                <div class="text-muted small d-block d-sm-none">Espera</div>
+                <div class="fs-5 fs-lg-4 fw-bold">{{ kpis.avg_espera }}</div>
               </div>
             </div>
           </div>
           <div class="col-6 col-lg-2">
             <div class="rec-card h-100 text-center">
-              <div class="card-body">
-                <i class="bi bi-stopwatch text-success fs-3 mb-2"></i>
-                <div class="text-muted small">Tempo médio atendimento</div>
-                <div class="fs-4 fw-bold">{{ kpis.avg_atendimento }}</div>
+              <div class="card-body py-2 py-lg-3">
+                <i class="bi bi-stopwatch text-success fs-4 fs-lg-3 mb-1 mb-lg-2"></i>
+                <div class="text-muted small d-none d-sm-block">Tempo médio atendimento</div>
+                <div class="text-muted small d-block d-sm-none">Atendimento</div>
+                <div class="fs-5 fs-lg-4 fw-bold">{{ kpis.avg_atendimento }}</div>
               </div>
             </div>
           </div>
                   <div class="col-6 col-lg-2">
                     <div class="rec-card h-100 text-center" id="card-desistencias" style="cursor: pointer;" onclick="filtrarAtendimentos('cancelado')">
-                      <div class="card-body">
-                        <i class="bi bi-x-circle text-danger fs-3 mb-2"></i>
-                        <div class="text-muted small">Desistências</div>
-                        <div class="fs-4 fw-bold">{{ kpis.desistencias|default:0 }}</div>
+                      <div class="card-body py-2 py-lg-3">
+                        <i class="bi bi-x-circle text-danger fs-4 fs-lg-3 mb-1 mb-lg-2"></i>
+                        <div class="text-muted small d-none d-sm-block">Desistências</div>
+                        <div class="text-muted small d-block d-sm-none">Cancelados</div>
+                        <div class="fs-5 fs-lg-4 fw-bold">{{ kpis.desistencias|default:0 }}</div>
                       </div>
                     </div>
                   </div>
                   <div class="col-6 col-lg-3">
                     <div class="rec-card h-100 text-center" id="card-total-atendimentos" style="cursor: pointer;" onclick="filtrarAtendimentos('concluido')">
-                      <div class="card-body">
-                        <i class="bi bi-list-check text-warning fs-3 mb-2"></i>
-                        <div class="text-muted small">Total atendimentos</div>
-                        <div class="fs-4 fw-bold">{{ kpis.total|default:0 }}</div>
+                      <div class="card-body py-2 py-lg-3">
+                        <i class="bi bi-list-check text-warning fs-4 fs-lg-3 mb-1 mb-lg-2"></i>
+                        <div class="text-muted small d-none d-sm-block">Total atendimentos</div>
+                        <div class="text-muted small d-block d-sm-none">Atendimentos</div>
+                        <div class="fs-5 fs-lg-4 fw-bold">{{ kpis.total|default:0 }}</div>
                       </div>
                     </div>
                   </div>
           <div class="col-6 col-lg-3">
             <div class="rec-card h-100 text-center" id="card-visitantes" style="cursor: pointer;" onclick="irParaVisitantes()">
-              <div class="card-body">
-                <i class="bi bi-people text-info fs-3 mb-2"></i>
-                <div class="text-muted small">Visitantes cadastrados</div>
-                <div class="fs-4 fw-bold">{{ total_visitantes|default:0 }}</div>
+              <div class="card-body py-2 py-lg-3">
+                <i class="bi bi-people text-info fs-4 fs-lg-3 mb-1 mb-lg-2"></i>
+                <div class="text-muted small d-none d-sm-block">Visitantes cadastrados</div>
+                <div class="text-muted small d-block d-sm-none">Visitantes</div>
+                <div class="fs-5 fs-lg-4 fw-bold">{{ total_visitantes|default:0 }}</div>
               </div>
             </div>
           </div>
@@ -125,17 +153,22 @@
   <div class="col-12">
     <div class="rec-card">
       <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <div>
-            <div class="rec-section-title">Atendimentos Realizados <span class="subtitle" id="atendimentos-count">({{ atendimentos_page.paginator.count }} total - Página {{ atendimentos_page.number }} de {{ atendimentos_page.paginator.num_pages }})</span></div>
+        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-3">
+          <div class="mb-2 mb-sm-0">
+            <div class="rec-section-title">
+              Atendimentos Realizados 
+              <span class="subtitle d-none d-sm-inline" id="atendimentos-count">({{ atendimentos_page.paginator.count }} total - Página {{ atendimentos_page.number }} de {{ atendimentos_page.paginator.num_pages }})</span>
+              <span class="subtitle d-inline d-sm-none" id="atendimentos-count-mobile">({{ atendimentos_page.paginator.count }} - Pág. {{ atendimentos_page.number }}/{{ atendimentos_page.paginator.num_pages }})</span>
+            </div>
             <div class="rec-section-sep"></div>
           </div>
-          <div class="d-flex align-items-center" style="gap: 1rem;">
+          <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center" style="gap: 0.5rem;">
             <div class="text-muted small">
-              {{ dt_ini|date:"d/m/Y" }} - {{ dt_fim|date:"d/m/Y" }}
+              <span class="d-none d-sm-inline">{{ dt_ini|date:"d/m/Y" }} - {{ dt_fim|date:"d/m/Y" }}</span>
+              <span class="d-inline d-sm-none">{{ dt_ini|date:"d/m" }} - {{ dt_fim|date:"d/m" }}</span>
             </div>
             <button class="btn btn-sm btn-outline-secondary" id="btn-limpar-filtro" onclick="limparFiltro()" style="display: none;">
-              <i class="bi bi-x-circle me-1"></i>Limpar Filtro
+              <i class="bi bi-x-circle me-1"></i><span class="d-none d-sm-inline">Limpar Filtro</span><span class="d-inline d-sm-none">Limpar</span>
             </button>
           </div>
         </div>
@@ -144,24 +177,29 @@
           <table class="table table-sm table-striped mb-0">
             <thead>
               <tr>
-                <th>Chegada</th>
-                <th>Início</th>
-                <th>Fim</th>
+                <th class="d-none d-md-table-cell">Chegada</th>
+                <th class="d-none d-lg-table-cell">Início</th>
+                <th class="d-none d-lg-table-cell">Fim</th>
                 <th>Visitante</th>
-                <th>Atendente</th>
+                <th class="d-none d-sm-table-cell">Atendente</th>
                 <th>Status</th>
-                <th class="text-center align-middle">Total</th>
+                <th class="text-center align-middle d-none d-md-table-cell">Total</th>
                 <th class="text-center align-middle">Ações</th>
               </tr>
             </thead>
             <tbody id="atendimentos-tbody">
               {% for r in atendimentos_recentes %}
                 <tr class="atendimento-row" data-status="{{ r.status }}">
-                  <td class="align-middle">{{ r.horario_chegada|default:''|date:'d/m H:i' }}</td>
-                  <td class="align-middle">{{ r.inicio_atendimento|default:''|date:'d/m H:i' }}</td>
-                  <td class="align-middle">{{ r.fim_atendimento|default:''|date:'d/m H:i' }}</td>
-                  <td class="align-middle">{{ r.visitante_nome }}</td>
-                  <td class="align-middle">{{ r.atendente_nome }}</td>
+                  <td class="align-middle d-none d-md-table-cell">{{ r.horario_chegada|default:''|date:'d/m H:i' }}</td>
+                  <td class="align-middle d-none d-lg-table-cell">{{ r.inicio_atendimento|default:''|date:'d/m H:i' }}</td>
+                  <td class="align-middle d-none d-lg-table-cell">{{ r.fim_atendimento|default:''|date:'d/m H:i' }}</td>
+                  <td class="align-middle">
+                    <div class="d-flex flex-column">
+                      <span class="fw-medium">{{ r.visitante_nome }}</span>
+                      <small class="text-muted d-md-none">{{ r.horario_chegada|default:''|date:'d/m H:i' }}</small>
+                    </div>
+                  </td>
+                  <td class="align-middle d-none d-sm-table-cell">{{ r.atendente_nome }}</td>
                   <td class="align-middle">
                     {% if r.status == 'cancelado' %}
                       <span class="badge bg-danger">{{ r.status_display }}</span>
@@ -171,7 +209,7 @@
                       <span class="badge bg-secondary">{{ r.status_display }}</span>
                     {% endif %}
                   </td>
-                  <td class="text-center align-middle">{{ r.total_display }}</td>
+                  <td class="text-center align-middle d-none d-md-table-cell">{{ r.total_display }}</td>
                   <td class="text-center align-middle">
                     <a class="btn btn-sm btn-outline-secondary" href="{% url 'recepcao:atendimento_detail' r.id %}" title="Detalhes">
                       <i class="bi bi-box-arrow-up-right"></i>
@@ -179,7 +217,8 @@
                   </td>
                 </tr>
               {% empty %}
-                <tr><td colspan="8" class="text-muted text-center py-4">Nenhum atendimento encontrado no período selecionado.</td></tr>
+                <tr><td colspan="8" class="text-muted text-center py-4 d-none d-md-table-cell">Nenhum atendimento encontrado no período selecionado.</td></tr>
+                <tr><td colspan="4" class="text-muted text-center py-4 d-table-cell d-md-none">Nenhum atendimento encontrado no período selecionado.</td></tr>
               {% endfor %}
             </tbody>
           </table>
@@ -187,9 +226,10 @@
         
         <!-- Paginação -->
         {% if atendimentos_page.has_other_pages %}
-        <div class="d-flex justify-content-between align-items-center mt-3">
-          <div class="text-muted small">
-            Mostrando {{ atendimentos_page.start_index }} a {{ atendimentos_page.end_index }} de {{ atendimentos_page.paginator.count }} atendimentos
+        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center mt-3">
+          <div class="text-muted small mb-2 mb-sm-0">
+            <span class="d-none d-sm-inline">Mostrando {{ atendimentos_page.start_index }} a {{ atendimentos_page.end_index }} de {{ atendimentos_page.paginator.count }} atendimentos</span>
+            <span class="d-inline d-sm-none">{{ atendimentos_page.start_index }}-{{ atendimentos_page.end_index }} de {{ atendimentos_page.paginator.count }}</span>
           </div>
           <nav aria-label="Paginação de atendimentos">
             <ul class="pagination pagination-sm mb-0">

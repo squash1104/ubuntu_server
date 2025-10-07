@@ -1,0 +1,238 @@
+{% extends 'base.html' %}
+{% load historico_tags %}
+{% block content %}
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-body">
+        <!-- Cabeçalho -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h1 class="h4 mb-1">
+              <i class="bi bi-clock-history text-primary me-2"></i>Detalhes do Histórico
+            </h1>
+            <div class="text-muted small">
+              <i class="bi bi-info-circle me-1"></i>Registro #{{ historico.id }}
+            </div>
+          </div>
+          <div>
+            <a href="{% url 'historico:historico_list' %}" class="btn btn-outline-secondary">
+              <i class="bi bi-arrow-left me-1"></i>Voltar
+            </a>
+          </div>
+        </div>
+
+        <!-- Informações Básicas -->
+        <div class="card mb-4">
+          <div class="card-body">
+            <h6 class="card-title mb-3">
+              <i class="bi bi-info-square me-2"></i>Informações da Ação
+            </h6>
+            <div class="row g-3">
+              <div class="col-md-3">
+                <label class="form-label fw-medium text-muted small">Data/Hora</label>
+                <div class="fw-medium">{{ historico.data_hora|date:"d/m/Y H:i:s" }}</div>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label fw-medium text-muted small">Ação</label>
+                <div>
+                  <span class="badge bg-{{ historico.acao_color }}">
+                    <i class="bi {{ historico.acao_icon }} me-1"></i>{{ historico.get_acao_display }}
+                  </span>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label fw-medium text-muted small">Tipo</label>
+                <div class="fw-medium">
+                  <i class="bi {{ historico.tipo_objeto_icon }} me-1"></i>{{ historico.get_tipo_objeto_display }}
+                </div>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label fw-medium text-muted small">Usuário</label>
+                <div class="fw-medium">
+                  {% if historico.usuario %}
+                    {{ historico.usuario.get_full_name|default:historico.usuario.username }}
+                  {% else %}
+                    <span class="text-muted">Sistema</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            <div class="row g-3 mt-2">
+              <div class="col-12">
+                <label class="form-label fw-medium text-muted small">Descrição</label>
+                <div class="fw-medium">{{ historico.descricao }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mudanças (Antes/Depois) -->
+        {% if historico.acao == 'EDITAR' and historico.detalhes_antes and historico.detalhes_depois %}
+        <div class="card mb-4">
+          <div class="card-body">
+            <h6 class="card-title mb-3">
+              <i class="bi bi-arrow-left-right me-2"></i>O que foi alterado
+            </h6>
+            <div class="table-responsive">
+              <table class="table table-sm table-hover">
+                <thead class="table-light">
+                  <tr>
+                    <th style="width: 30%;">Campo</th>
+                    <th style="width: 35%;">Antes</th>
+                    <th style="width: 35%;">Depois</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for key, value_antes in historico.detalhes_antes.items %}
+                    {% if historico.detalhes_depois %}
+                      {% with value_depois=historico.detalhes_depois|lookup:key %}
+                        {% if value_antes != value_depois %}
+                        <tr>
+                          <td class="fw-medium">{{ key|title }}</td>
+                          <td>
+                            <span class="text-danger">
+                              {% if value_antes %}{{ value_antes }}{% else %}<em class="text-muted">vazio</em>{% endif %}
+                            </span>
+                          </td>
+                          <td>
+                            <span class="text-success">
+                              {% if value_depois %}{{ value_depois }}{% else %}<em class="text-muted">vazio</em>{% endif %}
+                            </span>
+                          </td>
+                        </tr>
+                        {% endif %}
+                      {% endwith %}
+                    {% endif %}
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        {% elif historico.acao == 'EXCLUIR' and historico.detalhes_antes %}
+        <div class="card mb-4">
+          <div class="card-body">
+            <h6 class="card-title mb-3">
+              <i class="bi bi-trash me-2"></i>Dados antes da exclusão
+            </h6>
+            <div class="table-responsive">
+              <table class="table table-sm table-hover">
+                <thead class="table-light">
+                  <tr>
+                    <th style="width: 30%;">Campo</th>
+                    <th>Valor</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for key, value in historico.detalhes_antes.items %}
+                  <tr>
+                    <td class="fw-medium">{{ key|title }}</td>
+                    <td>
+                      {% if value %}{{ value }}{% else %}<em class="text-muted">vazio</em>{% endif %}
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        {% elif historico.acao == 'CRIAR' and historico.detalhes_depois %}
+        <div class="card mb-4">
+          <div class="card-body">
+            <h6 class="card-title mb-3">
+              <i class="bi bi-plus-circle me-2"></i>Dados criados
+            </h6>
+            <div class="table-responsive">
+              <table class="table table-sm table-hover">
+                <thead class="table-light">
+                  <tr>
+                    <th style="width: 30%;">Campo</th>
+                    <th>Valor</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for key, value in historico.detalhes_depois.items %}
+                  <tr>
+                    <td class="fw-medium">{{ key|title }}</td>
+                    <td>
+                      {% if value %}{{ value }}{% else %}<em class="text-muted">vazio</em>{% endif %}
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        {% else %}
+        <div class="card mb-4">
+          <div class="card-body">
+            <div class="text-center py-4">
+              <i class="bi bi-info-circle text-muted" style="font-size: 3rem;"></i>
+              <p class="text-muted mt-3">Não há detalhes adicionais para esta ação.</p>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Metadados Técnicos (opcional) -->
+        {% if historico.ip_address or historico.user_agent %}
+        <div class="card">
+          <div class="card-body">
+            <h6 class="card-title mb-3">
+              <i class="bi bi-laptop me-2"></i>Informações Técnicas
+            </h6>
+            <div class="row g-3">
+              {% if historico.ip_address %}
+              <div class="col-md-6">
+                <label class="form-label fw-medium text-muted small">Endereço IP</label>
+                <div class="fw-medium">{{ historico.ip_address }}</div>
+              </div>
+              {% endif %}
+              {% if historico.user_agent %}
+              <div class="col-md-12">
+                <label class="form-label fw-medium text-muted small">Navegador/Dispositivo</label>
+                <div class="text-truncate small">{{ historico.user_agent }}</div>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  .table thead th {
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #6c757d;
+    background-color: #f8f9fa;
+  }
+  
+  .badge {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.75rem;
+  }
+  
+  .card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  }
+  
+  .card-title {
+    color: #495057;
+    font-weight: 600;
+  }
+</style>
+{% endblock %}

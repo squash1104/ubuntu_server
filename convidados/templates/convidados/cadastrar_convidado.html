@@ -213,7 +213,7 @@
                     const data = await response.json();
                     bairroSelect.empty().append('<option value="">Selecione um bairro</option>');
                     data.forEach(function(bairro) {
-                        const option = new Option(bairro.nome_bairro, bairro.id, false, false);
+                        const option = new Option(bairro.nome, bairro.id, false, false);
                         bairroSelect.append(option);
                     });
                     const target = initialBairro || selectedBefore;

@@ -379,6 +379,7 @@ body {
                     <li class="nav-item"><a class="nav-link" href="{% url 'mapa_apoiadores' %}"><i class="bi bi-map-fill me-2"></i>Mapa</a></li>
                     <li class="nav-item"><a class="nav-link" href="#"><i class="bi bi-calendar-event-fill me-2"></i>Eventos</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'chat' %}"><i class="bi bi-chat-dots-fill me-2"></i>Chat</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'historico:historico_list' %}"><i class="bi bi-clock-history me-2"></i>Histórico</a></li>
                     {# Link para o módulo de recepção visível apenas para recepcionistas/supervisores/admins #}
                     {% if user.is_authenticated %}
                         {% if user.is_superuser or user|has_group:"Supervisor" or user|has_group:"Recepcionista" %}

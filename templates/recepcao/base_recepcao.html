@@ -215,10 +215,46 @@
         color: #e4606d !important;
     }
 
+    /* Responsividade da navbar */
     @media (max-width: 991.98px) {
         .navbar-brand {
             flex-grow: 1;
             text-align: left;
+        }
+        
+        .navbar-actions {
+            gap: 0.25rem;
+        }
+        
+        .navbar-text {
+            font-size: 0.8rem;
+        }
+    }
+    
+    @media (max-width: 575.98px) {
+        .navbar-brand {
+            font-size: 1rem;
+        }
+        
+        .navbar-actions .btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .navbar-text {
+            font-size: 0.75rem;
+        }
+    }
+    
+    /* Melhorias para filtros responsivos */
+    @media (max-width: 767.98px) {
+        .btn-group .btn {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+        }
+        
+        .form-control-sm {
+            font-size: 0.875rem;
         }
     }
 
@@ -421,25 +457,34 @@
 <body class="light-theme">
 
     <nav class="navbar navbar-dark rec-navbar shadow-sm fixed-top">
-        <div class="container-fluid px-3">
+        <div class="container-fluid px-2 px-sm-3">
             <!-- Botão do menu hambúrguer para mobile -->
             <button class="navbar-toggler me-2 d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#recOffcanvas" aria-controls="recOffcanvas">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-            <!-- Brand/Título com me-auto para empurrar o resto para a direita -->
-            <span class="navbar-brand me-auto">Recepção Gab. Max Russi</span>
+            <!-- Brand/Título responsivo -->
+            <span class="navbar-brand me-auto d-flex align-items-center">
+                <span class="d-none d-sm-inline">Recepção Gab. Max Russi</span>
+                <span class="d-inline d-sm-none">Recepção</span>
+            </span>
 
             <!-- Container dos botões -->
             <div class="navbar-actions d-flex align-items-center flex-shrink-0">
                 {% if user.is_authenticated %}
-                    <div class="d-flex align-items-center mx-3 d-none d-lg-block">
+                    <!-- Nome do usuário - apenas em telas maiores -->
+                    <div class="d-flex align-items-center mx-2 d-none d-lg-block">
                         <span class="navbar-text me-2">Olá, {{ user.get_full_name|default:user.username }}</span>
+                    </div>
+                    
+                    <!-- Nome do usuário - versão compacta para mobile -->
+                    <div class="d-flex align-items-center mx-1 d-lg-none">
+                        <span class="navbar-text small">{{ user.get_full_name|default:user.username|truncatechars:10 }}</span>
                     </div>
                 {% endif %}
 
                 <!-- Botão de tema -->
-                <button id="theme-toggler" class="btn btn-outline-light me-2" type="button" title="Mudar tema">
+                <button id="theme-toggler" class="btn btn-outline-light me-1 me-sm-2" type="button" title="Mudar tema">
                     <i id="theme-icon" class="bi bi-moon-stars-fill"></i>
                 </button>
 
@@ -463,6 +508,7 @@
             <li><a class="{% if request.path|startswith:'/recepcao/dashboard' or request.path|startswith:'/recepcao/atendimentos' %}active{% endif %}" href="{% url 'recepcao:dashboard' %}"><i class="bi bi-list-check"></i><span>Fila & Atendimento</span></a></li>
             <li><a class="{% if request.path|startswith:'/recepcao/visitantes' and not request.path|startswith:'/recepcao/visitantes/novo' %}active{% endif %}" href="{% url 'recepcao:visitantes_list' %}"><i class="bi bi-people"></i><span>Visitantes</span></a></li>
             <li><a class="{% if request.path|startswith:'/recepcao/visitantes/novo' %}active{% endif %}" href="{% url 'recepcao:visitante_create' %}"><i class="bi bi-person-plus"></i><span>Novo Visitante</span></a></li>
+            <li><a class="{% if request.path|startswith:'/recepcao/aniversariantes' %}active{% endif %}" href="{% url 'recepcao:aniversariantes' %}"><i class="bi bi-gift"></i><span>Aniversariantes</span></a></li>
             <li><a class="{% if request.path|startswith:'/recepcao/atendentes' %}active{% endif %}" href="{% url 'recepcao:atendentes' %}"><i class="bi bi-people-fill"></i><span>Atendentes</span></a></li>
             <li><a class="{% if request.path|startswith:'/recepcao/relatorios' %}active{% endif %}" href="{% url 'recepcao:relatorios' %}"><i class="bi bi-graph-up"></i><span>Relatórios</span></a></li>
             {% if user.is_authenticated %}
@@ -495,6 +541,7 @@
                 <li class="nav-item"><a class="nav-link" href="{% url 'recepcao:visitantes_list' %}"><i class="bi bi-people me-2"></i>Visitantes</a></li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'recepcao:visitante_create' %}"><i class="bi bi-person-plus me-2"></i>Novo Visitante</a></li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'recepcao:dashboard' %}"><i class="bi bi-list-check me-2"></i>Fila & Atendimento</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'recepcao:aniversariantes' %}"><i class="bi bi-gift me-2"></i>Aniversariantes</a></li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'recepcao:atendentes' %}"><i class="bi bi-people-fill me-2"></i>Atendentes</a></li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'recepcao:relatorios' %}"><i class="bi bi-graph-up me-2"></i>Relatórios</a></li>
             </ul>

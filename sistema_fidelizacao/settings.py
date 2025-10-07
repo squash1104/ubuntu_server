@@ -82,6 +82,7 @@ INSTALLED_APPS = [
     "convidados",
     "mensagens",
     "recepcao",
+    "historico",
     "django_filters",
     "channels",
     "chat",

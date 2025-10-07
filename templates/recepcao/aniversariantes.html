@@ -1,0 +1,355 @@
+{% extends 'recepcao/base_recepcao.html' %}
+{% load recepcao_extras %}
+
+{% block content %}
+<div class="row align-items-start">
+  <div class="col-12">
+    <div class="rec-card">
+      <div class="card-body">
+        <!-- Cabeçalho -->
+        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center mb-4">
+          <div class="mb-3 mb-lg-0">
+            <h1 class="h4 mb-1">
+              <i class="bi bi-gift text-primary me-2"></i>Aniversariantes
+            </h1>
+            <div class="text-muted small">
+              <i class="bi bi-calendar3 me-1"></i>Mês de {{ nome_mes_atual }} de {{ hoje.year }}
+            </div>
+          </div>
+          
+          <!-- Filtros -->
+          <div class="w-100 w-lg-auto">
+            <form method="get" class="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center" style="gap:.5rem">
+              <div class="d-flex flex-column flex-sm-row" style="gap:.5rem">
+                <select name="mes" class="form-select form-select-sm" onchange="this.form.submit()">
+                  {% for mes_num, mes_nome in meses %}
+                    <option value="{{ mes_num }}" {% if mes_filtro == mes_num %}selected{% endif %}>
+                      {{ mes_nome }}
+                    </option>
+                  {% endfor %}
+                </select>
+              </div>
+              <a href="{% url 'recepcao:dashboard' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i><span class="d-none d-sm-inline">Voltar</span>
+              </a>
+            </form>
+          </div>
+        </div>
+
+        <!-- KPIs -->
+        <div class="row g-2 g-lg-3 mb-4">
+          <div class="col-6 col-lg-3">
+            <div class="rec-card text-center">
+              <div class="card-body py-2 py-lg-3">
+                <i class="bi bi-gift text-primary fs-4 fs-lg-3 mb-1 mb-lg-2"></i>
+                <div class="text-muted small d-none d-sm-block">Total de Aniversariantes</div>
+                <div class="text-muted small d-block d-sm-none">Total</div>
+                <div class="fs-5 fs-lg-4 fw-bold">{{ total_aniversariantes }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 col-lg-3">
+            <div class="rec-card text-center">
+              <div class="card-body py-2 py-lg-3">
+                <i class="bi bi-balloon text-success fs-4 fs-lg-3 mb-1 mb-lg-2"></i>
+                <div class="text-muted small d-none d-sm-block">Aniversariantes de Hoje</div>
+                <div class="text-muted small d-block d-sm-none">Hoje</div>
+                <div class="fs-5 fs-lg-4 fw-bold text-success">{{ aniversariantes_hoje_count }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 col-lg-3">
+            <div class="rec-card text-center">
+              <div class="card-body py-2 py-lg-3">
+                <i class="bi bi-calendar-check text-warning fs-4 fs-lg-3 mb-1 mb-lg-2"></i>
+                <div class="text-muted small d-none d-sm-block">Já Passaram</div>
+                <div class="text-muted small d-block d-sm-none">Passados</div>
+                <div class="fs-5 fs-lg-4 fw-bold text-warning">{{ aniversariantes_passado_count }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 col-lg-3">
+            <div class="rec-card text-center">
+              <div class="card-body py-2 py-lg-3">
+                <i class="bi bi-calendar-event text-info fs-4 fs-lg-3 mb-1 mb-lg-2"></i>
+                <div class="text-muted small d-none d-sm-block">Ainda Vão Fazer</div>
+                <div class="text-muted small d-block d-sm-none">Futuros</div>
+                <div class="fs-5 fs-lg-4 fw-bold text-info">{{ aniversariantes_futuro_count }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Aniversariantes de Hoje -->
+        {% if aniversariantes_hoje %}
+        <div class="mb-4">
+          <div class="d-flex align-items-center mb-3">
+            <h5 class="mb-0 me-3">
+              <i class="bi bi-balloon-fill text-success me-2"></i>Aniversariantes de Hoje
+            </h5>
+            <span class="badge bg-success fs-6">{{ aniversariantes_hoje_count }}</span>
+          </div>
+          <div class="row g-3">
+            {% for aniv in aniversariantes_hoje %}
+            <div class="col-12 col-md-6 col-lg-4">
+              <div class="rec-card border-success">
+                <div class="card-body">
+                  <div class="d-flex align-items-center">
+                    <div class="me-3">
+                      {% if aniv.visitante.foto %}
+                        <img src="{{ aniv.visitante.foto.url }}" 
+                             alt="Foto do {{ aniv.visitante.nome }}"
+                             class="rounded-circle"
+                             style="width: 50px; height: 50px; object-fit: cover;">
+                      {% else %}
+                        <div class="bg-success rounded-circle d-flex align-items-center justify-content-center"
+                             style="width: 50px; height: 50px;">
+                          <i class="bi bi-person text-white fs-4"></i>
+                        </div>
+                      {% endif %}
+                    </div>
+                    <div class="flex-grow-1">
+                      <h6 class="mb-1 fw-bold text-success">{{ aniv.visitante.nome }}</h6>
+                      <div class="text-muted small">
+                        <i class="bi bi-cake me-1"></i>{{ aniv.idade }} anos hoje
+                      </div>
+                      {% if aniv.visitante.funcao %}
+                        <div class="text-muted small">
+                          <i class="bi bi-briefcase me-1"></i>{{ aniv.visitante.funcao }}
+                        </div>
+                      {% endif %}
+                    </div>
+                    <div class="text-end">
+                      <a href="{% url 'recepcao:visitante_update' aniv.visitante.id %}?view=1" 
+                         class="btn btn-sm btn-outline-success">
+                        <i class="bi bi-eye"></i>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Aniversariantes Futuros -->
+        {% if aniversariantes_futuro %}
+        <div class="mb-4">
+          <div class="d-flex align-items-center mb-3">
+            <h5 class="mb-0 me-3">
+              <i class="bi bi-calendar-event text-info me-2"></i>Próximos Aniversariantes
+            </h5>
+            <span class="badge bg-info fs-6">{{ aniversariantes_futuro_count }}</span>
+          </div>
+          <div class="row g-3">
+            {% for aniv in aniversariantes_futuro %}
+            <div class="col-12 col-md-6 col-lg-4">
+              <div class="rec-card">
+                <div class="card-body">
+                  <div class="d-flex align-items-center">
+                    <div class="me-3">
+                      {% if aniv.visitante.foto %}
+                        <img src="{{ aniv.visitante.foto.url }}" 
+                             alt="Foto do {{ aniv.visitante.nome }}"
+                             class="rounded-circle"
+                             style="width: 50px; height: 50px; object-fit: cover;">
+                      {% else %}
+                        <div class="bg-info rounded-circle d-flex align-items-center justify-content-center"
+                             style="width: 50px; height: 50px;">
+                          <i class="bi bi-person text-white fs-4"></i>
+                        </div>
+                      {% endif %}
+                    </div>
+                    <div class="flex-grow-1">
+                      <h6 class="mb-1 fw-bold">{{ aniv.visitante.nome }}</h6>
+                      <div class="text-muted small">
+                        <i class="bi bi-calendar3 me-1"></i>{{ aniv.data_aniversario|date:"d/m" }} - {{ aniv.idade }} anos
+                      </div>
+                      {% if aniv.visitante.funcao %}
+                        <div class="text-muted small">
+                          <i class="bi bi-briefcase me-1"></i>{{ aniv.visitante.funcao }}
+                        </div>
+                      {% endif %}
+                    </div>
+                    <div class="text-end">
+                      <a href="{% url 'recepcao:visitante_update' aniv.visitante.id %}?view=1" 
+                         class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-eye"></i>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Aniversariantes Passados -->
+        {% if aniversariantes_passado %}
+        <div class="mb-4">
+          <div class="d-flex align-items-center mb-3">
+            <h5 class="mb-0 me-3">
+              <i class="bi bi-calendar-check text-warning me-2"></i>Aniversariantes que Já Passaram
+            </h5>
+            <span class="badge bg-warning fs-6">{{ aniversariantes_passado_count }}</span>
+          </div>
+          <div class="row g-3">
+            {% for aniv in aniversariantes_passado %}
+            <div class="col-12 col-md-6 col-lg-4">
+              <div class="rec-card">
+                <div class="card-body">
+                  <div class="d-flex align-items-center">
+                    <div class="me-3">
+                      {% if aniv.visitante.foto %}
+                        <img src="{{ aniv.visitante.foto.url }}" 
+                             alt="Foto do {{ aniv.visitante.nome }}"
+                             class="rounded-circle"
+                             style="width: 50px; height: 50px; object-fit: cover;">
+                      {% else %}
+                        <div class="bg-warning rounded-circle d-flex align-items-center justify-content-center"
+                             style="width: 50px; height: 50px;">
+                          <i class="bi bi-person text-white fs-4"></i>
+                        </div>
+                      {% endif %}
+                    </div>
+                    <div class="flex-grow-1">
+                      <h6 class="mb-1 fw-bold">{{ aniv.visitante.nome }}</h6>
+                      <div class="text-muted small">
+                        <i class="bi bi-calendar3 me-1"></i>{{ aniv.data_aniversario|date:"d/m" }} - {{ aniv.idade }} anos
+                      </div>
+                      {% if aniv.visitante.funcao %}
+                        <div class="text-muted small">
+                          <i class="bi bi-briefcase me-1"></i>{{ aniv.visitante.funcao }}
+                        </div>
+                      {% endif %}
+                    </div>
+                    <div class="text-end">
+                      <a href="{% url 'recepcao:visitante_update' aniv.visitante.id %}?view=1" 
+                         class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-eye"></i>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Mensagem quando não há aniversariantes -->
+        {% if not aniversariantes_hoje and not aniversariantes_futuro and not aniversariantes_passado %}
+        <div class="text-center py-5">
+          <i class="bi bi-gift text-muted" style="font-size: 4rem;"></i>
+          <h3 class="h5 text-muted mt-3">Nenhum aniversariante encontrado</h3>
+          <p class="text-muted">Não há aniversariantes cadastrados para o mês de {{ nome_mes_atual }}.</p>
+          <a href="{% url 'recepcao:visitante_create' %}" class="btn btn-primary">
+            <i class="bi bi-person-plus me-1"></i>Cadastrar Visitante
+          </a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Cards de aniversariantes */
+  .rec-card {
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+  }
+
+  .rec-card:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+  }
+
+  [data-bs-theme="dark"] .rec-card {
+    border-color: #4a5568;
+    background-color: #1a202c;
+  }
+
+  /* Card especial para aniversariantes de hoje */
+  .rec-card.border-success {
+    border-color: #198754 !important;
+    background: linear-gradient(135deg, rgba(25, 135, 84, 0.05), rgba(25, 135, 84, 0.02));
+  }
+
+  [data-bs-theme="dark"] .rec-card.border-success {
+    background: linear-gradient(135deg, rgba(25, 135, 84, 0.1), rgba(25, 135, 84, 0.05));
+  }
+
+  /* Fotos dos aniversariantes */
+  .rec-card img {
+    border: 2px solid #dee2e6;
+    transition: all 0.3s ease;
+  }
+
+  .rec-card:hover img {
+    transform: scale(1.05);
+  }
+
+  [data-bs-theme="dark"] .rec-card img {
+    border-color: #4a5568;
+  }
+
+  /* Badges */
+  .badge.fs-6 {
+    font-size: 0.875rem !important;
+  }
+
+  /* Responsividade */
+  @media (max-width: 767.98px) {
+    .rec-card .card-body {
+      padding: 1rem;
+    }
+    
+    .rec-card .d-flex {
+      flex-direction: column;
+      text-align: center;
+    }
+    
+    .rec-card .me-3 {
+      margin-right: 0 !important;
+      margin-bottom: 1rem;
+    }
+    
+    .rec-card .text-end {
+      text-align: center !important;
+      margin-top: 1rem;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  (function(){
+    // Auto-submit do filtro de mês
+    const mesSelect = document.querySelector('select[name="mes"]');
+    if (mesSelect) {
+      mesSelect.addEventListener('change', function() {
+        this.form.submit();
+      });
+    }
+
+    // Tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+  })();
+</script>
+{% endblock %}
+
+

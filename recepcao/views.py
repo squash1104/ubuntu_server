@@ -1236,6 +1236,7 @@ def declaracao_visitante(request, pk: int):
 def relatorios(request):
     from datetime import datetime, timedelta
 
+    from django.core.paginator import Paginator
     from django.db.models import Avg, Count, Q
     from django.utils import timezone
 
@@ -1247,6 +1248,7 @@ def relatorios(request):
     # Filtros de data (se fornecidos)
     data_inicio = request.GET.get("data_inicio", inicio_30_dias.strftime("%Y-%m-%d"))
     data_fim = request.GET.get("data_fim", hoje.strftime("%Y-%m-%d"))
+    atendente_filtro = request.GET.get("atendente", "")
 
     try:
         dt_inicio = datetime.strptime(data_inicio, "%Y-%m-%d").date()
@@ -1259,6 +1261,12 @@ def relatorios(request):
     atendimentos_periodo = Atendimento.objects.filter(
         horario_chegada__date__gte=dt_inicio, horario_chegada__date__lte=dt_fim
     )
+
+    # Aplicar filtro de atendente se fornecido
+    if atendente_filtro:
+        atendimentos_periodo = atendimentos_periodo.filter(
+            atendente__nome=atendente_filtro
+        )
 
     # 1. Resumo Geral
     total_atendimentos = atendimentos_periodo.count()
@@ -1335,6 +1343,21 @@ def relatorios(request):
         qtd = atendimentos_periodo.filter(horario_chegada__hour=hora).count()
         horarios_movimento.append({"hora": f"{hora:02d}:00", "quantidade": qtd})
 
+    # 7. Lista paginada de atendimentos (quando filtrado por atendente)
+    atendimentos_lista = None
+    paginator = None
+    page_obj = None
+
+    if atendente_filtro:
+        # Buscar atendimentos do atendente específico com paginação
+        atendimentos_lista = atendimentos_periodo.select_related(
+            "visitante", "atendente", "recepcionista"
+        ).order_by("-horario_chegada")
+
+        paginator = Paginator(atendimentos_lista, 20)  # 20 por página
+        page_number = request.GET.get("page")
+        page_obj = paginator.get_page(page_number)
+
     # Função para formatar duração
     def fmt_td(td):
         if not td:
@@ -1347,6 +1370,7 @@ def relatorios(request):
     context = {
         "data_inicio": data_inicio,
         "data_fim": data_fim,
+        "atendente_filtro": atendente_filtro,
         "total_atendimentos": total_atendimentos,
         "concluidos": concluidos,
         "cancelados": cancelados,
@@ -1358,10 +1382,117 @@ def relatorios(request):
         "atendimentos_por_dia": atendimentos_por_dia,
         "top_visitantes": top_visitantes,
         "horarios_movimento": horarios_movimento,
+        "atendimentos_lista": atendimentos_lista,
+        "page_obj": page_obj,
         "fmt_td": fmt_td,
     }
 
     return render(request, "recepcao/relatorios.html", context)
+
+
+@login_required
+@user_passes_test(is_recepcionista)
+def aniversariantes(request):
+    """Página de aniversariantes do mês atual."""
+
+    # Data atual
+    hoje = timezone.now().date()
+    mes_atual = hoje.month
+    ano_atual = hoje.year
+
+    # Filtros opcionais
+    mes_filtro = request.GET.get("mes", mes_atual)
+    try:
+        mes_filtro = int(mes_filtro)
+    except (ValueError, TypeError):
+        mes_filtro = mes_atual
+
+    # Buscar aniversariantes do mês
+    aniversariantes_qs = Visitante.objects.filter(
+        data_nascimento__isnull=False, data_nascimento__month=mes_filtro
+    ).order_by("data_nascimento__day", "nome")
+
+    # Separar por status do aniversário
+    aniversariantes_hoje = []
+    aniversariantes_passado = []
+    aniversariantes_futuro = []
+
+    for visitante in aniversariantes_qs:
+        if visitante.data_nascimento:
+            # Calcular idade que fará este ano
+            idade_este_ano = ano_atual - visitante.data_nascimento.year
+
+            # Verificar se já passou o aniversário
+            aniversario_este_ano = visitante.data_nascimento.replace(year=ano_atual)
+
+            if aniversario_este_ano == hoje:
+                aniversariantes_hoje.append(
+                    {
+                        "visitante": visitante,
+                        "idade": idade_este_ano,
+                        "data_aniversario": aniversario_este_ano,
+                        "status": "hoje",
+                    }
+                )
+            elif aniversario_este_ano < hoje:
+                aniversariantes_passado.append(
+                    {
+                        "visitante": visitante,
+                        "idade": idade_este_ano,
+                        "data_aniversario": aniversario_este_ano,
+                        "status": "passado",
+                    }
+                )
+            else:
+                aniversariantes_futuro.append(
+                    {
+                        "visitante": visitante,
+                        "idade": idade_este_ano,
+                        "data_aniversario": aniversario_este_ano,
+                        "status": "futuro",
+                    }
+                )
+
+    # Estatísticas
+    total_aniversariantes = len(aniversariantes_qs)
+    aniversariantes_hoje_count = len(aniversariantes_hoje)
+    aniversariantes_passado_count = len(aniversariantes_passado)
+    aniversariantes_futuro_count = len(aniversariantes_futuro)
+
+    # Lista de meses para o filtro
+    meses = [
+        (1, "Janeiro"),
+        (2, "Fevereiro"),
+        (3, "Março"),
+        (4, "Abril"),
+        (5, "Maio"),
+        (6, "Junho"),
+        (7, "Julho"),
+        (8, "Agosto"),
+        (9, "Setembro"),
+        (10, "Outubro"),
+        (11, "Novembro"),
+        (12, "Dezembro"),
+    ]
+
+    # Nome do mês atual
+    nome_mes_atual = dict(meses)[mes_filtro]
+
+    context = {
+        "aniversariantes_hoje": aniversariantes_hoje,
+        "aniversariantes_passado": aniversariantes_passado,
+        "aniversariantes_futuro": aniversariantes_futuro,
+        "total_aniversariantes": total_aniversariantes,
+        "aniversariantes_hoje_count": aniversariantes_hoje_count,
+        "aniversariantes_passado_count": aniversariantes_passado_count,
+        "aniversariantes_futuro_count": aniversariantes_futuro_count,
+        "mes_filtro": mes_filtro,
+        "nome_mes_atual": nome_mes_atual,
+        "meses": meses,
+        "hoje": hoje,
+    }
+
+    return render(request, "recepcao/aniversariantes.html", context)
 
 
 # Create your views here.

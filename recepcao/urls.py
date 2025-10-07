@@ -49,4 +49,5 @@ urlpatterns = [
         "declaracao/<int:pk>/", views.declaracao_visitante, name="declaracao_visitante"
     ),
     path("relatorios/", views.relatorios, name="relatorios"),
+    path("aniversariantes/", views.aniversariantes, name="aniversariantes"),
 ]

@@ -8,6 +8,11 @@ from django.views.decorators.http import require_http_methods
 
 from convidados.models import Convidado
 from geografia.models import Bairro
+from historico.utils import (
+    registrar_criacao_colaborador,
+    registrar_edicao_colaborador,
+    registrar_exclusao_colaborador,
+)
 
 from .filters import ColaboradorFilter
 from .forms import ColaboradorForm
@@ -94,6 +99,9 @@ def adicionar_colaborador(request):
             colaborador.cadastrado_por = request.user
             colaborador.save()
 
+            # REGISTRAR NO HISTÓRICO
+            registrar_criacao_colaborador(colaborador, request.user, request)
+
             if form.has_phone_warning:
                 messages.warning(
                     request,
@@ -115,10 +123,36 @@ def adicionar_colaborador(request):
 def editar_colaborador(request, pk):
     colaborador = get_object_or_404(Colaborador, pk=pk)
 
+    # SALVAR DADOS ANTES DA EDIÇÃO
+    dados_antes = {
+        "nome": colaborador.nome,
+        "telefone": colaborador.telefone,
+        "data_nascimento": getattr(colaborador, "data_nascimento", None),
+        "cidade": (
+            str(getattr(colaborador, "cidade", None))
+            if getattr(colaborador, "cidade", None)
+            else None
+        ),
+        "bairro": (
+            str(getattr(colaborador, "bairro", None))
+            if getattr(colaborador, "bairro", None)
+            else None
+        ),
+        "cadastrado_por": getattr(
+            getattr(colaborador, "cadastrado_por", None), "username", None
+        ),
+    }
+
     if request.method == "POST":
         form = ColaboradorForm(request.POST, instance=colaborador)
         if form.is_valid():
             form.save()
+
+            # REGISTRAR NO HISTÓRICO
+            registrar_edicao_colaborador(
+                colaborador, request.user, dados_antes, request
+            )
+
             messages.success(request, "Colaborador editado com sucesso!")
             return redirect("colaboradores:lista_colaboradores")
     else:
@@ -140,6 +174,9 @@ def excluir_colaborador(request, colaborador_id):
 
     if request.method == "POST":
         if quantidade_convidados == 0:
+            # REGISTRAR NO HISTÓRICO ANTES DE EXCLUIR
+            registrar_exclusao_colaborador(colaborador, request.user, request)
+
             # Se não há convidados, pode excluir
             colaborador.delete()
             messages.success(

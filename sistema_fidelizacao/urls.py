@@ -81,6 +81,7 @@ urlpatterns = [
     path("mensagens/", include("mensagens.urls", namespace="mensagens")),
     path("geografia/", include("geografia.urls")),
     path("recepcao/", include("recepcao.urls", namespace="recepcao")),
+    path("historico/", include("historico.urls", namespace="historico")),
     path("health/", health_check_view),
     path("sobre/", views.sobre, name="sobre"),
     path("chat/", include("chat.urls")),

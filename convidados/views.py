@@ -10,6 +10,11 @@ from django.views.decorators.http import require_http_methods
 
 from colaboradores.models import Colaborador
 from geografia.models import Bairro
+from historico.utils import (
+    registrar_criacao_convidado,
+    registrar_edicao_convidado,
+    registrar_exclusao_convidado,
+)
 
 from .filters import ConvidadoFilter
 from .forms import ConvidadoForm
@@ -138,6 +143,9 @@ def cadastrar_convidado(request, colaborador_id=None):
             convidado.cadastrado_por = request.user
             convidado.save()
 
+            # REGISTRAR NO HISTÓRICO
+            registrar_criacao_convidado(convidado, request.user, request)
+
             convidado_nome = convidado.nome
 
             # Verificamos o atributo de aviso APÓS o salvamento
@@ -172,10 +180,29 @@ def cadastrar_convidado(request, colaborador_id=None):
 @login_required
 def editar_convidado(request, pk):
     convidado = get_object_or_404(Convidado, pk=pk)
+
+    # SALVAR DADOS ANTES DA EDIÇÃO
+    dados_antes = {
+        "nome": convidado.nome,
+        "telefone": convidado.telefone,
+        "data_nascimento": getattr(convidado, "data_nascimento", None),
+        "cidade": (
+            str(getattr(convidado, "cidade", None))
+            if getattr(convidado, "cidade", None)
+            else None
+        ),
+        "bairro": str(convidado.bairro) if convidado.bairro else None,
+        "colaborador": str(convidado.colaborador) if convidado.colaborador else None,
+    }
+
     if request.method == "POST":
         form = ConvidadoForm(request.POST, instance=convidado)
         if form.is_valid():
             form.save()
+
+            # REGISTRAR NO HISTÓRICO
+            registrar_edicao_convidado(convidado, request.user, dados_antes, request)
+
             messages.success(
                 request, f'Convidado "{convidado.nome}" atualizado com sucesso!'
             )
@@ -208,6 +235,9 @@ def excluir_convidado(request, pk):
     if request.method == "POST":
         # Pega a URL de redirecionamento que o formulário enviou
         redirect_url = request.POST.get("redirect_url", None)
+
+        # REGISTRAR NO HISTÓRICO ANTES DE EXCLUIR
+        registrar_exclusao_convidado(convidado, request.user, request)
 
         # Guarda o nome do convidado antes de o apagar
         nome_convidado = convidado.nome
