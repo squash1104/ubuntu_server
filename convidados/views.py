@@ -1,11 +1,20 @@
+import re
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_http_methods
 
 from colaboradores.models import Colaborador
 from geografia.models import Bairro
+from historico.utils import (
+    registrar_criacao_convidado,
+    registrar_edicao_convidado,
+    registrar_exclusao_convidado,
+)
 
 from .filters import ConvidadoFilter
 from .forms import ConvidadoForm
@@ -22,6 +31,11 @@ def lista_convidados(request):
     termo_busca = request.GET.get("q", "")
     ordenar_por_param = request.GET.get("ordenar_por", "nome")
     direcao = request.GET.get("direcao", "asc")
+    per_page = int(request.GET.get("per_page", 20))
+    page_number = request.GET.get("page", 1)
+
+    # Opções de registros por página
+    per_page_options = [20, 50, 100, 200]
 
     ordenar_por_query = ordenar_por_param
     if direcao == "desc":
@@ -39,18 +53,26 @@ def lista_convidados(request):
         )
 
     convidados_final = convidados_qs.order_by(ordenar_por_query)
-    total_convidados_filtrados = convidados_final.count()
+
+    # Implementar paginação
+    paginator = Paginator(convidados_final, per_page)
+    page_obj = paginator.get_page(page_number)
+
+    # Totais apenas da página atual
+    total_convidados_filtrados = page_obj.object_list.count()
 
     context = {
-        "convidados": convidados_final,
+        "convidados": page_obj,
+        "page_obj": page_obj,
+        "paginator": paginator,
         "termo_busca": termo_busca,
         "ordenar_por": ordenar_por_param,
         "direcao": direcao,
+        "per_page": per_page,
+        "per_page_options": per_page_options,
         "total_convidados_filtrados": total_convidados_filtrados,
     }
 
-    if request.GET.get("is_ajax") == "true":
-        return render(request, "convidados/convidados_table_fragment.html", context)
     return render(request, "convidados/lista_convidados.html", context)
 
 
@@ -109,9 +131,7 @@ def colaborador_convidados(request, pk):
 
 
 @login_required
-def cadastrar_convidado(
-    request, colaborador_id=None
-):  # <--- Garanta que aceita colaborador_id=None
+def cadastrar_convidado(request, colaborador_id=None):
     colaborador = None
     if colaborador_id:
         colaborador = get_object_or_404(Colaborador, pk=colaborador_id)
@@ -119,23 +139,32 @@ def cadastrar_convidado(
     if request.method == "POST":
         form = ConvidadoForm(request.POST)
         if form.is_valid():
-            convidado = form.save()
-            messages.success(
-                request, f'Convidado "{convidado.nome}" cadastrado com sucesso!'
-            )
-            if colaborador:
-                form = ConvidadoForm(initial={"colaborador": colaborador})
+            convidado = form.save(commit=False)
+            convidado.cadastrado_por = request.user
+            convidado.save()
 
-                context = {
-                    "form": form,
-                    "colaborador": colaborador,
-                }
-                return render(request, "convidados/cadastrar_convidado.html", context)
-            # Caso contrário, volta para a lista geral
+            # REGISTRAR NO HISTÓRICO
+            registrar_criacao_convidado(convidado, request.user, request)
+
+            convidado_nome = convidado.nome
+
+            # Verificamos o atributo de aviso APÓS o salvamento
+            if getattr(form, "phone_is_duplicate", False):
+                messages.warning(
+                    request,
+                    f'AVISO: O telefone "{convidado.telefone}" já está '
+                    f'cadastrado em outro convidado. Convidado "{convidado_nome}" '
+                    f"salvo com sucesso!",
+                )
+            else:
+                messages.success(
+                    request, f'Convidado "{convidado_nome}" salvo com sucesso!'
+                )
+
+            if colaborador:
+                return redirect("convidados:colaborador_convidados", pk=colaborador_id)
             return redirect("convidados:lista_convidados")
     else:
-        # Se for o primeiro acesso (GET) e viemos de um colaborador,
-        # já preenche o campo 'colaborador' no formulário
         if colaborador:
             form = ConvidadoForm(initial={"colaborador": colaborador})
         else:
@@ -143,7 +172,6 @@ def cadastrar_convidado(
 
     context = {
         "form": form,
-        # Envia o colaborador (ou None) para o template saber de onde viemos
         "colaborador": colaborador,
     }
     return render(request, "convidados/cadastrar_convidado.html", context)
@@ -152,31 +180,52 @@ def cadastrar_convidado(
 @login_required
 def editar_convidado(request, pk):
     convidado = get_object_or_404(Convidado, pk=pk)
-    colaborador_origem_id = request.GET.get("colaborador_origem_id")
+
+    # SALVAR DADOS ANTES DA EDIÇÃO
+    dados_antes = {
+        "nome": convidado.nome,
+        "telefone": convidado.telefone,
+        "data_nascimento": getattr(convidado, "data_nascimento", None),
+        "cidade": (
+            str(getattr(convidado, "cidade", None))
+            if getattr(convidado, "cidade", None)
+            else None
+        ),
+        "bairro": str(convidado.bairro) if convidado.bairro else None,
+        "colaborador": str(convidado.colaborador) if convidado.colaborador else None,
+    }
 
     if request.method == "POST":
         form = ConvidadoForm(request.POST, instance=convidado)
         if form.is_valid():
             form.save()
-            messages.warning(
-                request, f'Convidado "{convidado.nome}" editado com sucesso!'
+
+            # REGISTRAR NO HISTÓRICO
+            registrar_edicao_convidado(convidado, request.user, dados_antes, request)
+
+            messages.success(
+                request, f'Convidado "{convidado.nome}" atualizado com sucesso!'
             )
-            if colaborador_origem_id:
-                return redirect(
-                    "convidados:colaborador_convidados", pk=colaborador_origem_id
-                )
+
+            # --- MODIFICAÇÃO PRINCIPAL AQUI ---
+            # Pega a URL de retorno do formulário, se ela existir.
+            next_url = request.POST.get("next", None)
+            if next_url:
+                # Redireciona para a URL completa fornecida pelo formulário
+                return redirect(next_url)
+            # Se não houver, volta para a lista geral como fallback
             return redirect("convidados:lista_convidados")
+            # ----------------------------------
     else:
         form = ConvidadoForm(instance=convidado)
 
-    # **THE CORRECTION IS HERE**
-    # This `context` and `return render` block must be outside the `else` block
-    # so that it is executed for both GET and invalid POST requests.
-    context = {
-        "form": form,
-        "convidado": convidado,
-    }
-    return render(request, "convidados/editar_convidado.html", context)
+    # Adiciona a URL de retorno para o contexto, se ela existir
+    next_url_get = request.GET.get("next", None)
+    return render(
+        request,
+        "convidados/cadastrar_convidado.html",
+        {"form": form, "convidado": convidado, "next": next_url_get},
+    )
 
 
 @login_required
@@ -186,6 +235,9 @@ def excluir_convidado(request, pk):
     if request.method == "POST":
         # Pega a URL de redirecionamento que o formulário enviou
         redirect_url = request.POST.get("redirect_url", None)
+
+        # REGISTRAR NO HISTÓRICO ANTES DE EXCLUIR
+        registrar_exclusao_convidado(convidado, request.user, request)
 
         # Guarda o nome do convidado antes de o apagar
         nome_convidado = convidado.nome
@@ -238,3 +290,37 @@ def get_bairros_ajax(request):
             for bairro in bairros_qs
         ]
     return JsonResponse(bairros, safe=False)
+
+
+@require_http_methods(["GET"])
+def check_telefone_exists(request):
+    telefone = request.GET.get("telefone", None)
+    convidado_id = request.GET.get("pk", None)
+
+    if telefone:
+        # Lógica para limpar a formatação do telefone
+        telefone_limpo = re.sub(r"[\(\)\-\s]", "", telefone)
+
+        # Checa se o telefone limpo existe no banco de dados
+        queryset = Convidado.objects.filter(telefone=telefone_limpo)
+        if convidado_id:
+            queryset = queryset.exclude(pk=convidado_id)
+
+        exists = queryset.exists()
+        return JsonResponse({"exists": exists})
+    return JsonResponse({"exists": False})
+
+
+@require_http_methods(["GET"])
+def check_nome_exists(request):
+    nome = request.GET.get("nome", None)
+    convidado_id = request.GET.get("pk", None)
+
+    if nome:
+        queryset = Convidado.objects.filter(nome__iexact=nome)
+        if convidado_id:
+            queryset = queryset.exclude(pk=convidado_id)
+
+        exists = queryset.exists()
+        return JsonResponse({"exists": exists})
+    return JsonResponse({"exists": False})
