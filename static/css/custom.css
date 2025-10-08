@@ -30,41 +30,88 @@ html, body {
   padding: 0;
 }
 
-/* Estilo base para os campos de formulário */
-input[type="text"],
-input[type="email"],
-input[type="password"],
-input[type="number"],
-textarea,
-.select2-container .select2-selection--single {
-    /* A sombra: sem deslocamento horizontal, 2px para baixo, 5px de desfoque, cor preta com 10% de opacidade */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-
-    /* Outras melhorias visuais */
-    border: 1px solid #ccc; /* Garante uma borda consistente */
-    border-radius: 5px;   /* Bordas levemente arredondadas */
-
-    /* Transição suave para o efeito de foco */
-    transition: box-shadow 0.3s ease-in-out, border-color 0.3s ease-in-out;
+/* Estilo base para os campos de formulário - TEMA CLARO */
+[data-bs-theme="light"] input[type="text"],
+[data-bs-theme="light"] input[type="email"],
+[data-bs-theme="light"] input[type="password"],
+[data-bs-theme="light"] input[type="number"],
+[data-bs-theme="light"] input[type="date"],
+[data-bs-theme="light"] input[type="search"],
+[data-bs-theme="light"] textarea,
+[data-bs-theme="light"] select,
+[data-bs-theme="light"] .form-control,
+[data-bs-theme="light"] .form-select,
+[data-bs-theme="light"] .select2-container .select2-selection--single {
+    background-color: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    color: #1f2937 !important;
+    border-radius: 6px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
 }
 
+[data-bs-theme="light"] input::placeholder,
+[data-bs-theme="light"] textarea::placeholder {
+    color: #9ca3af !important;
+}
+
+/* Estilo base para os campos de formulário - TEMA ESCURO */
+[data-bs-theme="dark"] input[type="text"],
+[data-bs-theme="dark"] input[type="email"],
+[data-bs-theme="dark"] input[type="password"],
+[data-bs-theme="dark"] input[type="number"],
+[data-bs-theme="dark"] input[type="date"],
+[data-bs-theme="dark"] input[type="search"],
+[data-bs-theme="dark"] textarea,
+[data-bs-theme="dark"] select,
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] .form-select,
+[data-bs-theme="dark"] .select2-container .select2-selection--single {
+    background-color: #374151 !important;
+    border: 1px solid #4b5563 !important;
+    color: #f3f4f6 !important;
+    border-radius: 6px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s ease;
+}
+
+[data-bs-theme="dark"] input::placeholder,
+[data-bs-theme="dark"] textarea::placeholder {
+    color: #9ca3af !important;
+}
 
 /*
  * Efeito visual aprimorado quando o usuário passa o mouse ou clica no campo
  */
-input[type="text"]:focus,
-input[type="email"]:focus,
-input[type="password"]:focus,
-input[type="number"]:focus,
-textarea:focus,
-.select2-container--open .select2-selection--single {
-    /* A sombra fica um pouco mais pronunciada */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+[data-bs-theme="light"] input[type="text"]:focus,
+[data-bs-theme="light"] input[type="email"]:focus,
+[data-bs-theme="light"] input[type="password"]:focus,
+[data-bs-theme="light"] input[type="number"]:focus,
+[data-bs-theme="light"] input[type="date"]:focus,
+[data-bs-theme="light"] input[type="search"]:focus,
+[data-bs-theme="light"] textarea:focus,
+[data-bs-theme="light"] select:focus,
+[data-bs-theme="light"] .form-control:focus,
+[data-bs-theme="light"] .form-select:focus,
+[data-bs-theme="light"] .select2-container--open .select2-selection--single {
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.15) !important;
+    outline: none;
+}
 
-    /* A cor da borda muda para dar um feedback visual claro */
-    border-color: #0d6efd; /* Um azul padrão, você pode mudar */
-
-    /* Remove a borda padrão do navegador ao focar */
+[data-bs-theme="dark"] input[type="text"]:focus,
+[data-bs-theme="dark"] input[type="email"]:focus,
+[data-bs-theme="dark"] input[type="password"]:focus,
+[data-bs-theme="dark"] input[type="number"]:focus,
+[data-bs-theme="dark"] input[type="date"]:focus,
+[data-bs-theme="dark"] input[type="search"]:focus,
+[data-bs-theme="dark"] textarea:focus,
+[data-bs-theme="dark"] select:focus,
+[data-bs-theme="dark"] .form-control:focus,
+[data-bs-theme="dark"] .form-select:focus,
+[data-bs-theme="dark"] .select2-container--open .select2-selection--single {
+    border-color: #60a5fa !important;
+    box-shadow: 0 0 0 0.25rem rgba(96, 165, 250, 0.25) !important;
     outline: none;
 }
 
@@ -157,134 +204,179 @@ textarea:focus,
     text-align: center;
 }
 
-/* Estilos da navbar já devem estar no custom.css ou no Bootstrap,
+        /* Estilos da navbar já devem estar no custom.css ou no Bootstrap,
            mas mantendo os específicos que você tinha aqui. */
         .navbar-dark .navbar-text {
             color: #ffffff !important;
         }
+        
         /* Estilos base para a navbar */
         .navbar-actions {
             flex-shrink: 0; /* Nunca encolher */
             gap: 0.25rem; /* Espaçamento entre botões */
+            white-space: nowrap; /* Impede quebra de linha */
+        }
+        
+        /* Garantir que container-fluid não force quebra */
+        .navbar .container-fluid {
+            flex-wrap: nowrap !important; /* Nunca quebrar linha */
         }
         
         /* Diminuir ícone do menu hambúrguer */
         .navbar-toggler {
-            font-size: 0.9rem; /* Diminuir o ícone do menu */
+            font-size: 0.9rem;
+            padding: 0.25rem 0.5rem;
+            flex-shrink: 0;
         }
         
         .navbar-toggler-icon {
-            width: 1.2em; /* Diminuir largura do ícone */
-            height: 1.2em; /* Diminuir altura do ícone */
+            width: 1.2em;
+            height: 1.2em;
         }
         
         .navbar-brand {
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
-            font-size: 1.4rem; /* Aumentar mais o tamanho padrão */
-            font-weight: 500; /* Adicionar um pouco mais de peso */
+            font-size: 1.4rem;
+            font-weight: 500;
+            flex-shrink: 1; /* Permite encolher se necessário */
+            min-width: 0; /* Permite encolhimento */
         }
         
         /* Responsividade da Navbar */
         @media (max-width: 991.98px) {
             .navbar-brand {
-                font-size: 1.25rem; /* Aumentar mais */
-                max-width: calc(100% - 120px); /* Limitar largura para não sobrepor os botões */
+                font-size: 1.1rem;
+                max-width: calc(100% - 110px); /* Ajustar para dar espaço aos botões */
+                margin-right: auto !important; /* Empurra os botões para a direita */
             }
             
-            /* Ajustar botões para mobile */
+            /* Ajustar botões para mobile - menores para caber */
             #theme-toggler {
-                min-width: 40px; /* Aumentar um pouco */
-                height: 40px; /* Aumentar um pouco */
-                padding: 0.375rem; /* Padding reduzido */
+                min-width: 36px;
+                height: 36px;
+                padding: 0.25rem;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 1.2rem; /* Aumentar tamanho do ícone */
+                font-size: 1rem;
+                margin-right: 0.25rem !important;
             }
             
             #logout-navbar {
-                min-width: 42px; /* Aumentar mais o logout */
-                height: 42px; /* Aumentar mais o logout */
-                padding: 0.375rem; /* Padding reduzido */
+                min-width: 36px;
+                height: 36px;
+                padding: 0.25rem;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 1.3rem; /* Aumentar mais o logout */
+                font-size: 1rem;
+                margin-left: 0 !important;
+                margin-right: 0 !important;
             }
             
             /* Garantir que os ícones não quebrem */
             #theme-toggler i {
-                font-size: 1.2rem;
+                font-size: 1rem;
                 line-height: 1;
             }
             
             #logout-navbar i {
-                font-size: 1.3rem;
+                font-size: 1rem;
                 line-height: 1;
+            }
+            
+            /* Reduzir espaçamento do hambúrguer */
+            .navbar-toggler {
+                margin-right: 0.5rem !important;
+                padding: 0.25rem 0.4rem;
             }
         }
         
         /* Para telas muito pequenas (menos de 576px) */
         @media (max-width: 575.98px) {
             .navbar-brand {
-                font-size: 1.15rem; /* Aumentar mais */
-                max-width: calc(100% - 100px); /* Ainda menos espaço para o título */
+                font-size: 0.95rem;
+                max-width: calc(100% - 100px);
             }
             
             #theme-toggler {
-                min-width: 38px;
-                height: 38px;
-                font-size: 1.1rem; /* Aumentar ícone */
+                min-width: 32px;
+                height: 32px;
+                font-size: 0.9rem;
+                padding: 0.2rem;
             }
             
             #logout-navbar {
-                min-width: 40px; /* Aumentar mais o logout */
-                height: 40px; /* Aumentar mais o logout */
-                font-size: 1.2rem; /* Aumentar mais o logout */
+                min-width: 32px;
+                height: 32px;
+                font-size: 0.9rem;
+                padding: 0.2rem;
             }
             
             #theme-toggler i {
-                font-size: 1.1rem;
+                font-size: 0.9rem;
             }
             
             #logout-navbar i {
-                font-size: 1.2rem;
+                font-size: 0.9rem;
             }
             
             /* Reduzir margens em telas muito pequenas */
-            .navbar .container {
+            .navbar .container-fluid {
                 padding-left: 0.5rem;
                 padding-right: 0.5rem;
+            }
+            
+            .navbar-toggler {
+                margin-right: 0.25rem !important;
+                padding: 0.2rem 0.3rem;
             }
         }
         
         /* Para telas extremamente pequenas (menos de 400px) */
         @media (max-width: 399.98px) {
             .navbar-brand {
-                font-size: 1.05rem; /* Aumentar mais */
+                font-size: 0.85rem;
                 max-width: calc(100% - 90px);
             }
             
             #theme-toggler {
-                min-width: 34px;
-                height: 34px;
-                font-size: 1rem; /* Aumentar ícone */
+                min-width: 30px;
+                height: 30px;
+                font-size: 0.85rem;
+                padding: 0.15rem;
             }
             
             #logout-navbar {
-                min-width: 36px; /* Aumentar mais o logout */
-                height: 36px; /* Aumentar mais o logout */
-                font-size: 1.1rem; /* Aumentar mais o logout */
+                min-width: 30px;
+                height: 30px;
+                font-size: 0.85rem;
+                padding: 0.15rem;
             }
             
             #theme-toggler i {
-                font-size: 1rem;
+                font-size: 0.85rem;
             }
             
             #logout-navbar i {
-                font-size: 1.1rem;
+                font-size: 0.85rem;
+            }
+            
+            .navbar .container-fluid {
+                padding-left: 0.25rem;
+                padding-right: 0.25rem;
+            }
+            
+            .navbar-toggler {
+                margin-right: 0.15rem !important;
+                padding: 0.15rem 0.25rem;
+            }
+            
+            .navbar-toggler-icon {
+                width: 1em;
+                height: 1em;
             }
         }
 
@@ -503,15 +595,15 @@ textarea:focus,
     }
 
 
-    /* Estilos para os Botões de Navegação da HOME Personalizados */
+/* Estilos para os Botões de Navegação da HOME Personalizados */
 .custom-nav-btn {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
     justify-content: center;
     text-decoration: none;
     color: #fff;
-    padding: 2.5rem 1rem; /* Espaçamento interno grande */
+    padding: 2rem 1rem; /* Espaçamento interno grande */
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     font-weight: bold;
@@ -613,6 +705,72 @@ body.dark-theme .form-control {
     color: #f0f0f0; /* Texto do campo de busca */
 }
 
+/* ========================================
+   CORREÇÕES DATATABLES - TEMA CLARO
+   ======================================== */
+
+/* Garantir visibilidade de inputs e selects do DataTables no tema claro */
+[data-bs-theme="light"] .dataTables_wrapper select,
+[data-bs-theme="light"] .dataTables_wrapper input[type="search"],
+[data-bs-theme="light"] .dataTables_length select,
+[data-bs-theme="light"] .dataTables_filter input {
+    background-color: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    color: #1f2937 !important;
+    border-radius: 6px;
+}
+
+[data-bs-theme="light"] .dataTables_wrapper label,
+[data-bs-theme="light"] .dataTables_info,
+[data-bs-theme="light"] .dataTables_length,
+[data-bs-theme="light"] .dataTables_filter {
+    color: #374151 !important;
+}
+
+[data-bs-theme="light"] select option {
+    background-color: #ffffff;
+    color: #1f2937;
+}
+
+/* Corrigir padding do select para não sobrepor a seta */
+[data-bs-theme="light"] select,
+[data-bs-theme="light"] .form-select {
+    padding-right: 2.5rem !important; /* Espaço extra para a seta */
+    background-position: right 0.75rem center !important;
+}
+
+[data-bs-theme="dark"] select,
+[data-bs-theme="dark"] .form-select {
+    padding-right: 2.5rem !important;
+    background-position: right 0.75rem center !important;
+}
+
+/* ========================================
+   CORREÇÕES DATATABLES - TEMA ESCURO
+   ======================================== */
+
+[data-bs-theme="dark"] .dataTables_wrapper select,
+[data-bs-theme="dark"] .dataTables_wrapper input[type="search"],
+[data-bs-theme="dark"] .dataTables_length select,
+[data-bs-theme="dark"] .dataTables_filter input {
+    background-color: #374151 !important;
+    border: 1px solid #4b5563 !important;
+    color: #f3f4f6 !important;
+    border-radius: 6px;
+}
+
+[data-bs-theme="dark"] .dataTables_wrapper label,
+[data-bs-theme="dark"] .dataTables_info,
+[data-bs-theme="dark"] .dataTables_length,
+[data-bs-theme="dark"] .dataTables_filter {
+    color: #cbd5e1 !important;
+}
+
+[data-bs-theme="dark"] select option {
+    background-color: #374151;
+    color: #f3f4f6;
+}
+
 body.dark-theme .summary-bar {
     background-color: #2b3035;
     border-color: #495057;
@@ -679,4 +837,241 @@ body.dark-theme .list-group-item.active {
 /*    height: 500px; !* Ou qualquer altura que você precise *!*/
 /*    width: 100%;  !* Para preencher a largura do contêiner *!*/
 /*}*/
+
+/* ========================================
+   COLUNA DE AÇÕES NAS TABELAS
+   ======================================== */
+
+/* Garantir que ícones de ação fiquem lado a lado */
+.coluna-acoes,
+td:has(.btn-action),
+td:has([class*="btn-outline"]),
+.text-center:has(.btn-sm) {
+    white-space: nowrap !important;
+    min-width: 150px;
+}
+
+.coluna-acoes .btn,
+td .btn-action,
+td .btn-sm {
+    display: inline-flex !important;
+    margin: 0 0.15rem !important;
+}
+
+/* ========================================
+   RESPONSIVIDADE - RELATÓRIOS E ANIVERSARIANTES
+   ======================================== */
+
+/* Ajustes para títulos e cabeçalhos em mobile */
+@media (max-width: 767px) {
+    /* Títulos de página */
+    .card-title.h3 {
+        font-size: 1.25rem !important;
+    }
+    
+    /* Cabeçalho com botões */
+    .d-flex.justify-content-between.align-items-center {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 1rem;
+    }
+    
+    /* Botões de navegação */
+    .d-flex.gap-2 {
+        width: 100%;
+        flex-direction: column !important;
+        gap: 0.5rem !important;
+    }
+    
+    .d-flex.gap-2 .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    /* Seções de filtro */
+    .filter-section h6 {
+        font-size: 0.95rem;
+    }
+    
+    /* Botões de ação do formulário */
+    .buttons-container {
+        width: 100%;
+    }
+    
+    .buttons-row {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        width: 100%;
+    }
+    
+    .buttons-row .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    /* Tabelas responsivas */
+    .table-scroll-container {
+        max-height: none !important;
+        overflow-x: auto;
+    }
+    
+    .table-scroll-container .table {
+        font-size: 0.875rem;
+    }
+    
+    .table-scroll-container .table th,
+    .table-scroll-container .table td {
+        padding: 0.5rem 0.35rem;
+        white-space: nowrap;
+    }
+    
+    /* Garantir que coluna de ações não quebre */
+    .coluna-acoes,
+    td.text-center:last-child,
+    th:last-child {
+        white-space: nowrap !important;
+    }
+    
+    /* Botões de ação menores em mobile mas lado a lado */
+    .coluna-acoes .btn-sm,
+    td .btn-action,
+    td .btn-outline-primary,
+    td .btn-outline-secondary,
+    td .btn-outline-danger,
+    td .btn-success {
+        padding: 0.25rem 0.4rem !important;
+        font-size: 0.8rem !important;
+        margin: 0 0.1rem !important;
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .coluna-acoes .btn-sm i,
+    td .btn-action i,
+    td .btn i {
+        font-size: 0.85rem !important;
+    }
+    
+    /* Summary bar */
+    .summary-bar {
+        font-size: 0.875rem;
+        padding: 0.5rem;
+    }
+    
+    /* Cards de estatísticas */
+    .stat-card {
+        font-size: 0.9rem;
+        padding: 0.75rem !important;
+    }
+    
+    .stat-card h3,
+    .stat-card .h3 {
+        font-size: 1.5rem !important;
+    }
+    
+    /* Filtros de data lado a lado em mobile */
+    .filter-section .row .col-lg-4,
+    .filter-section .row .col-md-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+    
+    /* Checkboxes de colunas - 2 por linha */
+    .filter-section .row .col-lg-4.col-md-6:has(.form-check) {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+    
+    /* Labels de formulário menores */
+    .form-label {
+        font-size: 0.875rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    /* Inputs menores */
+    .form-control,
+    .form-select {
+        font-size: 0.875rem;
+        padding: 0.375rem 0.5rem;
+    }
+    
+    /* Ícones nos labels */
+    .form-label i,
+    .form-check-label i {
+        font-size: 0.85rem;
+    }
+    
+    /* Cards de aniversariantes */
+    .birthday-card {
+        font-size: 0.9rem;
+    }
+    
+    .birthday-card .card-title {
+        font-size: 1.1rem !important;
+    }
+    
+    /* Badges menores */
+    .badge {
+        font-size: 0.75rem;
+        padding: 0.25em 0.5em;
+    }
+    
+    /* Alertas */
+    .alert {
+        font-size: 0.875rem;
+        padding: 0.75rem;
+    }
+    
+    .alert h6 {
+        font-size: 0.95rem;
+    }
+    
+    .alert li {
+        font-size: 0.85rem;
+    }
+}
+
+/* Ajustes para telas muito pequenas (< 400px) */
+@media (max-width: 399px) {
+    .card-title.h3 {
+        font-size: 1.1rem !important;
+    }
+    
+    .filter-section h6 {
+        font-size: 0.875rem;
+    }
+    
+    .table-scroll-container .table {
+        font-size: 0.8rem;
+    }
+    
+    .table-scroll-container .table th,
+    .table-scroll-container .table td {
+        padding: 0.4rem 0.25rem;
+    }
+    
+    .form-label,
+    .form-check-label {
+        font-size: 0.8rem;
+    }
+    
+    .form-control,
+    .form-select {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.4rem;
+    }
+    
+    .btn {
+        font-size: 0.85rem;
+        padding: 0.375rem 0.5rem;
+    }
+    
+    /* Checkboxes de colunas - 1 por linha em telas muito pequenas */
+    .filter-section .row .col-lg-4.col-md-6:has(.form-check) {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}
 

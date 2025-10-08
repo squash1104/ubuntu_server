@@ -3,10 +3,146 @@
 
 {% block title %}Bem-vindo ao Sistema{% endblock %}
 
+{# Sobrescrever blocos para não mostrar sidebar e sempre mostrar hambúrguer na home #}
+{% block show_sidebar %}
+{# Não mostra sidebar na home #}
+{% endblock %}
+
+{% block hide_hamburger_desktop %}
+{# Mostra hambúrguer mesmo no desktop na home #}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+
+    /* Cores modernas para os botões - Tema Claro */
+    [data-bs-theme="light"] .dashboard-bg { 
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    }
+    [data-bs-theme="light"] .colaboradores-bg { 
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    }
+    [data-bs-theme="light"] .convidados-bg { 
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+    [data-bs-theme="light"] .relatorios-bg { 
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+    [data-bs-theme="light"] .mapa-bg { 
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    }
+    [data-bs-theme="light"] .agenda-bg { 
+        background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+    }
+    [data-bs-theme="light"] .chat-bg { 
+        background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+    }
+
+    /* Cores para tema escuro - mais vibrantes */
+    [data-bs-theme="dark"] .dashboard-bg { 
+        background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+    }
+    [data-bs-theme="dark"] .colaboradores-bg { 
+        background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
+    }
+    [data-bs-theme="dark"] .convidados-bg { 
+        background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+    }
+    [data-bs-theme="dark"] .relatorios-bg { 
+        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    }
+    [data-bs-theme="dark"] .mapa-bg { 
+        background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+    }
+    [data-bs-theme="dark"] .agenda-bg { 
+        background: linear-gradient(135deg, #f472b6 0%, #ec4899 100%);
+    }
+    [data-bs-theme="dark"] .chat-bg { 
+        background: linear-gradient(135deg, #22d3ee 0%, #06b6d4 100%);
+    }
+
+    /* Título da home */
+    .home-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+
+    [data-bs-theme="light"] .home-title {
+        color: #0f172a;
+    }
+
+    [data-bs-theme="dark"] .home-title {
+        color: #f9fafb;
+    }
+
+    .home-lead {
+        font-size: 1.25rem;
+        margin-bottom: 3rem;
+    }
+
+    [data-bs-theme="light"] .home-lead {
+        color: #64748b;
+    }
+
+    [data-bs-theme="dark"] .home-lead {
+        color: #cbd5e1;
+    }
+
+    /* Responsividade */
+    @media (max-width: 768px) {
+        .home-title {
+            font-size: 1.75rem;
+        }
+        
+        .home-lead {
+            font-size: 1rem;
+        }
+        
+        .custom-nav-btn {
+            min-height: 120px;
+            padding: 1.5rem 0.75rem;
+        }
+        
+        .custom-nav-btn i {
+            font-size: 2rem !important;
+        }
+        
+        .custom-nav-btn span {
+            font-size: 0.875rem;
+        }
+    }
+    
+    /* Responsividade */
+    @media (max-width: 768px) {
+        .home-title {
+            font-size: 1.75rem;
+        }
+        
+        .home-lead {
+            font-size: 1rem;
+        }
+        
+        .custom-nav-btn {
+            min-height: 120px;
+            padding: 1.5rem 0.75rem;
+        }
+        
+        .custom-nav-btn i {
+            font-size: 2rem !important;
+        }
+        
+        .custom-nav-btn span {
+            font-size: 0.875rem;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container text-center mt-5">
-    <h1>Bem-vindo ao Sistema de Fidelização!</h1>
-    <p class="lead">Navegue pelas funcionalidades do sistema.</p>
+    <h1 class="home-title">Bem-vindo ao Sistema de Fidelização!</h1>
+    <p class="home-lead">Navegue pelas funcionalidades do sistema.</p>
 
     {% if user.is_authenticated %}
         <div class="row justify-content-center g-3 my-5">
