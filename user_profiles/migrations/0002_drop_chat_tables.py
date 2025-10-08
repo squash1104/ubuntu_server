@@ -31,7 +31,3 @@ class Migration(migrations.Migration):
             reverse_sql="SELECT 1;",
         )
     ]
-
-
-
-

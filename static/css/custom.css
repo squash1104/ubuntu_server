@@ -193,6 +193,13 @@ html, body {
     border-color: #008080 !important;
 }
 
+/* Legibilidade no tema escuro para headers claros */
+body.dark-theme .card-header.bg-light h5,
+body.dark-theme .card-header.bg-light .h5,
+body.dark-theme .card-header.bg-light {
+    color: #212529 !important;
+}
+
 .coluna-acoes {
     min-width: 150px;
     width: 150px;

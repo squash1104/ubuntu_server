@@ -1,6 +1,8 @@
 from django import forms
-from .models import Convidado, Cidade, Bairro
+
 from colaboradores.models import Colaborador
+
+from .models import Bairro, Convidado
 
 
 class ConvidadoForm(forms.ModelForm):
@@ -21,7 +23,14 @@ class ConvidadoForm(forms.ModelForm):
 
     class Meta:
         model = Convidado
-        fields = ["nome", "telefone", "data_nascimento", "cidade", "bairro", "colaborador"]
+        fields = [
+            "nome",
+            "telefone",
+            "data_nascimento",
+            "cidade",
+            "bairro",
+            "colaborador",
+        ]
         labels = {
             "nome": "Nome:",
             "telefone": "Telefone:",
@@ -55,13 +64,17 @@ class ConvidadoForm(forms.ModelForm):
         if "cidade" in self.data:
             try:
                 cidade_id = int(self.data.get("cidade"))
-                self.fields["bairro"].queryset = Bairro.objects.filter(cidade_id=cidade_id).order_by("nome_bairro")
+                self.fields["bairro"].queryset = Bairro.objects.filter(
+                    cidade_id=cidade_id
+                ).order_by("nome_bairro")
             except (ValueError, TypeError):
                 pass
         elif self.instance.pk:
             # Se estiver editando um convidado existente
             if self.instance.cidade:
-                self.fields["bairro"].queryset = Bairro.objects.filter(cidade=self.instance.cidade).order_by("nome_bairro")
+                self.fields["bairro"].queryset = Bairro.objects.filter(
+                    cidade=self.instance.cidade
+                ).order_by("nome_bairro")
             else:
                 self.fields["bairro"].queryset = Bairro.objects.none()
         else:
@@ -71,19 +84,18 @@ class ConvidadoForm(forms.ModelForm):
 
 class RelatorioConvidadosForm(forms.Form):
     data_inicio = forms.DateField(
-        label='Data Início',
-        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
-        required=False
+        label="Data Início",
+        widget=forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+        required=False,
     )
     data_fim = forms.DateField(
-        label='Data Fim',
-        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
-        required=False
+        label="Data Fim",
+        widget=forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+        required=False,
     )
     colaborador = forms.ModelChoiceField(
-        queryset=Colaborador.objects.all().order_by('nome'),
-        empty_label='Todos os Colaboradores',
+        queryset=Colaborador.objects.all().order_by("nome"),
+        empty_label="Todos os Colaboradores",
         required=False,
-        widget=forms.Select(attrs={'class': 'form-control'})
+        widget=forms.Select(attrs={"class": "form-control"}),
     )
-

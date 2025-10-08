@@ -151,6 +151,7 @@ def aniversariantes_view(request):
 
     # Filtrar por mês (opcional) - agrupados por data
     lista_mes_por_data = {}
+    lista_todos_meses = {}
     if mes_int:
         lista_mes_all = serialize_colabs(
             colabs_base.filter(data_nascimento__month=mes_int)
@@ -172,14 +173,35 @@ def aniversariantes_view(request):
                 if data_str not in lista_mes_por_data:
                     lista_mes_por_data[data_str] = []
                 lista_mes_por_data[data_str].append(item)
+    elif mes is not None:
+        # Quando "mes" vem vazio (seleção "Todos"), agrupamos por mês e dentro por dia
+        lista_all = serialize_colabs(colabs_base) + serialize_convs(convs_base)
+        if tipo == "colaboradores":
+            lista_all = [r for r in lista_all if r["tipo_registro"] == "colaborador"]
+        elif tipo == "convidados":
+            lista_all = [r for r in lista_all if r["tipo_registro"] == "convidado"]
+
+        for item in lista_all:
+            dn = item.get("data_nascimento")
+            if not dn:
+                continue
+            mes_item = dn.month
+            data_str = dn.strftime("%d/%m")
+            if mes_item not in lista_todos_meses:
+                lista_todos_meses[mes_item] = {}
+            if data_str not in lista_todos_meses[mes_item]:
+                lista_todos_meses[mes_item][data_str] = []
+            lista_todos_meses[mes_item][data_str].append(item)
 
     context = {
         "hoje_str": hoje.strftime("%d/%m/%Y"),
         "aniversariantes_hoje": aniversariantes_hoje,
         "proximos_por_data": proximos_por_data,
         "lista_mes_por_data": lista_mes_por_data,
+        "lista_todos_meses": lista_todos_meses,
         "mes": mes,
         "mes_int": mes_int,
+        "sem_filtro_mes": mes is None,
         "meses_lista": meses_lista,
         "meses_nomes": meses_nomes,
         "tipo": tipo,

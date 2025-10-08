@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta
 
 from django.contrib.auth.decorators import login_required
-from django.core.paginator import Paginator
 from django.contrib.auth.models import User
+from django.core.paginator import Paginator
 from django.db.models import Count, Q
 from django.shortcuts import render
 from django.utils import timezone
@@ -43,7 +43,9 @@ def historico_list(request):
 
     if acao:
         if acao == "CRIAR_USUARIO":
-            historicos = historicos.filter(acao=TipoAcao.CRIAR, tipo_objeto=TipoObjeto.USUARIO)
+            historicos = historicos.filter(
+                acao=TipoAcao.CRIAR, tipo_objeto=TipoObjeto.USUARIO
+            )
         else:
             historicos = historicos.filter(acao=acao)
 
