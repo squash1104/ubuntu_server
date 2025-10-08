@@ -1,4 +1,5 @@
-from datetime import date, timedelta
+from collections import OrderedDict
+from datetime import date, datetime, timedelta
 
 from django.contrib.auth.decorators import login_required
 from django.db.models import CharField, F, Q, Value
@@ -57,7 +58,7 @@ def aniversariantes_view(request):
                 "colaborador_nome",
                 "data_nascimento",
             )
-            .order_by("nome")
+            .order_by("data_nascimento__month", "data_nascimento__day", "nome")
         )
         for r in rows:
             dn = r.get("data_nascimento")
@@ -65,7 +66,8 @@ def aniversariantes_view(request):
                 aniversario_este_ano = dn.replace(year=hoje.year)
                 idade = hoje.year - dn.year
                 if aniversario_este_ano < hoje:
-                    idade += 1  # idade que fará no próximo aniversário? Para "do dia", calcula idade que está fazendo hoje
+                    # Se já passou neste ano, incrementa a idade base
+                    idade += 1
                 r["idade"] = (
                     hoje.year - dn.year if aniversario_este_ano == hoje else idade
                 )
@@ -88,7 +90,7 @@ def aniversariantes_view(request):
                 "colaborador_nome",
                 "data_nascimento",
             )
-            .order_by("nome")
+            .order_by("data_nascimento__month", "data_nascimento__day", "nome")
         )
         for r in rows:
             dn = r.get("data_nascimento")
@@ -173,6 +175,14 @@ def aniversariantes_view(request):
                 if data_str not in lista_mes_por_data:
                     lista_mes_por_data[data_str] = []
                 lista_mes_por_data[data_str].append(item)
+
+        # Ordenar por data crescente (dd/mm)
+        lista_mes_por_data = OrderedDict(
+            sorted(
+                lista_mes_por_data.items(),
+                key=lambda kv: datetime.strptime(kv[0], "%d/%m").timetuple().tm_yday,
+            )
+        )
     elif mes is not None:
         # Quando "mes" vem vazio (seleção "Todos"), agrupamos por mês e dentro por dia
         lista_all = serialize_colabs(colabs_base) + serialize_convs(convs_base)
@@ -192,6 +202,21 @@ def aniversariantes_view(request):
             if data_str not in lista_todos_meses[mes_item]:
                 lista_todos_meses[mes_item][data_str] = []
             lista_todos_meses[mes_item][data_str].append(item)
+
+        # Ordenar meses e datas
+        lista_todos_meses = OrderedDict(
+            sorted(lista_todos_meses.items(), key=lambda kv: kv[0])
+        )
+        for m in list(lista_todos_meses.keys()):
+            datas_dict = lista_todos_meses[m]
+            lista_todos_meses[m] = OrderedDict(
+                sorted(
+                    datas_dict.items(),
+                    key=lambda kv: datetime.strptime(kv[0], "%d/%m")
+                    .timetuple()
+                    .tm_yday,
+                )
+            )
 
     context = {
         "hoje_str": hoje.strftime("%d/%m/%Y"),
