@@ -223,7 +223,7 @@ def editar_convidado(request, pk):
     next_url_get = request.GET.get("next", None)
     return render(
         request,
-        "convidados/cadastrar_convidado.html",
+        "convidados/editar_convidado.html",
         {"form": form, "convidado": convidado, "next": next_url_get},
     )
 

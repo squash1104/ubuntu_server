@@ -296,42 +296,34 @@ html, body {
         
         /* Para telas muito pequenas (menos de 576px) */
         @media (max-width: 575.98px) {
+            /* Aumentar altura da navbar */
+            .navbar {
+                padding-top: 0.75rem !important;
+                padding-bottom: 0.75rem !important;
+            }
+            /* Título do sistema maior */
             .navbar-brand {
-                font-size: 0.95rem;
-                max-width: calc(100% - 100px);
+                font-size: 1.2rem !important;
             }
-            
-            #theme-toggler {
-                min-width: 32px;
-                height: 32px;
-                font-size: 0.9rem;
-                padding: 0.2rem;
+            /* Ícones do tema e logout maiores */
+            #theme-toggler, #logout-navbar {
+                min-width: 40px !important;
+                height: 40px !important;
+                font-size: 1.2rem !important;
+                padding: 0.3rem !important;
             }
-            
-            #logout-navbar {
-                min-width: 32px;
-                height: 32px;
-                font-size: 0.9rem;
-                padding: 0.2rem;
+            #theme-toggler i, #logout-navbar i {
+                font-size: 1.2rem !important;
             }
-            
-            #theme-toggler i {
-                font-size: 0.9rem;
+            /* Aumentar espaçamento dos botões */
+            .navbar-actions {
+                gap: 0.5rem !important;
             }
-            
-            #logout-navbar i {
-                font-size: 0.9rem;
-            }
-            
-            /* Reduzir margens em telas muito pequenas */
-            .navbar .container-fluid {
-                padding-left: 0.5rem;
-                padding-right: 0.5rem;
-            }
-            
-            .navbar-toggler {
-                margin-right: 0.25rem !important;
-                padding: 0.2rem 0.3rem;
+
+            /* Ajustar título dos stat-cards para sentence case e tamanho menor */
+            .stats-cards .stat-card h3 {
+                text-transform: capitalize !important;
+                font-size: 1.1rem !important;
             }
         }
         
@@ -599,11 +591,11 @@ html, body {
 .custom-nav-btn {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
     text-decoration: none;
     color: #fff;
-    padding: 2rem 1rem; /* Espaçamento interno grande */
+    padding: 2.5rem 1rem; /* Espaçamento interno grande */
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     font-weight: bold;
@@ -968,7 +960,13 @@ td .btn-sm {
     
     .stat-card h3,
     .stat-card .h3 {
+        text-transform: lowercase !important;
+        letter-spacing: normal !important;
         font-size: 1.5rem !important;
+    }
+    .stat-card h3::first-letter,
+    .stat-card .h3::first-letter {
+        text-transform: uppercase !important;
     }
     
     /* Filtros de data lado a lado em mobile */
@@ -1072,6 +1070,42 @@ td .btn-sm {
     .filter-section .row .col-lg-4.col-md-6:has(.form-check) {
         flex: 0 0 100%;
         max-width: 100%;
+    }
+}
+
+        @media (max-width: 768px) {
+            /* Ajuste de h3 em stat-cards para mobile */
+            .stats-cards .stat-card h3 {
+                text-transform: lowercase !important;
+                font-size: 1.1rem !important;
+            }
+            .stats-cards .stat-card h3::first-letter {
+                text-transform: uppercase !important;
+            }
+        }
+
+    /* Override sentence-case para stat-card titles */
+    .stat-card h3,
+    .stat-card .h3 {
+        text-transform: lowercase !important;
+        letter-spacing: normal !important;
+    }
+    .stat-card h3::first-letter,
+    .stat-card .h3::first-letter {
+        text-transform: uppercase !important;
+    }
+
+/* Mobile: stat-card titles in sentence-case */
+@media (max-width: 768px) {
+    .stats-cards .stat-card h3,
+    .stats-cards .stat-card .h3 {
+        text-transform: lowercase !important;
+        letter-spacing: normal !important;
+        font-size: 1.2rem !important;
+    }
+    .stats-cards .stat-card h3::first-letter,
+    .stats-cards .stat-card .h3::first-letter {
+        text-transform: uppercase !important;
     }
 }
 

@@ -80,12 +80,13 @@ INSTALLED_APPS = [
     "geografia",
     "colaboradores",
     "convidados",
+    "user_profiles",
     "mensagens",
     "recepcao",
     "historico",
     "django_filters",
     "channels",
-    "chat",
+    # "chat",  # desabilitado temporariamente
     # Apps de segurança
     "security",
     # "django_ratelimit",  # Desabilitado temporariamente

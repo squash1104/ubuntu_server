@@ -337,23 +337,8 @@
 <script>
   // WebSocket notify para sincronização entre clientes (fila)
   (function(){
-    try{
-      const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const url = `${protocol}//${location.host}/ws/notify/`;
-      const sock = new WebSocket(url);
-      sock.onopen = () => console.log('Notify socket conectado (fila)');
-      sock.onmessage = (ev) => {
-        try{
-          const d = JSON.parse(ev.data);
-          if(d.type === 'recepcao_update'){
-            handleActionResponse({ok:true, action:d.action, id:d.id, inicio:d.inicio, fim:d.fim, visitante_nome:d.visitante, atendente:d.atendente, kpis:d.kpis, event_uuid:d.event_uuid, chegada:d.chegada, demanda_resumo:d.demanda_resumo, demanda_detalhes:d.demanda_detalhes, _source:'ws'});
-          }
-        }catch(err){ console.error('Erro ao processar notify:', err); }
-      };
-      sock.onclose = () => console.log('Notify socket fechado (fila)');
-    }catch(e){
-      console.warn('WS notify não disponível', e);
-    }
+    // WebSocket de notificação removido - chat desabilitado
+    console.log('WebSocket de notificação desabilitado');
   })();
 </script>
 <script>

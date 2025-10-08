@@ -4,34 +4,58 @@
 {% block title %}SisAps - Editar {{ convidado.nome }}{% endblock %}
 
 {% block content %}
+<style>
+#id_telefone { max-width: 220px; }
+#id_data_nascimento { max-width: 160px; }
+#id_cidade, #id_bairro, #id_colaborador { max-width: 320px; }
+.select2-container { max-width: 320px !important; }
+.input-group .btn-calendar { border-color: #ced4da; }
+.input-group .btn-calendar i { pointer-events: none; }
+#convidado-form label { display: block; margin-bottom: .25rem; }
+</style>
 <div class="row justify-content-center">
     <div class="col-md-8">
         <div class="card shadow-sm">
             <div class="card-header bg-primary text-white">
-                <h3 class="card-title mb-0">Editar Convidado: {{ convidado.nome }}</h3>
+                <h3 class="card-title mb-0">
+                    Editar Convidado: <span class="text-warning fw-bold">{{ convidado.nome }}</span>
+                </h3>
             </div>
             <div class="card-body">
-                <form method="post">
+                <form method="post" id="convidado-form">
                     {% csrf_token %}
+                    <input type="hidden" name="pk" value="{{ convidado.pk }}">
 
-                    {# Renderiza o formulário campo por campo, com os estilos do Bootstrap #}
                     {% for field in form %}
                         <div class="mb-3">
-                            {{ field.label_tag }}
-                            {{ field }}
-                            {% for error in field.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {{ error }}
+                            {% if field.id_for_label == 'id_data_nascimento' %}
+                                {{ field.label_tag }}
+                                <div class="input-group" style="max-width: 200px;">
+                                    {{ field }}
+                                    <button class="btn btn-outline-secondary btn-calendar" type="button" id="btn-calendar-edit">
+                                        <i class="bi bi-calendar3"></i>
+                                    </button>
                                 </div>
+                            {% else %}
+                                {{ field.label_tag }}
+                                {{ field }}
+                            {% endif %}
+                            {% if field.id_for_label == 'id_nome' %}
+                                <div id="nome-aviso" class="alert alert-danger mt-2" style="display: none;">Este nome já está cadastrado.</div>
+                            {% endif %}
+                            {% if field.id_for_label == 'id_telefone' %}
+                                <div id="telefone-aviso" class="alert alert-warning mt-2" style="display: none;">AVISO: Este telefone já está cadastrado em outro convidado.</div>
+                            {% endif %}
+                            {% for error in field.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
                             {% endfor %}
                         </div>
                     {% endfor %}
 
                     <div class="mt-4 border-top pt-3">
-                        <button type="submit" class="btn btn-success">Salvar Alterações</button>
-                        {# O link de cancelar agora é dinâmico! #}
-                        {% if request.GET.colaborador_origem_id %}
-                            <a href="{% url 'convidados:colaborador_convidados' pk=request.GET.colaborador_origem_id %}" class="btn btn-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-success" id="btn-salvar">Salvar Alterações</button>
+                        {% if next %}
+                            <a href="{{ next }}" class="btn btn-secondary">Cancelar</a>
                         {% else %}
                             <a href="{% url 'convidados:lista_convidados' %}" class="btn btn-secondary">Cancelar</a>
                         {% endif %}
@@ -58,10 +82,43 @@ document.addEventListener('DOMContentLoaded', function() {
         allowClear: true,
         width: '100%'
     });
+    if (!$('#id_cidade').hasClass('select2')) { $('#id_cidade').select2({ width: '100%' }); }
+    if (!$('#id_bairro').hasClass('select2')) { $('#id_bairro').select2({ width: '100%' }); }
+    if ($('#id_colaborador').length && !$('#id_colaborador').hasClass('select2')) { $('#id_colaborador').select2({ width: '100%' }); }
 
     // Lógica do dropdown dinâmico
     const cidadeSelect = $('#id_cidade');
     const bairroSelect = $('#id_bairro');
+    const dataNascimentoInput = $('#id_data_nascimento');
+    const btnCalendar = document.getElementById('btn-calendar-edit');
+
+    if (btnCalendar && dataNascimentoInput.length) {
+        btnCalendar.addEventListener('click', function() {
+            const input = document.getElementById('id_data_nascimento');
+            if (!input) return;
+            try { dataNascimentoInput.unmask(); } catch(e) {}
+            input.setAttribute('type', 'date');
+            if (input.showPicker) { try { input.showPicker(); } catch(e) { input.focus(); } }
+            else { input.focus(); }
+        });
+        const input = document.getElementById('id_data_nascimento');
+        if (input) {
+            const normalizeBack = function() {
+                const val = input.value;
+                if (val && /^\d{4}-\d{2}-\d{2}$/.test(val)) {
+                    const [y,m,d] = val.split('-');
+                    input.setAttribute('type', 'text');
+                    input.value = `${d}/${m}/${y}`;
+                    try { dataNascimentoInput.mask('00/00/0000'); } catch(e) {}
+                    return;
+                }
+                input.setAttribute('type', 'text');
+                try { dataNascimentoInput.mask('00/00/0000'); } catch(e) {}
+            };
+            input.addEventListener('change', normalizeBack);
+            input.addEventListener('blur', normalizeBack);
+        }
+    }
 
     cidadeSelect.on('change', function() {
         const cidadeId = this.value;
@@ -72,7 +129,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(response => response.json())
                 .then(data => {
                     bairroSelect.empty().append('<option value="">Selecione um bairro</option>');
-                    // Mantém o valor que já estava selecionado, se houver
                     const selectedBairro = '{{ form.bairro.value }}';
 
                     data.forEach(function(bairro) {
@@ -87,10 +143,43 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Dispara o evento 'change' na cidade assim que a página carrega
-    if (cidadeSelect.val()) {
-        cidadeSelect.trigger('change');
+    if (cidadeSelect.val()) { cidadeSelect.trigger('change'); }
+
+    // Validações assíncronas de nome/telefone
+    const btnSalvar = $('#btn-salvar');
+    const nomeInput = $('#id_nome');
+    const nomeAviso = $('#nome-aviso');
+    const telefoneInput = $('#id_telefone');
+    const telefoneAviso = $('#telefone-aviso');
+    const pkInput = $('input[name="pk"]');
+    let typingTimer; const doneTypingInterval = 500;
+
+    function checkFormStatus() { if (btnSalvar.length) btnSalvar.prop('disabled', nomeAviso.is(':visible')); }
+
+    async function checkNome() {
+        const nome = nomeInput.val()?.trim();
+        const pk = pkInput.val();
+        if (nome && nome.length > 2) {
+            let url = `{% url 'convidados:check_nome_exists_convidado' %}?nome=${encodeURIComponent(nome)}`;
+            if (pk) url += `&pk=${pk}`;
+            try { const r = await fetch(url); const d = await r.json(); if (d.exists) { nomeAviso.show(); } else { nomeAviso.hide(); } checkFormStatus(); } catch(e) { console.error(e); }
+        } else { nomeAviso.hide(); checkFormStatus(); }
     }
+
+    async function checkTelefone() {
+        const telefone = (telefoneInput.val() || '').replace(/\D/g, '');
+        const pk = pkInput.val();
+        if (telefone.length >= 8) {
+            let url = `{% url 'convidados:check_telefone_exists_convidado' %}?telefone=${encodeURIComponent(telefone)}`;
+            if (pk) url += `&pk=${pk}`;
+            try { const r = await fetch(url); const d = await r.json(); if (d.exists) { telefoneAviso.show(); } else { telefoneAviso.hide(); } } catch(e) { console.error(e); }
+        } else { telefoneAviso.hide(); }
+    }
+
+    nomeInput.on('keyup', function(){ clearTimeout(typingTimer); typingTimer = setTimeout(checkNome, doneTypingInterval); });
+    nomeInput.on('blur', checkNome);
+    telefoneInput.on('keyup', function(){ clearTimeout(typingTimer); typingTimer = setTimeout(checkTelefone, doneTypingInterval); });
+    telefoneInput.on('blur', checkTelefone);
 });
 </script>
 {% endblock %}

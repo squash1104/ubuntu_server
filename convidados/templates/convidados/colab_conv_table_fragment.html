@@ -46,7 +46,7 @@
 
                     <td class="coluna-acoes">
                         <div class="d-flex justify-content-center gap-2">
-                            <a href="{% url 'convidados:editar_convidado' pk=convidado.pk %}?next={% url 'convidados:colaborador_convidados' pk=convidado.colaborador.pk %}" class="btn btn-sm btn-warning" data-bs-toggle="tooltip" title="Editar Convidado">
+                            <a href="{% url 'convidados:editar_convidado' pk=convidado.pk %}?next={% url 'convidados:colaborador_convidados' convidado.colaborador.pk %}" class="btn btn-sm btn-warning" data-bs-toggle="tooltip" title="Editar Convidado">
                                 <i class="bi bi-pencil-square"></i>
                             </a>
                             <form action="{% url 'convidados:excluir_convidado' pk=convidado.pk %}" method="post" class="d-inline" onsubmit="return confirm('Tem certeza que deseja excluir o convidado {{ convidado.nome }}?');">
@@ -64,7 +64,7 @@
         </table>
     {% else %}
         <div class="alert alert-info text-center">
-            Nenhum convidado cadastrado para {{ colaborador.nome }} ainda. <a href="{% url 'convidados:colaborador_convidados' colaborador.id %}" class="alert-link">Cadastre um agora!</a>
+            Nenhum convidado cadastrado para {{ colaborador.nome }} ainda. <a href="{% url 'convidados:lista_convidados' %}?colaborador={{ colaborador.id }}" class="alert-link">Cadastre um agora!</a>
         </div>
     {% endif %}
 </div>

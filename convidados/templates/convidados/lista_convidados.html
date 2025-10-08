@@ -266,7 +266,7 @@
                             <td>{{ convidado.colaborador.nome|default:"-" }}</td>
                             <td class="text-center">
                                 <div class="d-flex justify-content-center gap-2">
-                                    <a href="{% url 'convidados:editar_convidado' convidado.id %}" class="btn btn-sm btn-warning" data-bs-toggle="tooltip" title="Editar Convidado">
+                                    <a href="{% url 'convidados:editar_convidado' pk=convidado.id %}" class="btn btn-sm btn-warning" data-bs-toggle="tooltip" title="Editar Convidado">
                                         <i class="bi bi-pencil-square"></i>
                                     </a>
                                     <form method="post" action="{% url 'convidados:excluir_convidado' convidado.id %}" style="display: inline;" onsubmit="return confirm('Tem certeza que deseja excluir este convidado?')">

@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
+from django.contrib.auth.models import User
 from django.db.models import Count, Q
 from django.shortcuts import render
 from django.utils import timezone
@@ -19,6 +20,7 @@ def historico_list(request):
     acao = request.GET.get("acao", "")
     tipo_objeto = request.GET.get("tipo_objeto", "")
     usuario = request.GET.get("usuario", "")
+    usuario_id = request.GET.get("usuario_id", "")
     busca = request.GET.get("busca", "")
 
     # Query base
@@ -40,12 +42,20 @@ def historico_list(request):
             pass
 
     if acao:
-        historicos = historicos.filter(acao=acao)
+        if acao == "CRIAR_USUARIO":
+            historicos = historicos.filter(acao=TipoAcao.CRIAR, tipo_objeto=TipoObjeto.USUARIO)
+        else:
+            historicos = historicos.filter(acao=acao)
 
     if tipo_objeto:
         historicos = historicos.filter(tipo_objeto=tipo_objeto)
 
-    if usuario:
+    if usuario_id:
+        try:
+            historicos = historicos.filter(usuario_id=int(usuario_id))
+        except (TypeError, ValueError):
+            pass
+    elif usuario:
         historicos = historicos.filter(usuario__username__icontains=usuario)
 
     if busca:
@@ -90,6 +100,25 @@ def historico_list(request):
         .order_by("-total")[:5]
     )
 
+    # Opções de ação (removendo ações da recepção) e adicionando 'Criar Usuário'
+    opcoes_acao = [
+        (TipoAcao.CRIAR, "Criar"),
+        (TipoAcao.EDITAR, "Editar"),
+        (TipoAcao.EXCLUIR, "Excluir"),
+        (TipoAcao.LOGIN, "Login"),
+        (TipoAcao.LOGOUT, "Logout"),
+        ("CRIAR_USUARIO", "Criar Usuário"),
+    ]
+
+    # Opções de tipo de objeto (removendo Atendimento, Visitante, Sistema)
+    opcoes_tipo_objeto = [
+        (TipoObjeto.COLABORADOR, "Colaborador"),
+        (TipoObjeto.CONVIDADO, "Convidado"),
+        (TipoObjeto.USUARIO, "Usuário"),
+    ]
+
+    usuarios = User.objects.order_by("username").all()
+
     context = {
         "page_obj": page_obj,
         "stats": stats,
@@ -101,15 +130,18 @@ def historico_list(request):
             "acao": acao,
             "tipo_objeto": tipo_objeto,
             "usuario": usuario,
+            "usuario_id": usuario_id,
             "busca": busca,
         },
-        "opcoes_acao": TipoAcao.choices,
-        "opcoes_tipo_objeto": TipoObjeto.choices,
+        "opcoes_acao": opcoes_acao,
+        "opcoes_tipo_objeto": opcoes_tipo_objeto,
+        "usuarios": usuarios,
         "data_inicio_str": data_inicio,
         "data_fim_str": data_fim,
         "acao_filtro": acao,
         "tipo_objeto_filtro": tipo_objeto,
         "usuario_filtro": usuario,
+        "usuario_id_filtro": usuario_id,
     }
 
     return render(request, "historico/historico_list.html", context)

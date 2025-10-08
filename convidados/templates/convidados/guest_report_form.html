@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}SisAps - Relatório de Convidados{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="card-title h3 mb-0">
+                <i class="bi bi-people-fill me-2"></i>Relatório de Convidados
+            </h1>
+        </div>
+
+        {% include 'report/guest_report_form.html' %}
+    </div>
+</div>
+{% endblock %}
+
+
