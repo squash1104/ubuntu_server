@@ -1068,18 +1068,29 @@ text-align: left;
             <li><a class="{% if 'guest_report' in request.path %}active{% endif %}" href="{% url 'convidados:guest_report_form' %}"><i class="bi bi-file-earmark-text"></i><span>Relatório Convidados</span></a></li>
             <li><a class="{% if 'relatorio_colaboradores' in request.path %}active{% endif %}" href="{% url 'colaboradores:relatorio_colaboradores_form' %}"><i class="bi bi-file-earmark-bar-graph"></i><span>Relatório Colaboradores</span></a></li>
             <li><a class="{% if request.path|startswith:'/mapa' %}active{% endif %}" href="{% url 'mapa_apoiadores' %}"><i class="bi bi-map-fill"></i><span>Mapa</span></a></li>
-            <li><a class="{% if request.path == '/aniversariantes/' %}active{% endif %}" href="{% url 'aniversariantes' %}"><i class="bi bi-calendar-event-fill"></i><span>Aniversariantes</span></a></li>
-            
             <li><a class="{% if request.path|startswith:'/historico' %}active{% endif %}" href="{% url 'historico:historico_list' %}"><i class="bi bi-clock-history"></i><span>Histórico</span></a></li>
             {% if user.is_authenticated %}
                 {% if user.is_superuser or user|has_group:"Supervisor" or user|has_group:"Recepcionista" %}
             <li><a class="{% if request.path|startswith:'/recepcao' %}active{% endif %}" href="{% url 'recepcao:home' %}"><i class="bi bi-person-lines-fill"></i><span>Recepção</span></a></li>
                 {% endif %}
             {% endif %}
+            {% if user.is_authenticated %}
+            <li><a class="{% if request.path|startswith:'/user-profiles' %}active{% endif %}" href="{% url 'user_profiles:user_settings' %}"><i class="bi bi-gear"></i><span>Configurações</span></a></li>
+            {% endif %}
+            <li><a href="{% url 'sobre' %}"><i class="bi bi-info-circle-fill"></i><span>Sobre</span></a></li>
             {% if user.is_authenticated and user.is_superuser %}
             <li><a href="{% url 'admin:index' %}" style="color: #ffc107 !important;"><i class="bi bi-shield-lock-fill"></i><span>Admin</span></a></li>
             {% endif %}
-            <li><a href="{% url 'sobre' %}"><i class="bi bi-info-circle-fill"></i><span>Sobre</span></a></li>
+            {% if user.is_authenticated %}
+            <li>
+                <form action="{% url 'logout' %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-link p-0" style="text-decoration:none; color: inherit;">
+                        <i class="bi bi-box-arrow-right"></i><span>Sair</span>
+                    </button>
+                </form>
+            </li>
+            {% endif %}
         </ul>
     </aside>
     {% endblock %}
