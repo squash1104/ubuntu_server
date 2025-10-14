@@ -103,7 +103,7 @@ def colaborador_convidados(request, pk):
         )
     # --- Fim da Lógica de Ordenação ---
 
-    meta = 15
+    meta = 20
     meta_status = ""
     porcentagem_meta = 0
 
@@ -112,7 +112,7 @@ def colaborador_convidados(request, pk):
 
     if total_convidados == meta:
         meta_status = "sucesso"
-    elif total_convidados <= 14:
+    elif total_convidados < meta:
         meta_status = "andamento"
     elif total_convidados > meta:
         meta_status = "superada"
@@ -141,7 +141,12 @@ def cadastrar_convidado(request, colaborador_id=None):
         if form.is_valid():
             try:
                 convidado = form.save(commit=False)
-                convidado.cadastrado_por = request.user
+                # Garantir vínculo com colaborador para refletir no ranking
+                if colaborador and not getattr(convidado, "colaborador", None):
+                    convidado.colaborador = colaborador
+                # Registrar quem cadastrou o convidado
+                if not getattr(convidado, "cadastrado_por", None):
+                    convidado.cadastrado_por = request.user
                 convidado.save()
 
                 # REGISTRAR NO HISTÓRICO
@@ -171,14 +176,16 @@ def cadastrar_convidado(request, colaborador_id=None):
                     )
 
                 if colaborador:
-                    return redirect("convidados:colaborador_convidados", pk=colaborador_id)
+                    return redirect(
+                        "convidados:colaborador_convidados", pk=colaborador_id
+                    )
                 return redirect("convidados:lista_convidados")
-                
+
             except Exception as e:
                 messages.error(
-                    request, 
-                    f'Erro ao salvar convidado: {str(e)}. '
-                    'Verifique se todos os campos obrigatórios foram preenchidos.'
+                    request,
+                    f"Erro ao salvar convidado: {e!s}. "
+                    "Verifique se todos os campos obrigatórios foram preenchidos.",
                 )
     else:
         if colaborador:
@@ -315,28 +322,32 @@ def check_telefone_exists(request):
 
     if telefone:
         # Normalizar o telefone (substituir + por espaço)
-        telefone_normalizado = telefone.replace('+', ' ')
-        
+        telefone_normalizado = telefone.replace("+", " ")
+
         # Função para normalizar telefone (remover formatação)
         def normalizar_telefone(tel):
             return re.sub(r"[\(\)\-\s]", "", tel)
-        
+
         # Normalizar o telefone de entrada
         telefone_entrada_limpo = normalizar_telefone(telefone_normalizado)
-        
+
         # Buscar todos os telefones de convidados e normalizar
-        convidados_queryset = Convidado.objects.exclude(telefone__isnull=True).exclude(telefone='')
+        convidados_queryset = Convidado.objects.exclude(telefone__isnull=True).exclude(
+            telefone=""
+        )
         if convidado_id:
             convidados_queryset = convidados_queryset.exclude(pk=convidado_id)
-            
+
         # Buscar todos os telefones de colaboradores e normalizar
-        colaboradores_queryset = Colaborador.objects.exclude(telefone__isnull=True).exclude(telefone='')
-        
+        colaboradores_queryset = Colaborador.objects.exclude(
+            telefone__isnull=True
+        ).exclude(telefone="")
+
         # Verificar se o telefone normalizado existe
         nome_existente = None
         tipo_existente = None
         exists = False
-        
+
         # Verificar em convidados
         for convidado in convidados_queryset:
             telefone_banco_limpo = normalizar_telefone(convidado.telefone)
@@ -345,7 +356,7 @@ def check_telefone_exists(request):
                 nome_existente = convidado.nome
                 tipo_existente = "convidado"
                 break
-        
+
         # Se não encontrou em convidados, verificar em colaboradores
         if not exists:
             for colaborador in colaboradores_queryset:
@@ -356,11 +367,13 @@ def check_telefone_exists(request):
                     tipo_existente = "colaborador"
                     break
 
-        return JsonResponse({
-            "exists": exists,
-            "nome_existente": nome_existente,
-            "tipo_existente": tipo_existente
-        })
+        return JsonResponse(
+            {
+                "exists": exists,
+                "nome_existente": nome_existente,
+                "tipo_existente": tipo_existente,
+            }
+        )
     return JsonResponse({"exists": False, "nome_existente": None})
 
 
@@ -379,7 +392,7 @@ def check_nome_exists(request):
         colaboradores_queryset = Colaborador.objects.filter(nome__iexact=nome)
 
         exists = convidados_queryset.exists() or colaboradores_queryset.exists()
-        
+
         # Determinar onde o nome existe
         tipo_existente = None
         if convidados_queryset.exists():
@@ -387,8 +400,5 @@ def check_nome_exists(request):
         elif colaboradores_queryset.exists():
             tipo_existente = "colaboradores"
 
-        return JsonResponse({
-            "exists": exists,
-            "tipo_existente": tipo_existente
-        })
+        return JsonResponse({"exists": exists, "tipo_existente": tipo_existente})
     return JsonResponse({"exists": False, "tipo_existente": None})

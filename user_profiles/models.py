@@ -1,5 +1,8 @@
+import typing
+
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils import timezone
 from PIL import Image
 
 
@@ -56,3 +59,24 @@ class Profile(models.Model):
     def display_name(self):
         """Retorna o nome completo ou username como fallback"""
         return self.full_name or self.user.get_full_name() or self.user.username
+
+
+class UserSession(models.Model):
+    """Rastreamento de sessões dos usuários para estatísticas de tempo/sessões."""
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sessions")
+    session_key = models.CharField(max_length=64, db_index=True)
+    start_at = models.DateTimeField(default=timezone.now, db_index=True)
+    last_seen_at = models.DateTimeField(default=timezone.now)
+    end_at = models.DateTimeField(null=True, blank=True, db_index=True)
+
+    class Meta:
+        indexes: typing.ClassVar = [
+            models.Index(fields=["user", "start_at"]),
+            models.Index(fields=["user", "end_at"]),
+        ]
+
+    @property
+    def duration_seconds(self) -> int:
+        end = self.end_at or timezone.now()
+        return max(0, int((end - self.start_at).total_seconds()))

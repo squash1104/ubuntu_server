@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 # from pickle import FALSE
 
+import importlib
 import os
 from pathlib import Path
 
@@ -97,8 +98,6 @@ INSTALLED_APPS = [
     "django_filters",
     "channels",
     # "chat",  # desabilitado temporariamente
-    # Apps de segurança
-    "security",
     # "django_ratelimit",  # Desabilitado temporariamente
     "django_otp",
     "django_otp.plugins.otp_totp",
@@ -107,6 +106,14 @@ INSTALLED_APPS = [
     "crispy_forms",
     "crispy_bootstrap5",
 ]
+
+# Carrega app 'security' somente em produção (quando existir)
+ENVIRONMENT = config("ENVIRONMENT", default="development")
+try:
+    if ENVIRONMENT == "production" and importlib.util.find_spec("security") is not None:
+        INSTALLED_APPS.append("security")
+except Exception:
+    pass
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -117,6 +124,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # Tracking de atividade e idle timeout por usuário
+    "user_profiles.middleware.UserActivityMiddleware",
     # Middleware de segurança - DESABILITADO PARA DEBUG
     # "django_otp.middleware.OTPMiddleware",
     # "security.frontend_protection.FrontendProtectionMiddleware",
@@ -339,6 +348,12 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 # CONFIGURAÇÕES DE DEBUG - FORÇAR HTTP
 # ===========================================
 SECURE_SSL_REDIRECT = False
+
+# Sessões: idle timeout e expiração
+SESSION_COOKIE_AGE = 60 * 60 * 8  # 8 horas (tempo máximo de sessão)
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+# Idle timeout (auto-logout por inatividade)
+IDLE_TIMEOUT_SECONDS = 30 * 60  # 30 minutos
 
 # ===========================================
 # APLICAR CONFIGURAÇÕES DE SEGURANÇA - DESABILITADO PARA DEBUG

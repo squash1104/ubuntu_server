@@ -1,4 +1,5 @@
 import re
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
@@ -32,6 +33,7 @@ def lista_colaboradores(request):
     ordenar_por_param = request.GET.get("ordenar_por", "nome")
     direcao = request.GET.get("direcao", "asc")
     per_page = request.GET.get("per_page", "20")
+    grupo = request.GET.get("grupo", "todos")
 
     # Validar per_page
     valid_per_page_options = [20, 50, 100, 200]
@@ -50,6 +52,14 @@ def lista_colaboradores(request):
     # Query base
     colaboradores_qs = Colaborador.objects.select_related("cidade", "bairro")
 
+    # Filtro por grupo (Capital/Interior)
+    capitais = ["Cuiabá", "Várzea Grande"]
+    if grupo == "capital":
+        colaboradores_qs = colaboradores_qs.filter(cidade__nome_cidade__in=capitais)
+    elif grupo == "interior":
+        # Interior inclui demais cidades e registros sem cidade
+        colaboradores_qs = colaboradores_qs.exclude(cidade__nome_cidade__in=capitais)
+
     # Filtro de busca
     if termo_busca:
         colaboradores_qs = colaboradores_qs.filter(
@@ -64,17 +74,22 @@ def lista_colaboradores(request):
         num_convidados=Count("convidados", distinct=True)
     ).order_by(ordenar_por_query)
 
-    # Paginação simples usando padrão Django
+    # Totais do conjunto filtrado (não apenas da página) e da página atual
+    total_colaboradores_filtrados = colaboradores_final.count()
+    soma_convidados_filtrados = colaboradores_final.aggregate(
+        total=Sum("num_convidados")
+    )
+    total_convidados_filtrados = soma_convidados_filtrados["total"] or 0
+
+    # Paginação
     paginator = Paginator(colaboradores_final, per_page)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
-    # Calcular totais da página atual
-    total_colaboradores_pagina_atual = page_obj.object_list.count()
-    soma_convidados_pagina_atual = page_obj.object_list.aggregate(
-        total=Sum("num_convidados")
-    )
-    total_convidados_pagina_atual = soma_convidados_pagina_atual["total"] or 0
+    # Totais da página atual (após paginação)
+    total_colaboradores_pagina = page_obj.object_list.count()
+    soma_convidados_pagina = page_obj.object_list.aggregate(total=Sum("num_convidados"))
+    total_convidados_pagina = soma_convidados_pagina["total"] or 0
 
     context = {
         "page_obj": page_obj,  # Usar page_obj (padrão Django)
@@ -84,8 +99,11 @@ def lista_colaboradores(request):
         "direcao": direcao,
         "per_page": per_page,
         "per_page_options": valid_per_page_options,
-        "total_colaboradores_filtrados": total_colaboradores_pagina_atual,
-        "total_convidados_filtrados": total_convidados_pagina_atual,
+        "grupo": grupo,
+        "total_colaboradores_filtrados": total_colaboradores_filtrados,
+        "total_convidados_filtrados": total_convidados_filtrados,
+        "total_colaboradores_pagina": total_colaboradores_pagina,
+        "total_convidados_pagina": total_convidados_pagina,
     }
 
     return render(request, "colaboradores/lista_colaboradores.html", context)
@@ -261,29 +279,34 @@ def check_telefone_exists(request):
 
     if telefone:
         # Normalizar o telefone (substituir + por espaço)
-        telefone_normalizado = telefone.replace('+', ' ')
-        
+        telefone_normalizado = telefone.replace("+", " ")
+
         # Função para normalizar telefone (remover formatação)
         def normalizar_telefone(tel):
             return re.sub(r"[\(\)\-\s]", "", tel)
-        
+
         # Normalizar o telefone de entrada
         telefone_entrada_limpo = normalizar_telefone(telefone_normalizado)
-        
+
         # Buscar todos os telefones de colaboradores e normalizar
-        colaboradores_queryset = Colaborador.objects.exclude(telefone__isnull=True).exclude(telefone='')
+        colaboradores_queryset = Colaborador.objects.exclude(
+            telefone__isnull=True
+        ).exclude(telefone="")
         if colaborador_id:
             colaboradores_queryset = colaboradores_queryset.exclude(pk=colaborador_id)
-            
+
         # Buscar todos os telefones de convidados e normalizar
         from convidados.models import Convidado
-        convidados_queryset = Convidado.objects.exclude(telefone__isnull=True).exclude(telefone='')
-        
+
+        convidados_queryset = Convidado.objects.exclude(telefone__isnull=True).exclude(
+            telefone=""
+        )
+
         # Verificar se o telefone normalizado existe
         nome_existente = None
         tipo_existente = None
         exists = False
-        
+
         # Verificar em colaboradores
         for colaborador in colaboradores_queryset:
             telefone_banco_limpo = normalizar_telefone(colaborador.telefone)
@@ -292,7 +315,7 @@ def check_telefone_exists(request):
                 nome_existente = colaborador.nome
                 tipo_existente = "colaborador"
                 break
-        
+
         # Se não encontrou em colaboradores, verificar em convidados
         if not exists:
             for convidado in convidados_queryset:
@@ -303,12 +326,16 @@ def check_telefone_exists(request):
                     tipo_existente = "convidado"
                     break
 
-        return JsonResponse({
-            "exists": exists,
-            "nome_existente": nome_existente,
-            "tipo_existente": tipo_existente
-        })
-    return JsonResponse({"exists": False, "nome_existente": None, "tipo_existente": None})
+        return JsonResponse(
+            {
+                "exists": exists,
+                "nome_existente": nome_existente,
+                "tipo_existente": tipo_existente,
+            }
+        )
+    return JsonResponse(
+        {"exists": False, "nome_existente": None, "tipo_existente": None}
+    )
 
 
 @require_http_methods(["GET"])
@@ -324,10 +351,11 @@ def check_nome_exists(request):
 
         # Checa se o nome existe em convidados
         from convidados.models import Convidado
+
         convidados_queryset = Convidado.objects.filter(nome__iexact=nome)
 
         exists = colaboradores_queryset.exists() or convidados_queryset.exists()
-        
+
         # Determinar onde o nome existe
         tipo_existente = None
         if colaboradores_queryset.exists():
@@ -335,8 +363,5 @@ def check_nome_exists(request):
         elif convidados_queryset.exists():
             tipo_existente = "convidados"
 
-        return JsonResponse({
-            "exists": exists,
-            "tipo_existente": tipo_existente
-        })
+        return JsonResponse({"exists": exists, "tipo_existente": tipo_existente})
     return JsonResponse({"exists": False, "tipo_existente": None})

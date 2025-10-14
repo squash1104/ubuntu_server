@@ -1,5 +1,6 @@
 from typing import ClassVar
 
+from django.contrib.auth.models import User
 from django.db import models
 
 from colaboradores.models import Colaborador
@@ -28,6 +29,13 @@ class Convidado(models.Model):
     )
 
     data_cadastro = models.DateTimeField(auto_now_add=True, editable=False)
+    cadastrado_por = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="convidados_cadastrados",
+    )
 
     class Meta:
         db_table = "convidados"  # A tabela no DB será 'convidados'

@@ -15,6 +15,8 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
+import importlib
+
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
@@ -86,10 +88,27 @@ urlpatterns = [
     path("health/", health_check_view),
     path("sobre/", views.sobre, name="sobre"),
     # path("chat/", include("chat.urls")),  # Chat desabilitado temporariamente
-    path("security/", include("security.urls", namespace="security")),
+    # security: apenas em produção e se o app existir
     # Página de aniversariantes
     path("aniversariantes/", aniversariantes_view, name="aniversariantes"),
 ]
+
+# Adiciona rotas do 'security' quando em produção e app disponível
+try:
+    from decouple import config as _config
+
+    if (
+        _config("ENVIRONMENT", default="development") == "production"
+        and importlib.util.find_spec("security") is not None
+    ):
+        urlpatterns += [
+            path(
+                "security/",
+                include(("security.urls", "security"), namespace="security"),
+            ),
+        ]
+except Exception:
+    pass
 
 # Adicionar URLs para arquivos estáticos
 if settings.DEBUG:

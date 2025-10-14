@@ -13,9 +13,16 @@ def user_badges(request):
     colaboradores_cadastrados = Colaborador.objects.filter(
         cadastrado_por=request.user
     ).count()
-    convidados_cadastrados = Convidado.objects.filter(
-        colaborador__cadastrado_por=request.user
-    ).count()
+    # Conta convidados cadastrados diretamente pelo usuário ou por colaboradores cadastrados pelo usuário
+    from django.db.models import Q
+
+    convidados_cadastrados = (
+        Convidado.objects.filter(
+            Q(cadastrado_por=request.user) | Q(colaborador__cadastrado_por=request.user)
+        )
+        .distinct()
+        .count()
+    )
     total_cadastros = colaboradores_cadastrados + convidados_cadastrados
 
     # Função para calcular badges do usuário
@@ -25,28 +32,54 @@ def user_badges(request):
         # Badges por total de cadastros
         if total >= 1000:
             badges.append(
-                {"emoji": "👑", "nome": "Rei dos Cadastros", "cor": "bg-danger"}
+                {
+                    "emoji": "👑",
+                    "nome": "Rei dos Cadastros",
+                    "cor": "bg-danger",
+                    "min": 1000,
+                }
             )
         elif total >= 500:
-            badges.append({"emoji": "💎", "nome": "Diamante", "cor": "bg-primary"})
+            badges.append(
+                {"emoji": "💎", "nome": "Diamante", "cor": "bg-primary", "min": 500}
+            )
         elif total >= 250:
-            badges.append({"emoji": "🏆", "nome": "Campeão", "cor": "bg-warning"})
+            badges.append(
+                {"emoji": "🏆", "nome": "Campeão", "cor": "bg-warning", "min": 250}
+            )
         elif total >= 100:
-            badges.append({"emoji": "🥇", "nome": "Ouro", "cor": "bg-warning"})
+            badges.append(
+                {"emoji": "🥇", "nome": "Ouro", "cor": "bg-warning", "min": 100}
+            )
         elif total >= 50:
             badges.append(
-                {"emoji": "⭐", "nome": "Super Cadastrador", "cor": "bg-success"}
+                {
+                    "emoji": "⭐",
+                    "nome": "Super Cadastrador",
+                    "cor": "bg-success",
+                    "min": 50,
+                }
             )
         elif total >= 25:
-            badges.append({"emoji": "🔥", "nome": "Em Chamas", "cor": "bg-danger"})
+            badges.append(
+                {"emoji": "🔥", "nome": "Em Chamas", "cor": "bg-danger", "min": 25}
+            )
         elif total >= 10:
-            badges.append({"emoji": "🚀", "nome": "Decolando", "cor": "bg-info"})
+            badges.append(
+                {"emoji": "🚀", "nome": "Decolando", "cor": "bg-info", "min": 10}
+            )
         elif total >= 5:
-            badges.append({"emoji": "🌱", "nome": "Crescendo", "cor": "bg-success"})
+            badges.append(
+                {"emoji": "🌱", "nome": "Crescendo", "cor": "bg-success", "min": 5}
+            )
         elif total >= 1:
-            badges.append({"emoji": "🌱", "nome": "Iniciante", "cor": "bg-secondary"})
+            badges.append(
+                {"emoji": "🌱", "nome": "Iniciante", "cor": "bg-secondary", "min": 1}
+            )
         else:
-            badges.append({"emoji": "🌱", "nome": "Novato", "cor": "bg-secondary"})
+            badges.append(
+                {"emoji": "🌱", "nome": "Novato", "cor": "bg-secondary", "min": 0}
+            )
 
         # Badges especiais por colaboradores
         if colaboradores >= 50:
@@ -87,5 +120,8 @@ def user_badges(request):
     badges_usuario_logado = calcular_badges_usuario(
         total_cadastros, colaboradores_cadastrados, convidados_cadastrados
     )
+    # Enriquecer tooltip com nível e total
+    for b in badges_usuario_logado:
+        b["tooltip"] = f"Nível: {b['nome']} | {total_cadastros} cadastros"
 
     return {"badges_usuario_logado": badges_usuario_logado}
