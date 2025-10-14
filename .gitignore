@@ -18,6 +18,9 @@ __pycache__/
 # Configurações Locais
 # -----------------------
 *.env
+development.env
+.env.development
+.env.local
 local_settings.py
 
 # -----------------------
@@ -78,3 +81,6 @@ database_credentials.txt
 *.swp
 *.swo
 # Sistema
+# Swap files
+*.swp
+*.swo

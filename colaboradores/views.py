@@ -1,3 +1,4 @@
+import re
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
@@ -259,13 +260,55 @@ def check_telefone_exists(request):
     colaborador_id = request.GET.get("pk", None)
 
     if telefone:
-        queryset = Colaborador.objects.filter(telefone=telefone)
+        # Normalizar o telefone (substituir + por espaço)
+        telefone_normalizado = telefone.replace('+', ' ')
+        
+        # Função para normalizar telefone (remover formatação)
+        def normalizar_telefone(tel):
+            return re.sub(r"[\(\)\-\s]", "", tel)
+        
+        # Normalizar o telefone de entrada
+        telefone_entrada_limpo = normalizar_telefone(telefone_normalizado)
+        
+        # Buscar todos os telefones de colaboradores e normalizar
+        colaboradores_queryset = Colaborador.objects.exclude(telefone__isnull=True).exclude(telefone='')
         if colaborador_id:
-            queryset = queryset.exclude(pk=colaborador_id)
+            colaboradores_queryset = colaboradores_queryset.exclude(pk=colaborador_id)
+            
+        # Buscar todos os telefones de convidados e normalizar
+        from convidados.models import Convidado
+        convidados_queryset = Convidado.objects.exclude(telefone__isnull=True).exclude(telefone='')
+        
+        # Verificar se o telefone normalizado existe
+        nome_existente = None
+        tipo_existente = None
+        exists = False
+        
+        # Verificar em colaboradores
+        for colaborador in colaboradores_queryset:
+            telefone_banco_limpo = normalizar_telefone(colaborador.telefone)
+            if telefone_entrada_limpo == telefone_banco_limpo:
+                exists = True
+                nome_existente = colaborador.nome
+                tipo_existente = "colaborador"
+                break
+        
+        # Se não encontrou em colaboradores, verificar em convidados
+        if not exists:
+            for convidado in convidados_queryset:
+                telefone_banco_limpo = normalizar_telefone(convidado.telefone)
+                if telefone_entrada_limpo == telefone_banco_limpo:
+                    exists = True
+                    nome_existente = convidado.nome
+                    tipo_existente = "convidado"
+                    break
 
-        exists = queryset.exists()
-        return JsonResponse({"exists": exists})
-    return JsonResponse({"exists": False})
+        return JsonResponse({
+            "exists": exists,
+            "nome_existente": nome_existente,
+            "tipo_existente": tipo_existente
+        })
+    return JsonResponse({"exists": False, "nome_existente": None, "tipo_existente": None})
 
 
 @require_http_methods(["GET"])
@@ -274,10 +317,26 @@ def check_nome_exists(request):
     colaborador_id = request.GET.get("pk", None)
 
     if nome:
-        queryset = Colaborador.objects.filter(nome__iexact=nome)
+        # Checa se o nome existe em colaboradores
+        colaboradores_queryset = Colaborador.objects.filter(nome__iexact=nome)
         if colaborador_id:
-            queryset = queryset.exclude(pk=colaborador_id)
+            colaboradores_queryset = colaboradores_queryset.exclude(pk=colaborador_id)
 
-        exists = queryset.exists()
-        return JsonResponse({"exists": exists})
-    return JsonResponse({"exists": False})
+        # Checa se o nome existe em convidados
+        from convidados.models import Convidado
+        convidados_queryset = Convidado.objects.filter(nome__iexact=nome)
+
+        exists = colaboradores_queryset.exists() or convidados_queryset.exists()
+        
+        # Determinar onde o nome existe
+        tipo_existente = None
+        if colaboradores_queryset.exists():
+            tipo_existente = "colaboradores"
+        elif convidados_queryset.exists():
+            tipo_existente = "convidados"
+
+        return JsonResponse({
+            "exists": exists,
+            "tipo_existente": tipo_existente
+        })
+    return JsonResponse({"exists": False, "tipo_existente": None})

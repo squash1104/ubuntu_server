@@ -46,15 +46,16 @@
 
                              {% if field.id_for_label == 'id_nome' %}
                                  <div id="nome-aviso" class="alert alert-danger mt-2" style="display: none;">
-                                     Este nome já está cadastrado.
+                                     <i class="bi bi-exclamation-triangle-fill"></i>
+                                     <strong>Erro:</strong> <span id="nome-aviso-texto">Este nome já está cadastrado. Escolha um nome diferente.</span>
                                  </div>
                              {% endif %}
 
                              {% if field.id_for_label == 'id_telefone' %}
                                 <div id="telefone-aviso" class="alert alert-warning mt-2" style="display: none;">
-                                     AVISO: Este telefone já está cadastrado em outro colaborador.
+                                    <i class="bi bi-info-circle-fill"></i>
+                                    <strong>AVISO:</strong> <span id="telefone-aviso-texto">Este telefone já está cadastrado. O colaborador será salvo mesmo assim.</span>
                                 </div>
-
                              {% endif %}
 
                              {% if field.help_text %}
@@ -96,11 +97,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Campos e avisos de Nome
     const nomeInput = $('#id_nome');
     const nomeAviso = $('#nome-aviso');
+    const nomeAvisoTexto = $('#nome-aviso-texto');
 
     // Campos e avisos de Telefone
     const telefoneInput = $('#id_telefone');
     const dataNascimentoInput = $('#id_data_nascimento');
     const telefoneAviso = $('#telefone-aviso');
+    const telefoneAvisoTexto = $('#telefone-aviso-texto');
 
     let typingTimer;
     const doneTypingInterval = 500; // Tempo em ms para esperar depois de parar de digitar
@@ -177,6 +180,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(response => response.json())
                 .then(data => {
                     if (data.exists) {
+                        if (data.tipo_existente === 'colaboradores') {
+                            nomeAvisoTexto.text('Este nome já está cadastrado em colaboradores.');
+                        } else if (data.tipo_existente === 'convidados') {
+                            nomeAvisoTexto.text('Este nome já está cadastrado em convidados.');
+                        }
                         nomeAviso.show();
                         nomeInput.focus();
                     } else {
@@ -203,12 +211,20 @@ document.addEventListener('DOMContentLoaded', function() {
     // VALIDAÇÃO EM TEMPO REAL DO TELEFONE
     // =========================================================================
     function checkTelefone() {
-        const telefone = telefoneInput.val().replace(/\D/g, ''); // Remove a máscara para a verificação
-        if (telefone.length >= 8) {
+        const telefone = telefoneInput.val();
+        console.log("Telefone original:", telefone);
+        
+        if (telefone && telefone.replace(/\D/g, '').length >= 8) {
             fetch(`{% url 'colaboradores:check_telefone_exists' %}?telefone=${encodeURIComponent(telefone)}`)
                 .then(response => response.json())
                 .then(data => {
+                    console.log("Resposta da verificação de telefone:", data);
                     if (data.exists) {
+                        if (data.nome_existente && data.tipo_existente) {
+                            telefoneAvisoTexto.text(`Aviso, esse telefone já está cadastrado no ${data.tipo_existente} ${data.nome_existente}`);
+                        } else {
+                            telefoneAvisoTexto.text('Aviso, esse telefone já está cadastrado');
+                        }
                         telefoneAviso.show();
                     } else {
                         telefoneAviso.hide();

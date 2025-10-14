@@ -51,10 +51,20 @@ ALLOWED_HOSTS = config(
     cast=Csv(),
 ) + ["testserver"]
 
-CSRF_TRUSTED_ORIGINS = [
-    "https://sistema.fidelizamax.app.br",
-    "https://www.sistema.fidelizamax.app.br",
-]
+# CSRF trusted origins
+# In production, read from environment (comma-separated). In development, also allow local hosts over HTTP.
+CSRF_TRUSTED_ORIGINS = config(
+    "CSRF_TRUSTED_ORIGINS",
+    default="https://sistema.fidelizamax.app.br,https://www.sistema.fidelizamax.app.br",
+    cast=Csv(),
+)
+
+if DEBUG:
+    CSRF_TRUSTED_ORIGINS += [
+        "http://192.168.18.158",
+        "http://localhost",
+        "http://127.0.0.1",
+    ]
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 # Ou 'django.core.mail.backends.filebased.EmailBackend' com
@@ -313,7 +323,7 @@ SERVER_EMAIL = "suporte@fidelizamax.app.br"  # E-mail para erros de servidor
 SITE_NAME = "SisAps - Fidelização de Apoiadores"
 # Domínio completo que aparecerá no link de reset de senha
 # É CRÍTICO que este seja o seu domínio de produção, ex:
-# https://sistema.fidelizamax.app.br
+# https://cadastro.fidelizamax.app.br
 # Use "SITE_ID = 1" e o objeto Site do Django para gerenciar isso
 # dinamicamente se tiver vários domínios.
 # Ou defina na mão se for um único domínio fixo:

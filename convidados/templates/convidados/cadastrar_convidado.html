@@ -50,13 +50,22 @@
 
                                 {% if field.id_for_label == 'id_nome' %}
                                     <div id="nome-aviso" class="alert alert-danger mt-2" style="display: none;">
-                                        Este nome já está cadastrado.
+                                        <i class="bi bi-exclamation-triangle-fill"></i>
+                                        <strong>Erro:</strong> <span id="nome-aviso-texto">Este nome já está cadastrado. Escolha um nome diferente.</span>
                                     </div>
                                 {% endif %}
 
                                 {% if field.id_for_label == 'id_telefone' %}
                                     <div id="telefone-aviso" class="alert alert-warning mt-2" style="display: none;">
-                                        AVISO: Este telefone já está cadastrado em outro convidado.
+                                        <i class="bi bi-info-circle-fill"></i>
+                                        <strong>AVISO:</strong> <span id="telefone-aviso-texto">Este telefone já está cadastrado. O convidado será salvo mesmo assim.</span>
+                                    </div>
+                                {% endif %}
+
+                                {% if field.id_for_label == 'id_colaborador' %}
+                                    <div class="alert alert-info mt-2">
+                                        <i class="bi bi-info-circle-fill"></i>
+                                        <strong>Obrigatório:</strong> É necessário selecionar um colaborador para cadastrar o convidado.
                                     </div>
                                 {% endif %}
 
@@ -94,8 +103,10 @@
         const btnSalvar = $('#btn-salvar');
         const nomeInput = $('#id_nome');
         const nomeAviso = $('#nome-aviso');
+        const nomeAvisoTexto = $('#nome-aviso-texto');
         const telefoneInput = $('#id_telefone');
         const telefoneAviso = $('#telefone-aviso');
+        const telefoneAvisoTexto = $('#telefone-aviso-texto');
         const dataNascimentoInput = $('#id_data_nascimento');
         const pkInput = $('input[name="pk"]');
         let typingTimer;
@@ -118,8 +129,18 @@
                 try {
                     const response = await fetch(url);
                     const data = await response.json();
-                    if (data.exists) { nomeAviso.show(); nomeInput.focus(); }
-                    else { nomeAviso.hide(); }
+                    if (data.exists) { 
+                        if (data.tipo_existente === 'colaboradores') {
+                            nomeAvisoTexto.text('Este nome já está cadastrado em colaboradores.');
+                        } else if (data.tipo_existente === 'convidados') {
+                            nomeAvisoTexto.text('Este nome já está cadastrado em convidados.');
+                        }
+                        nomeAviso.show(); 
+                        nomeInput.focus(); 
+                    }
+                    else { 
+                        nomeAviso.hide(); 
+                    }
                     checkFormStatus();
                 } catch (error) {
                     console.error("Erro na verificação do nome:", error);
@@ -133,19 +154,38 @@
         async function checkTelefone() {
             const telefone = telefoneInput.val().replace(/\D/g, '');
             const pk = pkInput.val();
+            console.log("Telefone limpo:", telefone);
+            console.log("Telefone original:", telefoneInput.val());
+            
             if (telefone.length >= 8) {
-                let url = `{% url 'convidados:check_telefone_exists_convidado' %}?telefone=${encodeURIComponent(telefone)}`;
+                // Usar o telefone original formatado em vez do limpo
+                const telefoneFormatado = telefoneInput.val();
+                let url = `{% url 'convidados:check_telefone_exists_convidado' %}?telefone=${encodeURIComponent(telefoneFormatado)}`;
                 if (pk) url += `&pk=${pk}`;
+                console.log("URL da verificação:", url);
+                
                 try {
                     const response = await fetch(url);
                     const data = await response.json();
                     console.log("Resposta da verificação de telefone:", data);
-                    if (data.exists) { telefoneAviso.show(); }
-                    else { telefoneAviso.hide(); }
+                    if (data.exists) { 
+                        if (data.nome_existente && data.tipo_existente) {
+                            telefoneAvisoTexto.text(`Aviso, esse telefone já está cadastrado no ${data.tipo_existente} ${data.nome_existente}`);
+                        } else {
+                            telefoneAvisoTexto.text('Aviso, esse telefone já está cadastrado');
+                        }
+                        telefoneAviso.show(); 
+                        // Não desabilitar o botão para telefone duplicado (apenas aviso)
+                    }
+                    else { 
+                        telefoneAviso.hide(); 
+                    }
                 } catch (error) {
                     console.error("Erro na verificação do telefone:", error);
                 }
-            } else { telefoneAviso.hide(); }
+            } else { 
+                telefoneAviso.hide(); 
+            }
         }
 
         telefoneInput.mask('(00) 00000-0000');

@@ -41,10 +41,16 @@
                                 {{ field }}
                             {% endif %}
                             {% if field.id_for_label == 'id_nome' %}
-                                <div id="nome-aviso" class="alert alert-danger mt-2" style="display: none;">Este nome já está cadastrado.</div>
+                                <div id="nome-aviso" class="alert alert-danger mt-2" style="display: none;">
+                                    <i class="bi bi-exclamation-triangle-fill"></i>
+                                    <strong>Erro:</strong> <span id="nome-aviso-texto">Este nome já está cadastrado. Escolha um nome diferente.</span>
+                                </div>
                             {% endif %}
                             {% if field.id_for_label == 'id_telefone' %}
-                                <div id="telefone-aviso" class="alert alert-warning mt-2" style="display: none;">AVISO: Este telefone já está cadastrado em outro convidado.</div>
+                                <div id="telefone-aviso" class="alert alert-warning mt-2" style="display: none;">
+                                    <i class="bi bi-info-circle-fill"></i>
+                                    <strong>AVISO:</strong> <span id="telefone-aviso-texto">Este telefone já está cadastrado. O convidado será salvo mesmo assim.</span>
+                                </div>
                             {% endif %}
                             {% for error in field.errors %}
                                 <div class="invalid-feedback d-block">{{ error }}</div>
@@ -149,8 +155,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnSalvar = $('#btn-salvar');
     const nomeInput = $('#id_nome');
     const nomeAviso = $('#nome-aviso');
+    const nomeAvisoTexto = $('#nome-aviso-texto');
     const telefoneInput = $('#id_telefone');
     const telefoneAviso = $('#telefone-aviso');
+    const telefoneAvisoTexto = $('#telefone-aviso-texto');
     const pkInput = $('input[name="pk"]');
     let typingTimer; const doneTypingInterval = 500;
 
@@ -162,18 +170,52 @@ document.addEventListener('DOMContentLoaded', function() {
         if (nome && nome.length > 2) {
             let url = `{% url 'convidados:check_nome_exists_convidado' %}?nome=${encodeURIComponent(nome)}`;
             if (pk) url += `&pk=${pk}`;
-            try { const r = await fetch(url); const d = await r.json(); if (d.exists) { nomeAviso.show(); } else { nomeAviso.hide(); } checkFormStatus(); } catch(e) { console.error(e); }
+            try { 
+                const r = await fetch(url); 
+                const d = await r.json(); 
+                if (d.exists) { 
+                    if (d.tipo_existente === 'colaboradores') {
+                        nomeAvisoTexto.text('Este nome já está cadastrado em colaboradores.');
+                    } else if (d.tipo_existente === 'convidados') {
+                        nomeAvisoTexto.text('Este nome já está cadastrado em convidados.');
+                    }
+                    nomeAviso.show(); 
+                } else { 
+                    nomeAviso.hide(); 
+                } 
+                checkFormStatus(); 
+            } catch(e) { console.error(e); }
         } else { nomeAviso.hide(); checkFormStatus(); }
     }
 
     async function checkTelefone() {
-        const telefone = (telefoneInput.val() || '').replace(/\D/g, '');
+        const telefone = telefoneInput.val();
         const pk = pkInput.val();
-        if (telefone.length >= 8) {
+        console.log("Telefone original:", telefone);
+        
+        if (telefone && telefone.replace(/\D/g, '').length >= 8) {
             let url = `{% url 'convidados:check_telefone_exists_convidado' %}?telefone=${encodeURIComponent(telefone)}`;
             if (pk) url += `&pk=${pk}`;
-            try { const r = await fetch(url); const d = await r.json(); if (d.exists) { telefoneAviso.show(); } else { telefoneAviso.hide(); } } catch(e) { console.error(e); }
-        } else { telefoneAviso.hide(); }
+            console.log("URL da verificação:", url);
+            
+            try { 
+                const r = await fetch(url); 
+                const d = await r.json(); 
+                console.log("Resposta da verificação de telefone:", d);
+                if (d.exists) { 
+                    if (d.nome_existente && d.tipo_existente) {
+                        telefoneAvisoTexto.text(`Aviso, esse telefone já está cadastrado no ${d.tipo_existente} ${d.nome_existente}`);
+                    } else {
+                        telefoneAvisoTexto.text('Aviso, esse telefone já está cadastrado');
+                    }
+                    telefoneAviso.show(); 
+                } else { 
+                    telefoneAviso.hide(); 
+                } 
+            } catch(e) { console.error(e); }
+        } else { 
+            telefoneAviso.hide(); 
+        }
     }
 
     nomeInput.on('keyup', function(){ clearTimeout(typingTimer); typingTimer = setTimeout(checkNome, doneTypingInterval); });

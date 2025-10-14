@@ -21,9 +21,9 @@ class Convidado(models.Model):
     bairro = models.ForeignKey(Bairro, on_delete=models.SET_NULL, null=True, blank=True)
     colaborador = models.ForeignKey(
         Colaborador,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
+        on_delete=models.CASCADE,
+        null=False,
+        blank=False,
         related_name="convidados",
     )
 

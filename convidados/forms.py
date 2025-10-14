@@ -38,6 +38,9 @@ class ConvidadoForm(forms.ModelForm):
             "bairro": "Bairro:",
             "colaborador": "Colaborador:",
         }
+        widgets = {
+            "colaborador": forms.Select(attrs={"class": "form-control select2"}),
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -55,10 +58,13 @@ class ConvidadoForm(forms.ModelForm):
         self.fields["bairro"].widget.attrs.update({"class": "select2"})
 
         if "colaborador" in self.fields:
-            # Opcional: select2 para colaborador, se presente
+            # Obrigatório: select2 para colaborador
             self.fields["colaborador"].widget.attrs.update({"class": "select2"})
-            if getattr(self.fields["colaborador"], "empty_label", None) is not None:
-                self.fields["colaborador"].empty_label = "Selecione um colaborador"
+            self.fields["colaborador"].empty_label = "Selecione um colaborador"
+            self.fields["colaborador"].required = True
+            self.fields["colaborador"].widget.attrs["required"] = "required"
+            # Forçar o campo a ser obrigatório
+            self.fields["colaborador"].empty_values = []
 
         # Atualizar queryset do bairro baseado na cidade selecionada
         if "cidade" in self.data:
@@ -80,6 +86,55 @@ class ConvidadoForm(forms.ModelForm):
         else:
             # Se for um novo convidado
             self.fields["bairro"].queryset = Bairro.objects.none()
+
+    def clean_nome(self):
+        nome = self.cleaned_data.get('nome')
+        if nome:
+            # Verificar se já existe um convidado com este nome
+            queryset = Convidado.objects.filter(nome__iexact=nome)
+            if self.instance.pk:
+                queryset = queryset.exclude(pk=self.instance.pk)
+            
+            if queryset.exists():
+                raise forms.ValidationError(
+                    f'O nome "{nome}" já está cadastrado. Escolha um nome diferente.',
+                    code='nome_duplicado'
+                )
+        return nome
+
+    def clean_telefone(self):
+        telefone = self.cleaned_data.get('telefone')
+        if telefone:
+            # Verificar se já existe um convidado com este telefone
+            convidado_existente = Convidado.objects.filter(telefone=telefone)
+            if self.instance.pk:
+                convidado_existente = convidado_existente.exclude(pk=self.instance.pk)
+            
+            if convidado_existente.exists():
+                convidado = convidado_existente.first()
+                # Marcar como duplicado para exibir aviso (não erro)
+                self.phone_is_duplicate = True
+                self.duplicate_phone_convidado = convidado.nome
+            
+            # Verificar se já existe um colaborador com este telefone
+            from colaboradores.models import Colaborador
+            colaborador_existente = Colaborador.objects.filter(telefone=telefone)
+            if colaborador_existente.exists():
+                colaborador = colaborador_existente.first()
+                # Marcar como duplicado para exibir aviso (não erro)
+                self.phone_is_duplicate = True
+                self.duplicate_phone_colaborador = colaborador.nome
+        
+        return telefone
+
+    def clean(self):
+        cleaned_data = super().clean()
+        colaborador = cleaned_data.get('colaborador')
+        
+        if not colaborador:
+            self.add_error('colaborador', 'É obrigatório selecionar um colaborador.')
+        
+        return cleaned_data
 
 
 class RelatorioConvidadosForm(forms.Form):

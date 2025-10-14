@@ -139,31 +139,47 @@ def cadastrar_convidado(request, colaborador_id=None):
     if request.method == "POST":
         form = ConvidadoForm(request.POST)
         if form.is_valid():
-            convidado = form.save(commit=False)
-            convidado.cadastrado_por = request.user
-            convidado.save()
+            try:
+                convidado = form.save(commit=False)
+                convidado.cadastrado_por = request.user
+                convidado.save()
 
-            # REGISTRAR NO HISTÓRICO
-            registrar_criacao_convidado(convidado, request.user, request)
+                # REGISTRAR NO HISTÓRICO
+                registrar_criacao_convidado(convidado, request.user, request)
 
-            convidado_nome = convidado.nome
+                convidado_nome = convidado.nome
 
-            # Verificamos o atributo de aviso APÓS o salvamento
-            if getattr(form, "phone_is_duplicate", False):
-                messages.warning(
-                    request,
-                    f'AVISO: O telefone "{convidado.telefone}" já está '
-                    f'cadastrado em outro convidado. Convidado "{convidado_nome}" '
-                    f"salvo com sucesso!",
+                # Verificar avisos de telefone duplicado
+                if getattr(form, "phone_is_duplicate", False):
+                    if hasattr(form, "duplicate_phone_convidado"):
+                        messages.warning(
+                            request,
+                            f'AVISO: O telefone "{convidado.telefone}" já está '
+                            f'cadastrado no convidado "{form.duplicate_phone_convidado}". '
+                            f'Convidado "{convidado_nome}" salvo com sucesso!',
+                        )
+                    elif hasattr(form, "duplicate_phone_colaborador"):
+                        messages.warning(
+                            request,
+                            f'AVISO: O telefone "{convidado.telefone}" já está '
+                            f'cadastrado no colaborador "{form.duplicate_phone_colaborador}". '
+                            f'Convidado "{convidado_nome}" salvo com sucesso!',
+                        )
+                else:
+                    messages.success(
+                        request, f'Convidado "{convidado_nome}" salvo com sucesso!'
+                    )
+
+                if colaborador:
+                    return redirect("convidados:colaborador_convidados", pk=colaborador_id)
+                return redirect("convidados:lista_convidados")
+                
+            except Exception as e:
+                messages.error(
+                    request, 
+                    f'Erro ao salvar convidado: {str(e)}. '
+                    'Verifique se todos os campos obrigatórios foram preenchidos.'
                 )
-            else:
-                messages.success(
-                    request, f'Convidado "{convidado_nome}" salvo com sucesso!'
-                )
-
-            if colaborador:
-                return redirect("convidados:colaborador_convidados", pk=colaborador_id)
-            return redirect("convidados:lista_convidados")
     else:
         if colaborador:
             form = ConvidadoForm(initial={"colaborador": colaborador})
@@ -298,17 +314,54 @@ def check_telefone_exists(request):
     convidado_id = request.GET.get("pk", None)
 
     if telefone:
-        # Lógica para limpar a formatação do telefone
-        telefone_limpo = re.sub(r"[\(\)\-\s]", "", telefone)
-
-        # Checa se o telefone limpo existe no banco de dados
-        queryset = Convidado.objects.filter(telefone=telefone_limpo)
+        # Normalizar o telefone (substituir + por espaço)
+        telefone_normalizado = telefone.replace('+', ' ')
+        
+        # Função para normalizar telefone (remover formatação)
+        def normalizar_telefone(tel):
+            return re.sub(r"[\(\)\-\s]", "", tel)
+        
+        # Normalizar o telefone de entrada
+        telefone_entrada_limpo = normalizar_telefone(telefone_normalizado)
+        
+        # Buscar todos os telefones de convidados e normalizar
+        convidados_queryset = Convidado.objects.exclude(telefone__isnull=True).exclude(telefone='')
         if convidado_id:
-            queryset = queryset.exclude(pk=convidado_id)
+            convidados_queryset = convidados_queryset.exclude(pk=convidado_id)
+            
+        # Buscar todos os telefones de colaboradores e normalizar
+        colaboradores_queryset = Colaborador.objects.exclude(telefone__isnull=True).exclude(telefone='')
+        
+        # Verificar se o telefone normalizado existe
+        nome_existente = None
+        tipo_existente = None
+        exists = False
+        
+        # Verificar em convidados
+        for convidado in convidados_queryset:
+            telefone_banco_limpo = normalizar_telefone(convidado.telefone)
+            if telefone_entrada_limpo == telefone_banco_limpo:
+                exists = True
+                nome_existente = convidado.nome
+                tipo_existente = "convidado"
+                break
+        
+        # Se não encontrou em convidados, verificar em colaboradores
+        if not exists:
+            for colaborador in colaboradores_queryset:
+                telefone_banco_limpo = normalizar_telefone(colaborador.telefone)
+                if telefone_entrada_limpo == telefone_banco_limpo:
+                    exists = True
+                    nome_existente = colaborador.nome
+                    tipo_existente = "colaborador"
+                    break
 
-        exists = queryset.exists()
-        return JsonResponse({"exists": exists})
-    return JsonResponse({"exists": False})
+        return JsonResponse({
+            "exists": exists,
+            "nome_existente": nome_existente,
+            "tipo_existente": tipo_existente
+        })
+    return JsonResponse({"exists": False, "nome_existente": None})
 
 
 @require_http_methods(["GET"])
@@ -317,10 +370,25 @@ def check_nome_exists(request):
     convidado_id = request.GET.get("pk", None)
 
     if nome:
-        queryset = Convidado.objects.filter(nome__iexact=nome)
+        # Checa se o nome existe em convidados
+        convidados_queryset = Convidado.objects.filter(nome__iexact=nome)
         if convidado_id:
-            queryset = queryset.exclude(pk=convidado_id)
+            convidados_queryset = convidados_queryset.exclude(pk=convidado_id)
 
-        exists = queryset.exists()
-        return JsonResponse({"exists": exists})
-    return JsonResponse({"exists": False})
+        # Checa se o nome existe em colaboradores
+        colaboradores_queryset = Colaborador.objects.filter(nome__iexact=nome)
+
+        exists = convidados_queryset.exists() or colaboradores_queryset.exists()
+        
+        # Determinar onde o nome existe
+        tipo_existente = None
+        if convidados_queryset.exists():
+            tipo_existente = "convidados"
+        elif colaboradores_queryset.exists():
+            tipo_existente = "colaboradores"
+
+        return JsonResponse({
+            "exists": exists,
+            "tipo_existente": tipo_existente
+        })
+    return JsonResponse({"exists": False, "tipo_existente": None})
