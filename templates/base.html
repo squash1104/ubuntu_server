@@ -1060,49 +1060,42 @@ text-align: left;
     <!-- Menu lateral fixo (desktop) - NÃO aparece na home -->
     {% block show_sidebar %}
     <aside class="sisvot-sidebar d-none d-lg-block">
-        <ul class="menu">
-            <li><a class="{% if request.path == '/' %}active{% endif %}" href="{% url 'home' %}"><i class="bi bi-house-door-fill"></i><span>Home</span></a></li>
-            <li><a class="{% if request.path|startswith:'/dashboard' %}active{% endif %}" href="{% url 'dashboard' %}"><i class="bi bi-bar-chart-line-fill"></i><span>Dashboard</span></a></li>
-            <li><a class="{% if request.path|startswith:'/colaboradores' %}active{% endif %}" href="{% url 'colaboradores:lista_colaboradores' %}"><i class="bi bi-briefcase-fill"></i><span>Colaboradores</span></a></li>
-            <li><a class="{% if request.path|startswith:'/convidados' %}active{% endif %}" href="{% url 'convidados:lista_convidados' %}"><i class="bi bi-people-fill"></i><span>Convidados</span></a></li>
+        <ul class="navbar-nav pe-3">
+            <li class="nav-item"><a class="nav-link d-flex align-items-center {% if request.path == '/' %}active{% endif %}" href="{% url 'home' %}"><i class="bi bi-house-door-fill me-2"></i><span>Home</span></a></li>
+            <li class="nav-item"><a class="nav-link d-flex align-items-center {% if request.path|startswith:'/dashboard' %}active{% endif %}" href="{% url 'dashboard' %}"><i class="bi bi-bar-chart-line-fill me-2"></i><span>Dashboard</span></a></li>
+            <li class="nav-item"><a class="nav-link d-flex align-items-center {% if request.path|startswith:'/colaboradores' %}active{% endif %}" href="{% url 'colaboradores:lista_colaboradores' %}"><i class="bi bi-briefcase-fill me-2"></i><span>Colaboradores</span></a></li>
+            <li class="nav-item"><a class="nav-link d-flex align-items-center {% if request.path|startswith:'/convidados' %}active{% endif %}" href="{% url 'convidados:lista_convidados' %}"><i class="bi bi-people-fill me-2"></i><span>Convidados</span></a></li>
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-file-earmark-bar-graph-fill me-2"></i>
                     <span>Relatórios</span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-dark">
-                    <li>
-                        <a class="dropdown-item" href="{% url 'convidados:guest_report_form' %}">
-                            <span>Relatório de Convidados</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item" href="{% url 'colaboradores:relatorio_colaboradores_form' %}">
-                            <span>Relatório de Colaboradores</span>
-                        </a>
-                    </li>
+                    <li><a class="dropdown-item" href="{% url 'convidados:guest_report_form' %}"><span>Relatório de Convidados</span></a></li>
+                    <li><a class="dropdown-item" href="{% url 'colaboradores:relatorio_colaboradores_form' %}"><span>Relatório de Colaboradores</span></a></li>
                 </ul>
             </li>
-            <li><a class="{% if request.path|startswith:'/mapa' %}active{% endif %}" href="{% url 'mapa_apoiadores' %}"><i class="bi bi-map-fill"></i><span>Mapa</span></a></li>
-            <li><a class="{% if request.path|startswith:'/historico' %}active{% endif %}" href="{% url 'historico:historico_list' %}"><i class="bi bi-clock-history"></i><span>Histórico</span></a></li>
-            {% if user.is_authenticated %}
-                {% if user.is_superuser or user|has_group:"Supervisor" or user|has_group:"Recepcionista" %}
-            <li><a class="{% if request.path|startswith:'/recepcao' %}active{% endif %}" href="{% url 'recepcao:home' %}"><i class="bi bi-person-lines-fill"></i><span>Recepção</span></a></li>
-                {% endif %}
+            <li class="nav-item"><a class="nav-link d-flex align-items-center {% if request.path|startswith:'/mapa' %}active{% endif %}" href="{% url 'mapa_apoiadores' %}"><i class="bi bi-map-fill me-2"></i><span>Mapa</span></a></li>
+            <li class="nav-item"><a class="nav-link d-flex align-items-center {% if request.path|startswith:'/historico' %}active{% endif %}" href="{% url 'historico:historico_list' %}"><i class="bi bi-clock-history me-2"></i><span>Histórico</span></a></li>
+            {% if user.is_authenticated and (user.is_superuser or user|has_group:"Supervisor" or user|has_group:"Recepcionista") %}
+            <li class="nav-item"><a class="nav-link d-flex align-items-center {% if request.path|startswith:'/recepcao' %}active{% endif %}" href="{% url 'recepcao:home' %}"><i class="bi bi-person-lines-fill me-2"></i><span>Recepção</span></a></li>
             {% endif %}
+        </ul>
+        <hr>
+        <ul class="navbar-nav">
             {% if user.is_authenticated %}
-            <li><a class="{% if request.path|startswith:'/user-profiles' %}active{% endif %}" href="{% url 'user_profiles:user_settings' %}"><i class="bi bi-gear"></i><span>Configurações</span></a></li>
+            <li class="nav-item"><a class="nav-link d-flex align-items-center {% if request.path|startswith:'/user-profiles' %}active{% endif %}" href="{% url 'user_profiles:user_settings' %}"><i class="bi bi-gear me-2"></i><span>Configurações</span></a></li>
             {% endif %}
-            <li><a href="{% url 'sobre' %}"><i class="bi bi-info-circle-fill"></i><span>Sobre</span></a></li>
+            <li class="nav-item"><a class="nav-link d-flex align-items-center" href="{% url 'sobre' %}"><i class="bi bi-info-circle-fill me-2"></i><span>Sobre</span></a></li>
             {% if user.is_authenticated and user.is_superuser %}
-            <li><a href="{% url 'admin:index' %}" style="color: #ffc107 !important;"><i class="bi bi-shield-lock-fill"></i><span>Admin</span></a></li>
+            <li class="nav-item"><a class="nav-link d-flex align-items-center" href="{% url 'admin:index' %}"><i class="bi bi-shield-lock-fill me-2"></i><span>Admin</span></a></li>
             {% endif %}
             {% if user.is_authenticated %}
-            <li>
+            <li class="nav-item">
                 <form action="{% url 'logout' %}" method="post">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-link p-0" style="text-decoration:none; color: inherit;">
-                        <i class="bi bi-box-arrow-right"></i><span>Sair</span>
+                    <button type="submit" class="nav-link d-flex align-items-center" style="background:none; border:none;">
+                        <i class="bi bi-box-arrow-right me-2"></i><span>Sair</span>
                     </button>
                 </form>
             </li>
