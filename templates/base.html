@@ -1016,7 +1016,7 @@ text-align: left;
 
                     <li class="nav-item"><a class="nav-link" href="{% url 'mapa_apoiadores' %}"><i class="bi bi-map-fill me-2"></i>Mapa</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'historico:historico_list' %}"><i class="bi bi-clock-history me-2"></i>Logs</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'aniversariantes' %}"><i class="bi bi-calendar-event-fill me-2"></i>Aniversariantes</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'aniversariantes' %}"><i class="bi bi-gift-fill me-2"></i>Aniversariantes</a></li>
                     {# Link para o módulo de recepção visível apenas para recepcionistas/supervisores/admins #}
                     {% if user.is_authenticated %}
                         {% if user.is_superuser or user|has_group:"Supervisor" or user|has_group:"Recepcionista" %}
@@ -1062,7 +1062,7 @@ text-align: left;
     {% block show_sidebar %}
     <aside class="sisvot-sidebar d-none d-lg-block">
         <ul class="navbar-nav ps-3 pe-3">
-            <li class="nav-item mt-2"><a class="nav-link d-flex align-items-center {% if request.path == '/' %}active{% endif %}" href="{% url 'home' %}"><i class="bi bi-house-door-fill me-2"></i><span>Home</span></a></li>
+            <li class="nav-item mt-3"><a class="nav-link d-flex align-items-center {% if request.path == '/' %}active{% endif %}" href="{% url 'home' %}"><i class="bi bi-house-door-fill me-2"></i><span>Home</span></a></li>
             <li class="nav-item"><a class="nav-link d-flex align-items-center {% if request.path|startswith:'/dashboard' %}active{% endif %}" href="{% url 'dashboard' %}"><i class="bi bi-bar-chart-line-fill me-2"></i><span>Dashboard</span></a></li>
             <li class="nav-item"><a class="nav-link d-flex align-items-center {% if request.path|startswith:'/colaboradores' %}active{% endif %}" href="{% url 'colaboradores:lista_colaboradores' %}"><i class="bi bi-briefcase-fill me-2"></i><span>Colaboradores</span></a></li>
             <li class="nav-item"><a class="nav-link d-flex align-items-center {% if request.path|startswith:'/convidados' %}active{% endif %}" href="{% url 'convidados:lista_convidados' %}"><i class="bi bi-people-fill me-2"></i><span>Convidados</span></a></li>
@@ -1078,7 +1078,7 @@ text-align: left;
             </li>
             <li class="nav-item"><a class="nav-link d-flex align-items-center {% if request.path|startswith:'/mapa' %}active{% endif %}" href="{% url 'mapa_apoiadores' %}"><i class="bi bi-map-fill me-2"></i><span>Mapa</span></a></li>
             <li class="nav-item"><a class="nav-link d-flex align-items-center {% if request.path|startswith:'/historico' %}active{% endif %}" href="{% url 'historico:historico_list' %}"><i class="bi bi-clock-history me-2"></i><span>Logs</span></a></li>
-            <li class="nav-item"><a class="nav-link d-flex align-items-center {% if request.path == '/aniversariantes/' %}active{% endif %}" href="{% url 'aniversariantes' %}"><i class="bi bi-calendar-event-fill me-2"></i><span>Aniversariantes</span></a></li>
+            <li class="nav-item"><a class="nav-link d-flex align-items-center {% if request.path == '/aniversariantes/' %}active{% endif %}" href="{% url 'aniversariantes' %}"><i class="bi bi-gift-fill me-2"></i><span>Aniversariantes</span></a></li>
             {% if user.is_authenticated %}
                 {% if user.is_superuser or user|has_group:"Supervisor" or user|has_group:"Recepcionista" %}
                 <li class="nav-item"><a class="nav-link d-flex align-items-center {% if request.path|startswith:'/recepcao' %}active{% endif %}" href="{% url 'recepcao:home' %}"><i class="bi bi-person-lines-fill me-2"></i><span>Recepção</span></a></li>
