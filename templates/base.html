@@ -1065,8 +1065,24 @@ text-align: left;
             <li><a class="{% if request.path|startswith:'/dashboard' %}active{% endif %}" href="{% url 'dashboard' %}"><i class="bi bi-bar-chart-line-fill"></i><span>Dashboard</span></a></li>
             <li><a class="{% if request.path|startswith:'/colaboradores' %}active{% endif %}" href="{% url 'colaboradores:lista_colaboradores' %}"><i class="bi bi-briefcase-fill"></i><span>Colaboradores</span></a></li>
             <li><a class="{% if request.path|startswith:'/convidados' %}active{% endif %}" href="{% url 'convidados:lista_convidados' %}"><i class="bi bi-people-fill"></i><span>Convidados</span></a></li>
-            <li><a class="{% if 'guest_report' in request.path %}active{% endif %}" href="{% url 'convidados:guest_report_form' %}"><i class="bi bi-file-earmark-text"></i><span>Relatório Convidados</span></a></li>
-            <li><a class="{% if 'relatorio_colaboradores' in request.path %}active{% endif %}" href="{% url 'colaboradores:relatorio_colaboradores_form' %}"><i class="bi bi-file-earmark-bar-graph"></i><span>Relatório Colaboradores</span></a></li>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-file-earmark-bar-graph-fill me-2"></i>
+                    <span>Relatórios</span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-dark">
+                    <li>
+                        <a class="dropdown-item" href="{% url 'convidados:guest_report_form' %}">
+                            <span>Relatório de Convidados</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="{% url 'colaboradores:relatorio_colaboradores_form' %}">
+                            <span>Relatório de Colaboradores</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
             <li><a class="{% if request.path|startswith:'/mapa' %}active{% endif %}" href="{% url 'mapa_apoiadores' %}"><i class="bi bi-map-fill"></i><span>Mapa</span></a></li>
             <li><a class="{% if request.path|startswith:'/historico' %}active{% endif %}" href="{% url 'historico:historico_list' %}"><i class="bi bi-clock-history"></i><span>Histórico</span></a></li>
             {% if user.is_authenticated %}
