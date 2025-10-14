@@ -177,8 +177,14 @@
         /* Enforce inside tables as well */
         table img.avatar-md { width: 56px !important; height: 56px !important; border-radius: 50% !important; object-fit: cover !important; }
         .rank-inline { display: inline-flex; align-items: center; height: 56px; }
+        @media (min-width: 992px) {
+            .rank-inline { display: flex; align-items: center; height: 56px; }
+        }
         /* Ensure table cells align content vertically centered */
         table.table td, table.table th { vertical-align: middle; }
+        .card table td, .card table th { vertical-align: middle; }
+        /* Neutralize any top alignment coming from utility classes */
+        .rank-inline .align-text-top { vertical-align: middle !important; }
         .avatar-fallback { width: 56px; height: 56px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background-color: #e9ecef; color: #6c757d; }
         .avatar-fallback i { font-size: 32px; line-height: 1; }
 
@@ -384,7 +390,7 @@
                                 <div class="flex-grow-1 text-start">
                                     <span class="rank-inline">
                                         {% if usuario.usuario.profile.photo %}
-                                            <img src="{{ usuario.usuario.profile.photo.url }}" alt="avatar" class="avatar-md me-2 align-text-top" style="width:56px;height:56px;max-width:56px;max-height:56px;border-radius:50%;object-fit:cover;">
+                                            <img src="{{ usuario.usuario.profile.photo.url }}" alt="avatar" class="avatar-md me-2" style="width:56px;height:56px;max-width:56px;max-height:56px;border-radius:50%;object-fit:cover;">
                                         {% else %}
                                             <span class="avatar-fallback me-2"><i class="bi bi-person-fill"></i></span>
                                         {% endif %}
@@ -418,7 +424,7 @@
                                 </thead>
                                 <tbody>
                                     {% for usuario in ranking_usuarios %}
-                                        <tr {% if usuario.usuario == user %}class="table-primary"{% endif %}>
+                                        <tr {% if usuario.usuario == user %}class="table-primary align-middle"{% endif %}>
                                             <td>
                                                 {% if usuario.posicao <= 3 %}
                                                     {% if usuario.posicao == 1 %}🥇{% elif usuario.posicao == 2 %}🥈{% elif usuario.posicao == 3 %}🥉{% endif %}
@@ -429,7 +435,7 @@
                                             <td>
                                                 <span class="rank-inline">
                                                     {% if usuario.usuario.profile.photo %}
-                                                        <img src="{{ usuario.usuario.profile.photo.url }}" alt="avatar" class="avatar-md me-2 align-text-top" style="width:56px;height:56px;max-width:56px;max-height:56px;border-radius:50%;object-fit:cover;">
+                                                        <img src="{{ usuario.usuario.profile.photo.url }}" alt="avatar" class="avatar-md me-2" style="width:56px;height:56px;max-width:56px;max-height:56px;border-radius:50%;object-fit:cover;">
                                                     {% else %}
                                                         <span class="avatar-fallback me-2"><i class="bi bi-person-fill"></i></span>
                                                     {% endif %}
@@ -437,10 +443,10 @@
                                                 </span>
                                                 {% if usuario.usuario == user %}<span class="badge bg-primary ms-1">Você</span>{% endif %}
                                             </td>
-                                            <td class="text-center">{{ usuario.colaboradores }}</td>
-                                            <td class="text-center">{{ usuario.convidados }}</td>
-                                            <td class="text-center"><strong>{{ usuario.total }}</strong></td>
-                                            <td class="text-center">
+                                            <td class="text-center align-middle">{{ usuario.colaboradores }}</td>
+                                            <td class="text-center align-middle">{{ usuario.convidados }}</td>
+                                            <td class="text-center align-middle"><strong>{{ usuario.total }}</strong></td>
+                                            <td class="text-center align-middle">
                                                 {% if usuario.total >= 1000 %}
                                                     <span class="badge bg-danger" title="Rei dos Cadastros">👑</span>
                                                 {% elif usuario.total >= 500 %}
