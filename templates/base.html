@@ -1077,8 +1077,10 @@ text-align: left;
             </li>
             <li class="nav-item"><a class="nav-link d-flex align-items-center {% if request.path|startswith:'/mapa' %}active{% endif %}" href="{% url 'mapa_apoiadores' %}"><i class="bi bi-map-fill me-2"></i><span>Mapa</span></a></li>
             <li class="nav-item"><a class="nav-link d-flex align-items-center {% if request.path|startswith:'/historico' %}active{% endif %}" href="{% url 'historico:historico_list' %}"><i class="bi bi-clock-history me-2"></i><span>Histórico</span></a></li>
-            {% if user.is_authenticated and (user.is_superuser or user|has_group:"Supervisor" or user|has_group:"Recepcionista") %}
-            <li class="nav-item"><a class="nav-link d-flex align-items-center {% if request.path|startswith:'/recepcao' %}active{% endif %}" href="{% url 'recepcao:home' %}"><i class="bi bi-person-lines-fill me-2"></i><span>Recepção</span></a></li>
+            {% if user.is_authenticated %}
+                {% if user.is_superuser or user|has_group:"Supervisor" or user|has_group:"Recepcionista" %}
+                <li class="nav-item"><a class="nav-link d-flex align-items-center {% if request.path|startswith:'/recepcao' %}active{% endif %}" href="{% url 'recepcao:home' %}"><i class="bi bi-person-lines-fill me-2"></i><span>Recepção</span></a></li>
+                {% endif %}
             {% endif %}
         </ul>
         <hr>
@@ -1245,4 +1247,5 @@ text-align: left;
     <!-- Cache buster: 202501080234 - Chat removido -->
 
 </body>
+</html>
 </html>
