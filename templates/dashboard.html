@@ -176,6 +176,9 @@
         }
         /* Enforce inside tables as well */
         table img.avatar-md { width: 56px !important; height: 56px !important; border-radius: 50% !important; object-fit: cover !important; }
+        .rank-inline { display: inline-flex; align-items: center; }
+        .avatar-fallback { width: 56px; height: 56px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background-color: #e9ecef; color: #6c757d; }
+        .avatar-fallback i { font-size: 28px; line-height: 1; }
 
     </style>
 {% endblock %}
@@ -377,12 +380,14 @@
                                     {% endif %}
                                 </div>
                                 <div class="flex-grow-1 text-start">
-                                    {% if usuario.usuario.profile.photo %}
-                                        <img src="{{ usuario.usuario.profile.photo.url }}" alt="avatar" class="avatar-md me-2 align-text-top" style="width:56px;height:56px;max-width:56px;max-height:56px;border-radius:50%;object-fit:cover;">
-                                    {% else %}
-                                        <i class="bi bi-person-circle me-2"></i>
-                                    {% endif %}
-                                    <strong>{{ usuario.first_name }}</strong>
+                                    <span class="rank-inline">
+                                        {% if usuario.usuario.profile.photo %}
+                                            <img src="{{ usuario.usuario.profile.photo.url }}" alt="avatar" class="avatar-md me-2 align-text-top" style="width:56px;height:56px;max-width:56px;max-height:56px;border-radius:50%;object-fit:cover;">
+                                        {% else %}
+                                            <span class="avatar-fallback me-2"><i class="bi bi-person-fill"></i></span>
+                                        {% endif %}
+                                        <strong>{{ usuario.first_name }}</strong>
+                                    </span>
                                     <br>
                                     <small class="text-muted">{{ usuario.total }} cadastros</small>
                                 </div>
@@ -420,12 +425,14 @@
                                                 {% endif %}
                                             </td>
                                             <td>
-                                                {% if usuario.usuario.profile.photo %}
-                                                    <img src="{{ usuario.usuario.profile.photo.url }}" alt="avatar" class="avatar-md me-2 align-text-top" style="width:56px;height:56px;max-width:56px;max-height:56px;border-radius:50%;object-fit:cover;">
-                                                {% else %}
-                                                    <i class="bi bi-person-circle me-2"></i>
-                                                {% endif %}
-                                                <strong>{{ usuario.first_name }}</strong>
+                                                <span class="rank-inline">
+                                                    {% if usuario.usuario.profile.photo %}
+                                                        <img src="{{ usuario.usuario.profile.photo.url }}" alt="avatar" class="avatar-md me-2 align-text-top" style="width:56px;height:56px;max-width:56px;max-height:56px;border-radius:50%;object-fit:cover;">
+                                                    {% else %}
+                                                        <span class="avatar-fallback me-2"><i class="bi bi-person-fill"></i></span>
+                                                    {% endif %}
+                                                    <strong>{{ usuario.first_name }}</strong>
+                                                </span>
                                                 {% if usuario.usuario == user %}<span class="badge bg-primary ms-1">Você</span>{% endif %}
                                             </td>
                                             <td class="text-center">{{ usuario.colaboradores }}</td>
