@@ -165,17 +165,17 @@
 
         /* Avatar pequeno para ranking */
         .avatar-md {
-            width: 48px !important;
-            height: 48px !important;
-            max-width: 48px !important;
-            max-height: 48px !important;
+            width: 56px !important;
+            height: 56px !important;
+            max-width: 56px !important;
+            max-height: 56px !important;
             border-radius: 50% !important;
             object-fit: cover !important;
             display: inline-block;
             vertical-align: middle;
         }
         /* Enforce inside tables as well */
-        table img.avatar-md { width: 48px !important; height: 48px !important; border-radius: 50% !important; object-fit: cover !important; }
+        table img.avatar-md { width: 56px !important; height: 56px !important; border-radius: 50% !important; object-fit: cover !important; }
 
     </style>
 {% endblock %}
@@ -378,7 +378,7 @@
                                 </div>
                                 <div class="flex-grow-1 text-start">
                                     {% if usuario.usuario.profile.photo %}
-                                        <img src="{{ usuario.usuario.profile.photo.url }}" alt="avatar" class="avatar-md me-2 align-text-top" style="width:48px;height:48px;max-width:48px;max-height:48px;border-radius:50%;object-fit:cover;">
+                                        <img src="{{ usuario.usuario.profile.photo.url }}" alt="avatar" class="avatar-md me-2 align-text-top" style="width:56px;height:56px;max-width:56px;max-height:56px;border-radius:50%;object-fit:cover;">
                                     {% else %}
                                         <i class="bi bi-person-circle me-2"></i>
                                     {% endif %}
@@ -421,7 +421,7 @@
                                             </td>
                                             <td>
                                                 {% if usuario.usuario.profile.photo %}
-                                                    <img src="{{ usuario.usuario.profile.photo.url }}" alt="avatar" class="avatar-md me-2 align-text-top" style="width:48px;height:48px;max-width:48px;max-height:48px;border-radius:50%;object-fit:cover;">
+                                                    <img src="{{ usuario.usuario.profile.photo.url }}" alt="avatar" class="avatar-md me-2 align-text-top" style="width:56px;height:56px;max-width:56px;max-height:56px;border-radius:50%;object-fit:cover;">
                                                 {% else %}
                                                     <i class="bi bi-person-circle me-2"></i>
                                                 {% endif %}
