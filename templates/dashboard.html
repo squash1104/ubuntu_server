@@ -418,43 +418,72 @@
             <div class="col-lg-8">
                 <div class="card h-100">
                     <div class="card-body">
-                        <h5 class="card-title mb-3">📊 Ranking Completo</h5>
-                        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
-                            <table class="table table-hover">
-                                <thead class="table-light sticky-top">
+                        <h5 class="card-title mb-4">📊 Ranking Completo</h5>
+                        <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-dark sticky-top">
                                     <tr>
-                                        <th>Posição</th>
+                                        <th class="text-center" style="width: 80px;">Posição</th>
                                         <th>Usuário</th>
-                                        <th class="text-center">Colaboradores</th>
-                                        <th class="text-center">Convidados</th>
-                                        <th class="text-center">Total</th>
-                                        <th class="text-center">Nível</th>
+                                        <th class="text-center" style="width: 100px;">Colaboradores</th>
+                                        <th class="text-center" style="width: 100px;">Convidados</th>
+                                        <th class="text-center" style="width: 80px;">Total</th>
+                                        <th class="text-center" style="width: 120px;">Nível</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for usuario in ranking_usuarios %}
-                                        <tr {% if usuario.usuario == user %}class="table-primary text-center align-middle"{% endif %}>
+                                        <tr {% if usuario.usuario == user %}class="table-primary"{% endif %}>
+                                            <!-- Posição -->
                                             <td class="text-center align-middle">
                                                 {% if usuario.posicao <= 3 %}
-                                                    {% if usuario.posicao == 1 %}🥇{% elif usuario.posicao == 2 %}🥈{% elif usuario.posicao == 3 %}🥉{% endif %}
+                                                    <span class="fs-5">
+                                                        {% if usuario.posicao == 1 %}🥇{% elif usuario.posicao == 2 %}🥈{% elif usuario.posicao == 3 %}🥉{% endif %}
+                                                    </span>
                                                 {% else %}
-                                                    <strong>{{ usuario.posicao }}º</strong>
+                                                    <span class="badge bg-light text-dark">{{ usuario.posicao }}º</span>
                                                 {% endif %}
                                             </td>
-                                            <td>
-                                                <span class="rank-inline">
-                                                    {% if usuario.usuario.profile.photo %}
-                                                        <img src="{{ usuario.usuario.profile.photo.url }}" alt="avatar" class="avatar-md me-2" style="width:56px;height:56px;max-width:56px;max-height:56px;border-radius:50%;object-fit:cover;">
-                                                    {% else %}
-                                                        <span class="avatar-fallback me-2"><i class="bi bi-person-fill"></i></span>
-                                                    {% endif %}
-                                                    <strong>{{ usuario.first_name }}</strong>
-                                                </span>
-                                                {% if usuario.usuario == user %}<span class="badge bg-primary ms-1">Você</span>{% endif %}
+                                            
+                                            <!-- Usuário -->
+                                            <td class="align-middle">
+                                                <div class="d-flex align-items-center">
+                                                    <!-- Avatar -->
+                                                    <div class="me-3">
+                                                        {% if usuario.usuario.profile.photo %}
+                                                            <img src="{{ usuario.usuario.profile.photo.url }}" alt="avatar" class="rounded-circle" style="width:40px;height:40px;object-fit:cover;">
+                                                        {% else %}
+                                                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center" style="width:40px;height:40px;">
+                                                                <i class="bi bi-person-fill text-muted" style="font-size:18px;"></i>
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                    
+                                                    <!-- Nome e badge "Você" -->
+                                                    <div>
+                                                        <div class="fw-bold">{{ usuario.first_name }}</div>
+                                                        {% if usuario.usuario == user %}
+                                                            <span class="badge bg-primary badge-sm">Você</span>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
                                             </td>
-                                            <td class="text-center align-middle">{{ usuario.colaboradores }}</td>
-                                            <td class="text-center align-middle">{{ usuario.convidados }}</td>
-                                            <td class="text-center align-middle"><strong>{{ usuario.total }}</strong></td>
+                                            
+                                            <!-- Colaboradores -->
+                                            <td class="text-center align-middle">
+                                                <span class="badge bg-info">{{ usuario.colaboradores }}</span>
+                                            </td>
+                                            
+                                            <!-- Convidados -->
+                                            <td class="text-center align-middle">
+                                                <span class="badge bg-success">{{ usuario.convidados }}</span>
+                                            </td>
+                                            
+                                            <!-- Total -->
+                                            <td class="text-center align-middle">
+                                                <strong class="fs-6">{{ usuario.total }}</strong>
+                                            </td>
+                                            <!-- Nível -->
                                             <td class="text-center align-middle">
                                                 {% if usuario.total >= 1000 %}
                                                     <span class="badge bg-danger" title="Rei dos Cadastros">👑</span>
@@ -476,24 +505,6 @@
                                                     <span class="badge bg-secondary" title="Iniciante">🌱</span>
                                                 {% else %}
                                                     <span class="badge bg-secondary" title="Novato">🌱</span>
-                                                {% endif %}
-                                                
-                                                {% if usuario.colaboradores >= 50 %}
-                                                    <span class="badge bg-primary" title="Rei dos Colaboradores">👑</span>
-                                                {% elif usuario.colaboradores >= 25 %}
-                                                    <span class="badge bg-info" title="Mentor Master">👥</span>
-                                                {% elif usuario.colaboradores >= 10 %}
-                                                    <span class="badge bg-info" title="Mentor de Colaboradores">👥</span>
-                                                {% endif %}
-                                                
-                                                {% if usuario.convidados >= 500 %}
-                                                    <span class="badge bg-warning" title="Mestre dos Convidados">🎯</span>
-                                                {% elif usuario.convidados >= 250 %}
-                                                    <span class="badge bg-warning" title="Expert em Convidados">🎯</span>
-                                                {% elif usuario.convidados >= 100 %}
-                                                    <span class="badge bg-warning" title="Convidados Master">🎯</span>
-                                                {% elif usuario.convidados >= 50 %}
-                                                    <span class="badge bg-warning" title="Especialista em Convidados">🎯</span>
                                                 {% endif %}
                                             </td>
                                         </tr>
