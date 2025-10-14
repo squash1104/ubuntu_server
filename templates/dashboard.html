@@ -377,31 +377,36 @@
             <!-- Top 3 em Destaque -->
             <div class="col-lg-4">
                 <div class="card h-100">
-                    <div class="card-body text-center">
-                        <h5 class="card-title mb-3">🥇 Top 3</h5>
+                    <div class="card-body">
+                        <h5 class="card-title text-center mb-4">🥇 Top 3</h5>
                         {% for usuario in top_3_usuarios %}
-                            <div class="d-flex align-items-center mb-3 p-2 {% if usuario.usuario == user %}bg-primary bg-opacity-10 rounded{% endif %}">
+                            <div class="d-flex align-items-center mb-3 p-3 {% if usuario.usuario == user %}bg-primary bg-opacity-10 rounded{% endif %}">
+                                <!-- Medalha da posição -->
                                 <div class="me-3">
                                     {% if usuario.posicao == 1 %}
-                                        <span class="badge bg-warning text-dark fs-6">🥇</span>
+                                        <span class="badge bg-warning text-dark fs-4">🥇</span>
                                     {% elif usuario.posicao == 2 %}
-                                        <span class="badge bg-secondary fs-6">🥈</span>
+                                        <span class="badge bg-secondary fs-4">🥈</span>
                                     {% elif usuario.posicao == 3 %}
-                                        <span class="badge bg-warning text-dark fs-6">🥉</span>
+                                        <span class="badge bg-warning text-dark fs-4">🥉</span>
                                     {% endif %}
                                 </div>
-                                <div class="flex-grow-1 text-start rank-text">
-                                    <span class="rank-inline">
-                                        {% if usuario.usuario.profile.photo %}
-                                            <img src="{{ usuario.usuario.profile.photo.url }}" alt="avatar" class="avatar-md me-2" style="width:56px;height:56px;max-width:56px;max-height:56px;border-radius:50%;object-fit:cover;">
-                                        {% else %}
-                                            <span class="avatar-fallback me-2"><i class="bi bi-person-fill"></i></span>
-                                        {% endif %}
-                                        <span class="rank-name">
-                                            <strong>{{ usuario.first_name }}</strong>
-                                            <small class="text-muted">{{ usuario.total }} cadastros</small>
-                                        </span>
-                                    </span>
+                                
+                                <!-- Avatar do usuário -->
+                                <div class="me-3">
+                                    {% if usuario.usuario.profile.photo %}
+                                        <img src="{{ usuario.usuario.profile.photo.url }}" alt="avatar" class="rounded-circle" style="width:56px;height:56px;object-fit:cover;">
+                                    {% else %}
+                                        <div class="rounded-circle bg-light d-flex align-items-center justify-content-center" style="width:56px;height:56px;">
+                                            <i class="bi bi-person-fill text-muted" style="font-size:24px;"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Nome e estatísticas -->
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1 fw-bold">{{ usuario.first_name }}</h6>
+                                    <small class="text-muted">{{ usuario.total }} cadastros</small>
                                 </div>
                             </div>
                         {% endfor %}
