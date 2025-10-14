@@ -673,6 +673,21 @@ text-align: left;
 }
 
 /* ========================================
+   Cores padrão para gráficos (claro/escuro)
+   ======================================== */
+:root {
+    --chart-colab: rgba(59, 130, 246, 0.85); /* azul vivo */
+    --chart-conv: rgba(16, 185, 129, 0.85);  /* verde vivo */
+    --chart-region: rgba(139, 92, 246, 0.85); /* roxo vivo */
+}
+
+[data-bs-theme="dark"] {
+    --chart-colab: rgba(96, 165, 250, 0.9);
+    --chart-conv: rgba(52, 211, 153, 0.9);
+    --chart-region: rgba(167, 139, 250, 0.9);
+}
+
+/* ========================================
    CABEÇALHOS DE PÁGINA - ESTILO RECEPÇÃO
    ======================================== */
 
@@ -944,7 +959,7 @@ text-align: left;
                         </ul>
                         {% if badges_usuario_logado %}
                             {% for badge in badges_usuario_logado %}
-                                <span class="badge {{ badge.cor }} me-1" title="{{ badge.nome }}">{{ badge.emoji }}</span>
+                                <span class="badge {{ badge.cor }} me-1" title="{{ badge.tooltip|default:badge.nome }}">{{ badge.emoji }}</span>
                             {% endfor %}
                         {% endif %}
                     </div>
@@ -973,7 +988,7 @@ text-align: left;
                         <span class="navbar-text fs-5 me-2">Olá, {{ user.get_full_name }}</span>
                         {% if badges_usuario_logado %}
                             {% for badge in badges_usuario_logado %}
-                                <span class="badge {{ badge.cor }} me-1" title="{{ badge.nome }}">{{ badge.emoji }}</span>
+                                <span class="badge {{ badge.cor }} me-1" title="{{ badge.tooltip|default:badge.nome }}">{{ badge.emoji }}</span>
                             {% endfor %}
                         {% endif %}
                     </div>
@@ -1174,7 +1189,7 @@ text-align: left;
         <script src="{% static 'js/jquery.mask.min.js' %}"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
 

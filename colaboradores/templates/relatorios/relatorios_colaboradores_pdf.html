@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>SisVot - Relatório de Colaboradores</title>
+    <title>Relatório de Colaboradores</title>
     <style>
         @page {
             margin: 1cm;
@@ -238,7 +238,7 @@
                 </thead>
                 <tbody>
                     {% for colaborador in colaboradores %}
-                        <tr {% if colaborador.total_convidados <= 14 %}class="meta-pendente"{% elif colaborador.total_convidados == 15 %}class="meta-atingida"{% elif colaborador.total_convidados >= 16 %}class="meta-superada"{% endif %}>
+                        <tr {% if colaborador.total_convidados < 20 %}class="meta-pendente"{% elif colaborador.total_convidados == 20 %}class="meta-atingida"{% elif colaborador.total_convidados > 20 %}class="meta-superada"{% endif %}>
                             <td><strong>{{ forloop.counter }}</strong></td>
                             {% for column in selected_columns %}
                                 <td>
@@ -251,11 +251,11 @@
                                 </td>
                             {% endfor %}
                             <td>
-                                {% if colaborador.total_convidados <= 14 %}
+                                {% if colaborador.total_convidados < 20 %}
                                     <span class="status-badge badge-pendente">Pendente</span>
-                                {% elif colaborador.total_convidados == 15 %}
+                                {% elif colaborador.total_convidados == 20 %}
                                     <span class="status-badge badge-atingida">Atingida</span>
-                                {% elif colaborador.total_convidados >= 16 %}
+                                {% elif colaborador.total_convidados > 20 %}
                                     <span class="status-badge badge-superada">Superada</span>
                                 {% endif %}
                             </td>

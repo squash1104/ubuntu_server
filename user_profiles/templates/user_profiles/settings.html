@@ -359,7 +359,7 @@
                                 <div class="stats-icon mb-2">
                                     <i class="bi bi-people-fill text-primary" style="font-size: 2rem;"></i>
                                 </div>
-                                <h3 class="stats-number text-primary mb-1">{{ stats.total_convidados }}</h3>
+                                <h3 class="stats-number text-primary mb-1">{{ stats.total_cadastros_usuario }}</h3>
                                 <p class="stats-label text-muted mb-0">Total de Cadastros</p>
                             </div>
                         </div>
@@ -399,49 +399,21 @@
                     </div>
                 </div>
 
-                <!-- Ranking e Badges -->
+                <!-- Ranking -->
                 <div class="row mb-4">
                     <div class="col-md-6">
                         <div class="card settings-card">
                             <div class="card-header">
                                 <h5 class="mb-0">
-                                    <i class="bi bi-trophy me-2"></i>Ranking e Badges
+                                    <i class="bi bi-trophy me-2"></i>Ranking
                                 </h5>
                             </div>
                             <div class="card-body">
-                                {% if stats.posicao_ranking %}
-                                    <div class="mb-3">
-                                        <h6 class="text-primary mb-2">
-                                            <i class="bi bi-trophy-fill me-1"></i>
-                                            Sua Posição no Ranking: {{ stats.posicao_ranking }}º
-                                        </h6>
-                                        <p class="text-muted small mb-0">
-                                            Total de cadastros: <strong>{{ stats.total_cadastros_usuario }}</strong>
-                                        </p>
-                                    </div>
-                                {% endif %}
-                                
-                                {% if stats.badges %}
-                                    <div class="mb-3">
-                                        <h6 class="text-success mb-2">Suas Conquistas:</h6>
-                                        <div class="d-flex flex-wrap gap-2">
-                                            {% for badge in stats.badges %}
-                                                <span class="badge {{ badge.cor }} fs-6" title="{{ badge.nome }}">
-                                                    {{ badge.emoji }} {{ badge.nome }}
-                                                </span>
-                                            {% endfor %}
-                                        </div>
-                                    </div>
-                                {% else %}
-                                    <p class="text-muted">Nenhuma badge conquistada ainda.</p>
-                                {% endif %}
-                                
-                                <div class="mt-3">
-                                    <small class="text-muted">
-                                        <i class="bi bi-info-circle me-1"></i>
-                                        Continue usando o sistema para conquistar mais badges!
-                                    </small>
-                                </div>
+                                <h6 class="text-primary mb-2">
+                                    <i class="bi bi-trophy-fill me-1"></i>
+                                    Posição no Ranking Geral
+                                </h6>
+                                <p class="display-6 mb-0">{{ stats.posicao_ranking|default:'-' }}º</p>
                             </div>
                         </div>
                     </div>
@@ -467,6 +439,40 @@
                                         <small class="text-muted">Dias Ativo</small>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Conquistas -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card settings-card">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-award me-2"></i>Conquistas
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                {% if stats.badges %}
+                                    <div class="row g-2">
+                                        {% for badge in stats.badges %}
+                                            <div class="col-6 col-md-4 col-lg-3">
+                                                <div class="d-flex align-items-center gap-2 p-2 border rounded" data-bs-toggle="tooltip" title="{{ badge.nome }}: {{ badge.min|default:0 }}+ cadastros">
+                                                    <span class="badge {{ badge.cor }}">{{ badge.emoji }}</span>
+                                                    <div>
+                                                        <div class="fw-semibold">{{ badge.nome }}</div>
+                                                        {% if badge.data %}
+                                                            <small class="text-muted">{{ badge.data|date:"d/m/Y H:i" }}</small>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <p class="text-muted mb-0">Nenhuma badge conquistada ainda.</p>
+                                {% endif %}
                             </div>
                         </div>
                     </div>

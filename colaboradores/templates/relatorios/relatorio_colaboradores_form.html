@@ -2,7 +2,7 @@
 {% load static %}
 {% load colaboradores_filters %}
 
-{% block title %}SisAps - Relatório de Colaboradores{% endblock %}
+{% block title %}Relatório de Colaboradores{% endblock %}
 
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'css/relatorios.css' %}">
@@ -127,9 +127,9 @@
                         </label>
                         <select name="meta_status" id="id_meta_status" class="form-control">
                             <option value="---">Todos os Status</option>
-                            <option value="pendente" {% if request.GET.meta_status == 'pendente' %}selected{% endif %}>Meta Pendente (0-14)</option>
-                            <option value="atingida" {% if request.GET.meta_status == 'atingida' %}selected{% endif %}>Meta Atingida (15)</option>
-                            <option value="superada" {% if request.GET.meta_status == 'superada' %}selected{% endif %}>Meta Superada (16+)</option>
+                            <option value="pendente" {% if request.GET.meta_status == 'pendente' %}selected{% endif %}>Meta Pendente (0-19)</option>
+                            <option value="atingida" {% if request.GET.meta_status == 'atingida' %}selected{% endif %}>Meta Atingida (20)</option>
+                            <option value="superada" {% if request.GET.meta_status == 'superada' %}selected{% endif %}>Meta Superada (21+)</option>
                         </select>
                     </div>
                 </div>
@@ -270,11 +270,11 @@
                                     </td>
                                 {% endfor %}
                                 <td>
-                                    {% if colaborador.total_convidados <= 14 %}
+                                    {% if colaborador.total_convidados < 20 %}
                                         <span class="badge bg-warning text-dark">
                                             <i class="bi bi-hourglass-half me-1"></i>Pendente
                                         </span>
-                                    {% elif colaborador.total_convidados == 15 %}
+                                    {% elif colaborador.total_convidados == 20 %}
                                         <span class="badge bg-success">
                                             <i class="bi bi-check-circle me-1"></i>Atingida
                                         </span>
@@ -314,7 +314,7 @@
                         <li><i class="bi bi-check-circle me-2"></i>Selecione pelo menos uma coluna para exibir</li>
                         <li><i class="bi bi-check-circle me-2"></i>Use o filtro "Status da Meta" para ver performance</li>
                         <li><i class="bi bi-check-circle me-2"></i>Combine cidade e bairro para pesquisas regionais</li>
-                        <li><i class="bi bi-info-circle me-2"></i><strong>Metas:</strong> Pendente (0-14), Atingida (15), Superada (16+)</li>
+                        <li><i class="bi bi-info-circle me-2"></i><strong>Metas:</strong> Pendente (0-19), Atingida (20), Superada (21+)</li>
                     </ul>
                 </div>
             </div>

@@ -321,7 +321,7 @@
                             <tbody>
                                 {% for colaborador in page_obj %}
                                     {% with num_convidados=colaborador.num_convidados %}
-                                        <tr class="{% if num_convidados < 15 %}table-danger{% elif num_convidados == 15 %}table-success{% else %}table-primary{% endif %}">
+                                        <tr class="{% if num_convidados < 20 %}table-danger{% elif num_convidados == 20 %}table-success{% else %}table-primary{% endif %}">
                                             <td>{{ page_obj.start_index|add:forloop.counter0 }}</td>
                                             <td><strong>{{ colaborador.nome }}</strong></td>
                                             <td>{{ colaborador.telefone|format_telefone|default:"-" }}</td>
@@ -365,12 +365,12 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <span>
-                                    <strong>Totais desta página:</strong> {{ total_colaboradores_filtrados }} colaborador(es).
+                                    <strong>Totais desta página:</strong> {{ total_colaboradores_pagina }} colaborador(es).
                                 </span>
                             </div>
                             <div class="col-md-6 text-end">
                                 <span>
-                                    {{ total_convidados_filtrados }} convidados.
+                                    {{ total_convidados_pagina }} convidados.
                                 </span>
                             </div>
                         </div>
