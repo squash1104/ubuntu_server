@@ -486,6 +486,14 @@
                                 <h5 class="mb-0">
                                     <i class="bi bi-graph-up me-2"></i>Produtividade (Últimos 7 dias)
                                 </h5>
+                                <div class="d-flex gap-2 mt-2">
+                                    <div class="btn-group" role="group" aria-label="Filtro de período">
+                                        <button type="button" class="btn btn-sm btn-outline-primary prod-range" data-range="day">Dia</button>
+                                        <button type="button" class="btn btn-sm btn-outline-primary prod-range active" data-range="week">Semana</button>
+                                        <button type="button" class="btn btn-sm btn-outline-primary prod-range" data-range="month">Mês</button>
+                                        <button type="button" class="btn btn-sm btn-outline-primary prod-range" data-range="year">Ano</button>
+                                    </div>
+                                </div>
                             </div>
                             <div class="card-body">
                                 <canvas id="productivityChart" width="400" height="100"></canvas>
@@ -624,9 +632,19 @@
         if (file) {
             const reader = new FileReader();
             reader.onload = function(e) {
-                const currentPhoto = document.getElementById('current-photo');
+                let currentPhoto = document.getElementById('current-photo');
                 if (currentPhoto) {
-                    currentPhoto.src = e.target.result;
+                    if (currentPhoto.tagName && currentPhoto.tagName.toLowerCase() === 'img') {
+                        currentPhoto.src = e.target.result;
+                    } else {
+                        // Substitui placeholder por uma imagem circular
+                        const img = document.createElement('img');
+                        img.id = 'current-photo';
+                        img.alt = 'Foto do perfil';
+                        img.src = e.target.result;
+                        img.className = 'profile-photo';
+                        currentPhoto.parentNode.replaceChild(img, currentPhoto);
+                    }
                 }
             };
             reader.readAsDataURL(file);
@@ -672,20 +690,21 @@
         }
     }
 
-    // Gráfico de Produtividade
+    // Gráfico de Produtividade com filtro (dia/semana/mês/ano)
     document.addEventListener('DOMContentLoaded', function() {
-        const ctx = document.getElementById('productivityChart');
-        if (ctx) {
-            const productivityData = {{ stats.productivity_data|default:"[0,0,0,0,0,0,0]"|safe }};
-            const labels = ['{{ stats.last_7_days.0|default:"Dom" }}', '{{ stats.last_7_days.1|default:"Seg" }}', '{{ stats.last_7_days.2|default:"Ter" }}', '{{ stats.last_7_days.3|default:"Qua" }}', '{{ stats.last_7_days.4|default:"Qui" }}', '{{ stats.last_7_days.5|default:"Sex" }}', '{{ stats.last_7_days.6|default:"Sáb" }}'];
-            
-            new Chart(ctx, {
+        const canvas = document.getElementById('productivityChart');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        let chart;
+        function renderChart(labels, data) {
+            if (chart) chart.destroy();
+            chart = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: labels,
                     datasets: [{
                         label: 'Cadastros',
-                        data: productivityData,
+                        data: data,
                         borderColor: 'rgb(75, 192, 192)',
                         backgroundColor: 'rgba(75, 192, 192, 0.2)',
                         tension: 0.1,
@@ -695,22 +714,29 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 1
-                            }
-                        }
-                    }
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
                 }
             });
         }
+        // Inicial com semana (dados do template)
+        const initialData = {{ stats.productivity_data|default:"[0,0,0,0,0,0,0]"|safe }};
+        const initialLabels = ['{{ stats.last_7_days.0|default:"Dom" }}', '{{ stats.last_7_days.1|default:"Seg" }}', '{{ stats.last_7_days.2|default:"Ter" }}', '{{ stats.last_7_days.3|default:"Qua" }}', '{{ stats.last_7_days.4|default:"Qui" }}', '{{ stats.last_7_days.5|default:"Sex" }}', '{{ stats.last_7_days.6|default:"Sáb" }}'];
+        renderChart(initialLabels, initialData);
+
+        // Troca de período
+        document.querySelectorAll('.prod-range').forEach(btn => {
+            btn.addEventListener('click', async function() {
+                document.querySelectorAll('.prod-range').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                const range = this.getAttribute('data-range');
+                try {
+                    const resp = await fetch("{% url 'user_profiles:productivity_data' %}?range=" + encodeURIComponent(range));
+                    const json = await resp.json();
+                    renderChart(json.labels, json.data);
+                } catch (e) { console.error(e); }
+            });
+        });
     });
 </script>
 {% endblock %}

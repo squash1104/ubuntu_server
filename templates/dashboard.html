@@ -163,6 +163,20 @@
     margin: 5px 0 0;
 }
 
+        /* Avatar pequeno para ranking */
+        .avatar-md {
+            width: 40px !important;
+            height: 40px !important;
+            max-width: 40px !important;
+            max-height: 40px !important;
+            border-radius: 50% !important;
+            object-fit: cover !important;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        /* Enforce inside tables as well */
+        table img.avatar-md { width: 40px !important; height: 40px !important; border-radius: 50% !important; object-fit: cover !important; }
+
     </style>
 {% endblock %}
 
@@ -363,6 +377,11 @@
                                     {% endif %}
                                 </div>
                                 <div class="flex-grow-1 text-start">
+                                    {% if usuario.usuario.profile.photo %}
+                                        <img src="{{ usuario.usuario.profile.photo.url }}" alt="avatar" class="avatar-md me-2 align-text-top" style="width:40px;height:40px;max-width:40px;max-height:40px;border-radius:50%;object-fit:cover;">
+                                    {% else %}
+                                        <i class="bi bi-person-circle me-2"></i>
+                                    {% endif %}
                                     <strong>{{ usuario.first_name }}</strong>
                                     <br>
                                     <small class="text-muted">{{ usuario.total }} cadastros</small>
@@ -401,6 +420,11 @@
                                                 {% endif %}
                                             </td>
                                             <td>
+                                                {% if usuario.usuario.profile.photo %}
+                                                    <img src="{{ usuario.usuario.profile.photo.url }}" alt="avatar" class="avatar-md me-2 align-text-top" style="width:40px;height:40px;max-width:40px;max-height:40px;border-radius:50%;object-fit:cover;">
+                                                {% else %}
+                                                    <i class="bi bi-person-circle me-2"></i>
+                                                {% endif %}
                                                 <strong>{{ usuario.first_name }}</strong>
                                                 {% if usuario.usuario == user %}<span class="badge bg-primary ms-1">Você</span>{% endif %}
                                             </td>
@@ -679,8 +703,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const ctxRegioes = document.getElementById('mesorregioesChart');
     if (ctxRegioes) {
         try {
-            const labelsRegioes = JSON.parse('{{ labels_regioes|default:"[]"|safe }}');
-            const dataRegioes = JSON.parse('{{ data_regioes|default:"[]"|safe }}');
+            const labelsRegioesRaw = JSON.parse('{{ labels_regioes|default:"[]"|safe }}');
+            const dataRegioesRaw = JSON.parse('{{ data_regioes|default:"[]"|safe }}');
+            const paired = labelsRegioesRaw.map((l, i) => ({ l, v: dataRegioesRaw[i] }));
+            const filtered = paired.filter(x => !/não\s*mapeada/i.test(x.l) && !/sem\s*cidade/i.test(x.l));
+            const labelsRegioes = filtered.map(x => x.l);
+            const dataRegioes = filtered.map(x => x.v);
             
             new Chart(ctxRegioes.getContext('2d'), {
                 type: 'bar', // Tipo: barra vertical (padrão)

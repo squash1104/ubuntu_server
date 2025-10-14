@@ -185,11 +185,11 @@ def dashboard(request):
     total_convidados = Convidado.objects.count()
 
     colaboradores_com_contagem = Colaborador.objects.annotate(
-        num_convidados=Count("convidados")
+        num_convidados=Count("convidados", distinct=True)
     )
 
     # Define as nossas metas
-    meta = 15
+    meta = 20
 
     # Calcula quantos colaboradores estão em cada categoria de meta para grafico rosca
     abaixo_da_meta = colaboradores_com_contagem.filter(num_convidados__lt=meta).count()
@@ -198,7 +198,7 @@ def dashboard(request):
 
     # Calcula nosso top 10 para grafico
     top_15_colaboradores = Colaborador.objects.annotate(
-        num_convidados=Count("convidados")
+        num_convidados=Count("convidados", distinct=True)
     ).order_by("-num_convidados")[:15]
 
     # --- NOVO CÓDIGO PARA O GRÁFICO DE APOIADORES POR CIDADE ---
@@ -238,32 +238,87 @@ def dashboard(request):
     # data_cidades = [item[1] for item in cidades_ordenadas]
     # --- FIM DO NOVO CÓDIGO ---
 
-    # --- NOVO CÓDIGO PARA OS DOIS GRÁFICOS SEPARADOS ---
-    # 1. Ranking Top 10 Cidades por NÚMERO DE COLABORADORES
-    top_cidades_colaboradores = (
-        Colaborador.objects.values("cidade__nome_cidade")
+    # --- GRÁFICOS: COLABORADORES/CONVIDADOS POR GRUPOS (CAPITAL vs INTERIOR) ---
+    capitais = ["Cuiabá", "Várzea Grande"]
+
+    # Colaboradores por grupo
+    total_colab_capital = Colaborador.objects.filter(
+        cidade__nome_cidade__in=capitais
+    ).count()
+    # Interior inclui demais cidades e registros sem cidade
+    total_colab_interior = Colaborador.objects.exclude(
+        cidade__nome_cidade__in=capitais
+    ).count()
+
+    labels_cidades_colab = ["Capital", "Interior"]
+    data_cidades_colab = [total_colab_capital, total_colab_interior]
+
+    # Convidados por grupo
+    total_conv_capital = Convidado.objects.filter(
+        cidade__nome_cidade__in=capitais
+    ).count()
+    # Interior inclui demais cidades e registros sem cidade
+    total_conv_interior = Convidado.objects.exclude(
+        cidade__nome_cidade__in=capitais
+    ).count()
+
+    labels_cidades_conv = ["Capital", "Interior"]
+    data_cidades_conv = [total_conv_capital, total_conv_interior]
+
+    # --- NOVOS RANKINGS GEOGRÁFICOS ---
+    # Top 15 bairros da capital (Cuiabá) por número de convidados
+    top_bairros_capital = (
+        Convidado.objects.filter(bairro__cidade__nome_cidade__iexact="Cuiabá")
+        .filter(bairro__nome_bairro__isnull=False)
+        .values("bairro__nome_bairro")
         .annotate(total=Count("id"))
-        .order_by("-total")
-        .filter(cidade__nome_cidade__isnull=False)[:10]
+        .order_by("-total")[:15]
     )
-
-    labels_cidades_colab = [
-        item["cidade__nome_cidade"] for item in top_cidades_colaboradores
+    labels_bairros_capital = [
+        item["bairro__nome_bairro"] for item in top_bairros_capital
     ]
-    data_cidades_colab = [item["total"] for item in top_cidades_colaboradores]
+    data_bairros_capital = [item["total"] for item in top_bairros_capital]
 
-    # 2. Ranking Top 10 Cidades por NÚMERO DE CONVIDADOS
-    top_cidades_convidados = (
-        Convidado.objects.values("cidade__nome_cidade")
+    # Série de colaboradores para os mesmos bairros (Cuiabá)
+    colab_bairros_capital = (
+        Colaborador.objects.filter(bairro__cidade__nome_cidade__iexact="Cuiabá")
+        .values("bairro__nome_bairro")
+        .annotate(total=Count("id", distinct=True))
+    )
+    colab_bairros_capital_map = {
+        item["bairro__nome_bairro"]: item["total"] for item in colab_bairros_capital
+    }
+    data_bairros_capital_colab = [
+        int(colab_bairros_capital_map.get(bairro, 0))
+        for bairro in labels_bairros_capital
+    ]
+
+    # Top 15 cidades do interior por número de convidados
+    top_cidades_interior_conv = (
+        Convidado.objects.exclude(cidade__nome_cidade__in=["Cuiabá", "Várzea Grande"])
+        .filter(cidade__nome_cidade__isnull=False)
+        .values("cidade__nome_cidade")
         .annotate(total=Count("id"))
-        .order_by("-total")
-        .filter(cidade__nome_cidade__isnull=False)[:10]
+        .order_by("-total")[:15]
     )
-
-    labels_cidades_conv = [
-        item["cidade__nome_cidade"] for item in top_cidades_convidados
+    labels_cidades_interior = [
+        item["cidade__nome_cidade"] for item in top_cidades_interior_conv
     ]
-    data_cidades_conv = [item["total"] for item in top_cidades_convidados]
+    data_cidades_interior = [item["total"] for item in top_cidades_interior_conv]
+
+    # Série de colaboradores para as mesmas cidades do interior
+    colab_cidades_interior = (
+        Colaborador.objects.exclude(cidade__nome_cidade__in=["Cuiabá", "Várzea Grande"])
+        .values("cidade__nome_cidade")
+        .annotate(total=Count("id", distinct=True))
+    )
+    colab_cidades_interior_map = {
+        item["cidade__nome_cidade"]: item["total"] for item in colab_cidades_interior
+    }
+    data_cidades_interior_colab = [
+        int(colab_cidades_interior_map.get(cidade, 0))
+        for cidade in labels_cidades_interior
+    ]
 
     # --- NOVO CÓDIGO PARA O GRÁFICO DE CONVIDADOS POR MESORREGIÃO ---
     # 1. Define as regiões e inicializa os contadores
@@ -272,16 +327,25 @@ def dashboard(request):
 
     # 2. Busca todos os convidados com a sua cidade
     convidados_qs = Convidado.objects.select_related("cidade").all()
+    convidados_sem_colaborador = Convidado.objects.filter(
+        colaborador__isnull=True
+    ).count()
 
     # 3. Itera em Python para agregar os dados por região
+    nao_mapeada = 0
     for convidado in convidados_qs:
         if convidado.cidade and convidado.cidade.nome_cidade in CIDADE_PARA_MESORREGIAO:
             regiao = CIDADE_PARA_MESORREGIAO[convidado.cidade.nome_cidade]
             dados_regioes[regiao] += 1
+        else:
+            # Contabiliza convidados sem cidade ou cidade não mapeada
+            nao_mapeada += 1
 
     dados_regioes_ordenados = dict(
         sorted(dados_regioes.items(), key=lambda item: item[1], reverse=True)
     )
+
+    # Não incluir bucket de não mapeada/sem cidade no gráfico
 
     # 4. Prepara os dados para o Chart.js
     labels_regioes = list(dados_regioes_ordenados.keys())
@@ -409,9 +473,16 @@ def dashboard(request):
         ).count()
 
         # Conta convidados cadastrados por este usuário (através dos colaboradores)
-        convidados_cadastrados = Convidado.objects.filter(
-            colaborador__cadastrado_por=usuario
-        ).count()
+        # Convidados: conta uma vez se for por colaborador do usuário OU direto por ele
+        from django.db.models import Q
+
+        convidados_cadastrados = (
+            Convidado.objects.filter(
+                Q(colaborador__cadastrado_por=usuario) | Q(cadastrado_por=usuario)
+            )
+            .distinct()
+            .count()
+        )
 
         # Total de cadastros (colaboradores + convidados)
         total_cadastros = colaboradores_cadastrados + convidados_cadastrados
@@ -538,6 +609,15 @@ def dashboard(request):
         "data_regioes": json.dumps(data_regioes),
         "dados_regioes": dados_regioes_ordenados,
         "heat_data": json.dumps(heat_data),
+        # Transparência: convidados sem colaborador (pode explicar diferenças de soma)
+        "convidados_sem_colaborador": convidados_sem_colaborador,
+        # Novos rankings geográficos
+        "labels_bairros_capital": json.dumps(labels_bairros_capital),
+        "data_bairros_capital": json.dumps(data_bairros_capital),
+        "data_bairros_capital_colab": json.dumps(data_bairros_capital_colab),
+        "labels_cidades_interior": json.dumps(labels_cidades_interior),
+        "data_cidades_interior": json.dumps(data_cidades_interior),
+        "data_cidades_interior_colab": json.dumps(data_cidades_interior_colab),
         # --- NOVOS KPIs ---
         "eficiencia_media": eficiencia_media,
         # --- RANKING ---
