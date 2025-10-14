@@ -1030,6 +1030,11 @@ text-align: left;
                      <a class="nav-link" href="{% url 'sobre' %}"><i class="bi bi-info-circle-fill me-2"></i>Sobre</a>
                  </li>
                  {% if user.is_authenticated %}
+                     <li class="nav-item">
+                         <a class="nav-link" href="{% url 'user_profiles:user_settings' %}">
+                             <i class="bi bi-gear me-2"></i>Configurações
+                         </a>
+                     </li>
                      {% if user.is_superuser %}
                      <li class="nav-item">
                          <a href="{% url 'admin:index' %}" class="nav-link d-flex align-items-center">
@@ -1038,11 +1043,6 @@ text-align: left;
                          </a>
                      </li>
                      {% endif %}
-                     <li class="nav-item">
-                         <a class="nav-link" href="{% url 'user_profiles:user_settings' %}">
-                             <i class="bi bi-gear me-2"></i>Configurações
-                         </a>
-                     </li>
                      <li class="nav-item">
                          <form action="{% url 'logout' %}" method="post">
                              {% csrf_token %}
