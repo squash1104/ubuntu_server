@@ -429,7 +429,7 @@
                                 <tbody>
                                     {% for usuario in ranking_usuarios %}
                                         <tr {% if usuario.usuario == user %}class="table-primary text-center align-middle"{% endif %}>
-                                            <td>
+                                            <td class="text-center align-middle">
                                                 {% if usuario.posicao <= 3 %}
                                                     {% if usuario.posicao == 1 %}🥇{% elif usuario.posicao == 2 %}🥈{% elif usuario.posicao == 3 %}🥉{% endif %}
                                                 {% else %}
