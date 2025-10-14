@@ -176,9 +176,11 @@
         }
         /* Enforce inside tables as well */
         table img.avatar-md { width: 56px !important; height: 56px !important; border-radius: 50% !important; object-fit: cover !important; }
-        .rank-inline { display: inline-flex; align-items: center; }
+        .rank-inline { display: inline-flex; align-items: center; height: 56px; }
+        /* Ensure table cells align content vertically centered */
+        table.table td, table.table th { vertical-align: middle; }
         .avatar-fallback { width: 56px; height: 56px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background-color: #e9ecef; color: #6c757d; }
-        .avatar-fallback i { font-size: 28px; line-height: 1; }
+        .avatar-fallback i { font-size: 32px; line-height: 1; }
 
     </style>
 {% endblock %}
