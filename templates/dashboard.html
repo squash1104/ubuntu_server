@@ -392,9 +392,11 @@
                                 </div>
                                 <div class="flex-grow-1 text-start rank-text">
                                     <span class="rank-inline">
-                                        
+                                        {% if usuario.usuario.profile.photo %}
                                             <img src="{{ usuario.usuario.profile.photo.url }}" alt="avatar" class="avatar-md me-2" style="width:56px;height:56px;max-width:56px;max-height:56px;border-radius:50%;object-fit:cover;">
-                                        
+                                        {% else %}
+                                            <span class="avatar-fallback me-2"><i class="bi bi-person-fill"></i></span>
+                                        {% endif %}
                                         <span class="rank-name">
                                             <strong>{{ usuario.first_name }}</strong>
                                             <small class="text-muted">{{ usuario.total }} cadastros</small>
@@ -426,7 +428,7 @@
                                 </thead>
                                 <tbody>
                                     {% for usuario in ranking_usuarios %}
-                                        <tr {% if usuario.usuario == user %}class="table-primary align-middle"{% endif %}>
+                                        <tr {% if usuario.usuario == user %}class="table-primary text-center align-middle"{% endif %}>
                                             <td>
                                                 {% if usuario.posicao <= 3 %}
                                                     {% if usuario.posicao == 1 %}🥇{% elif usuario.posicao == 2 %}🥈{% elif usuario.posicao == 3 %}🥉{% endif %}
