@@ -188,6 +188,8 @@
         .avatar-fallback { width: 56px; height: 56px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background-color: #e9ecef; color: #6c757d; }
         .avatar-fallback i { font-size: 32px; line-height: 1; }
         .rank-text { min-height: 56px; display: flex; flex-direction: column; justify-content: center; }
+        .rank-name { display: flex; flex-direction: column; line-height: 1.15; }
+        .rank-name small { margin-top: 2px; }
 
     </style>
 {% endblock %}
@@ -390,15 +392,14 @@
                                 </div>
                                 <div class="flex-grow-1 text-start rank-text">
                                     <span class="rank-inline">
-                                        {% if usuario.usuario.profile.photo %}
+                                        
                                             <img src="{{ usuario.usuario.profile.photo.url }}" alt="avatar" class="avatar-md me-2" style="width:56px;height:56px;max-width:56px;max-height:56px;border-radius:50%;object-fit:cover;">
-                                        {% else %}
-                                            <span class="avatar-fallback me-2"><i class="bi bi-person-fill"></i></span>
-                                        {% endif %}
-                                        <strong>{{ usuario.first_name }}</strong>
+                                        
+                                        <span class="rank-name">
+                                            <strong>{{ usuario.first_name }}</strong>
+                                            <small class="text-muted">{{ usuario.total }} cadastros</small>
+                                        </span>
                                     </span>
-                                    <br>
-                                    <small class="text-muted">{{ usuario.total }} cadastros</small>
                                 </div>
                             </div>
                         {% endfor %}
