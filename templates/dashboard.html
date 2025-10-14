@@ -187,6 +187,7 @@
         .rank-inline .align-text-top { vertical-align: middle !important; }
         .avatar-fallback { width: 56px; height: 56px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background-color: #e9ecef; color: #6c757d; }
         .avatar-fallback i { font-size: 32px; line-height: 1; }
+        .rank-text { min-height: 56px; display: flex; flex-direction: column; justify-content: center; }
 
     </style>
 {% endblock %}
@@ -387,7 +388,7 @@
                                         <span class="badge bg-warning text-dark fs-6">🥉</span>
                                     {% endif %}
                                 </div>
-                                <div class="flex-grow-1 text-start">
+                                <div class="flex-grow-1 text-start rank-text">
                                     <span class="rank-inline">
                                         {% if usuario.usuario.profile.photo %}
                                             <img src="{{ usuario.usuario.profile.photo.url }}" alt="avatar" class="avatar-md me-2" style="width:56px;height:56px;max-width:56px;max-height:56px;border-radius:50%;object-fit:cover;">
