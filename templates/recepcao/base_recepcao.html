@@ -513,7 +513,7 @@
             <li><a class="{% if request.path|startswith:'/recepcao/relatorios' %}active{% endif %}" href="{% url 'recepcao:relatorios' %}"><i class="bi bi-graph-up"></i><span>Relatórios</span></a></li>
             {% if user.is_authenticated %}
             {% if user.is_superuser or user|has_group:'Supervisor' %}
-            <li><a class="" href="https://sistema.fidelizamax.app.br/" target="_blank"><i class="bi bi-box-seam"></i><span>FidelizaMax</span></a></li>
+            <li><a class="" href="https://fidelizamax.app.br/" target="_blank"><i class="bi bi-box-seam"></i><span>FidelizaMax</span></a></li>
             {% endif %}
             {% endif %}
         </ul>

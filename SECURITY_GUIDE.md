@@ -131,7 +131,7 @@ sudo ufw enable
 sudo apt install certbot python3-certbot-nginx
 
 # Obter certificado
-sudo certbot --nginx -d sistema.fidelizamax.app.br
+sudo certbot --nginx -d fidelizamax.app.br
 ```
 
 ## 🔐 CONFIGURAÇÕES DE SEGURANÇA AVANÇADAS
@@ -225,10 +225,10 @@ tar -xzf backups/media/media_YYYYMMDD_HHMMSS.tar.gz -C /
 python manage.py check --deploy
 
 # Testar HTTPS
-curl -I https://sistema.fidelizamax.app.br
+curl -I https://fidelizamax.app.br
 
 # Verificar headers de segurança
-curl -I https://sistema.fidelizamax.app.br | grep -i security
+curl -I https://fidelizamax.app.br | grep -i security
 ```
 
 ## ⚡ IMPLEMENTAÇÃO RÁPIDA

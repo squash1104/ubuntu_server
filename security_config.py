@@ -15,15 +15,15 @@ SECURITY_SETTINGS = {
     "DEBUG": False,
     # Configurar hosts permitidos
     "ALLOWED_HOSTS": [
-        "sistema.fidelizamax.app.br",
-        "www.sistema.fidelizamax.app.br",
+        "fidelizamax.app.br",
+        "www.fidelizamax.app.br",
         "localhost",
         "127.0.0.1",
     ],
     # Configurar CSRF
     "CSRF_TRUSTED_ORIGINS": [
-        "https://sistema.fidelizamax.app.br",
-        "https://www.sistema.fidelizamax.app.br",
+        "https://fidelizamax.app.br",
+        "https://www.fidelizamax.app.br",
     ],
 }
 

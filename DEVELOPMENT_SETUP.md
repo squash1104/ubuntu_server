@@ -2,7 +2,7 @@
 
 ## Visão Geral
 - **Desenvolvimento**: VM local (192.168.18.158) + PostgreSQL local
-- **Produção**: AWS EC2 (sistema.fidelizamax.app.br) + RDS PostgreSQL
+- **Produção**: AWS EC2 (fidelizamax.app.br) + RDS PostgreSQL
 
 ## 1. Configurações do Ambiente de Desenvolvimento
 
@@ -203,4 +203,4 @@ python manage.py dumpdata > backup_$(date +%Y%m%d).json
 
 Observações:
 - O `settings.py` lê variáveis do `.env` via `python-decouple`.
-- Em produção (AWS), use um `.env` com as credenciais do RDS e domínios `https://sistema.fidelizamax.app.br`.
+- Em produção (AWS), use um `.env` com as credenciais do RDS e domínios `https://fidelizamax.app.br`.

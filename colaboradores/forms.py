@@ -4,7 +4,7 @@ from django import forms
 
 from geografia.models import Bairro, Cidade
 
-from .models import Colaborador
+from .models import TIPO_CHOICES, Colaborador
 
 
 class RelatorioColaboradoresForm(forms.Form):
@@ -91,9 +91,22 @@ class ColaboradorForm(forms.ModelForm):
         label="Data de Nascimento:",
     )
 
+    tipo = forms.ChoiceField(
+        choices=TIPO_CHOICES,
+        label="Tipo:",
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
+
     class Meta:
         model = Colaborador
-        fields: ClassVar = ["nome", "telefone", "data_nascimento", "cidade", "bairro"]
+        fields: ClassVar = [
+            "nome",
+            "telefone",
+            "data_nascimento",
+            "cidade",
+            "bairro",
+            "tipo",
+        ]
         labels: ClassVar = {
             "nome": "Nome:",
             "telefone": "Telefone:",

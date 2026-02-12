@@ -138,7 +138,7 @@ EMAIL_HOST_PASSWORD=fdww ubmc vjqm xdos
 ```bash
 SECRET_KEY=Sk_hOiH$iMo4=l#qYZBy...
 DEBUG=False
-ALLOWED_HOSTS=sistema.fidelizamax.app.br,www.sistema.fidelizamax.app.br,localhost,127.0.0.1
+ALLOWED_HOSTS=fidelizamax.app.br,www.fidelizamax.app.br,localhost,127.0.0.1
 ```
 
 ### **Redis (Opcional)**

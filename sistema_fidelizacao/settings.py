@@ -48,7 +48,7 @@ DEBUG = config("DEBUG", default=True, cast=bool)
 
 ALLOWED_HOSTS = config(
     "ALLOWED_HOSTS",
-    default="sistema.fidelizamax.app.br,www.sistema.fidelizamax.app.br,localhost,127.0.0.1",
+    default="fidelizamax.app.br,www.fidelizamax.app.br,localhost,127.0.0.1",
     cast=Csv(),
 ) + ["testserver"]
 
@@ -56,7 +56,7 @@ ALLOWED_HOSTS = config(
 # In production, read from environment (comma-separated). In development, also allow local hosts over HTTP.
 CSRF_TRUSTED_ORIGINS = config(
     "CSRF_TRUSTED_ORIGINS",
-    default="https://sistema.fidelizamax.app.br,https://www.sistema.fidelizamax.app.br",
+    default="https://fidelizamax.app.br,https://www.fidelizamax.app.br",
     cast=Csv(),
 )
 
@@ -336,7 +336,7 @@ SITE_NAME = "SisAps - Fidelização de Apoiadores"
 # Use "SITE_ID = 1" e o objeto Site do Django para gerenciar isso
 # dinamicamente se tiver vários domínios.
 # Ou defina na mão se for um único domínio fixo:
-DOMAIN_NAME = "sistema.fidelizamax.app.br"
+DOMAIN_NAME = "fidelizamax.app.br"
 
 # ===========================================
 # CONFIGURAÇÕES DO CRISPY FORMS

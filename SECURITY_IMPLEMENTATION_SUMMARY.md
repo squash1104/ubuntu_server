@@ -149,7 +149,7 @@ python manage.py backup --cleanup
 
 ### **Configurar 2FA**
 ```bash
-# Acesse: https://sistema.fidelizamax.app.br/security/setup-2fa/
+# Acesse: https://fidelizamax.app.br/security/setup-2fa/
 ```
 
 ## 🎯 **PRÓXIMOS PASSOS RECOMENDADOS**

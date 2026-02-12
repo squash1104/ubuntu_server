@@ -8,11 +8,15 @@
 #id_telefone { max-width: 220px; }
 #id_data_nascimento { max-width: 160px; }
 #id_cidade, #id_bairro { max-width: 320px; }
+#id_tipo { max-width: 320px; }
+#id_tipo_outro { max-width: 320px; }
 .select2-container { max-width: 320px !important; }
 .input-group .btn-calendar { border-color: #ced4da; }
 .input-group .btn-calendar i { pointer-events: none; }
 /* Labels acima no formulário */
 #colaborador-form label { display: block; margin-bottom: .25rem; }
+/* Esconder campo de tipo outro inicialmente */
+#tipo-outro-container { display: none; }
 </style>
 <div class="row justify-content-center">
     <div class="col-md-8">
@@ -38,6 +42,14 @@
                                     <button class="btn btn-outline-secondary btn-calendar" type="button" id="btn-calendar-edit">
                                         <i class="bi bi-calendar3"></i>
                                     </button>
+                                </div>
+                            {% elif field.id_for_label == 'id_tipo' %}
+                                {{ field.label_tag }}
+                                {{ field }}
+                            {% elif field.id_for_label == 'id_tipo_outro' %}
+                                <div id="tipo-outro-container">
+                                    {{ field.label_tag }}
+                                    {{ field }}
                                 </div>
                             {% else %}
                                 {{ field.label_tag }}
@@ -88,6 +100,12 @@
         const telefoneAviso = $('#telefone-aviso');
         const telefoneAvisoTexto = $('#telefone-aviso-texto');
         const pkInput = $('input[name="pk"]');
+        
+        // Campos de tipo
+        const tipoSelect = $('#id_tipo');
+        const tipoOutroContainer = $('#tipo-outro-container');
+        const tipoOutroInput = $('#id_tipo_outro');
+
         let typingTimer;
         const doneTypingInterval = 500;
 
@@ -98,6 +116,26 @@
                 btnSalvar.prop('disabled', false);
             }
         }
+
+        // =========================================================================
+        // LÓGICA DO CAMPO TIPO COM "OUTRO"
+        // =========================================================================
+        function verificarTipoOutro() {
+            if (tipoSelect.val() === '__outro__') {
+                tipoOutroContainer.show();
+                tipoOutroInput.prop('required', true);
+            } else {
+                tipoOutroContainer.hide();
+                tipoOutroInput.prop('required', false);
+                tipoOutroInput.val(''); // Limpar campo quando não é "outro"
+            }
+        }
+
+        // Inicializar estado do campo tipo outro
+        verificarTipoOutro();
+
+        // Listener para mudança no select de tipo
+        tipoSelect.on('change', verificarTipoOutro);
 
         telefoneInput.mask('(00) 00000-0000');
         if (dataNascimentoInput.length) { dataNascimentoInput.mask('00/00/0000'); }

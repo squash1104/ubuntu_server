@@ -205,8 +205,8 @@ python manage.py runserver
 ```python
 # settings.py
 DEBUG = False
-ALLOWED_HOSTS = ['sistema.fidelizamax.app.br', 'www.sistema.fidelizamax.app.br']
-CSRF_TRUSTED_ORIGINS = ['https://sistema.fidelizamax.app.br']
+ALLOWED_HOSTS = ['fidelizamax.app.br', 'www.fidelizamax.app.br']
+CSRF_TRUSTED_ORIGINS = ['https://fidelizamax.app.br']
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 ```
 

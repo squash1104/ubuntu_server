@@ -547,7 +547,7 @@ exec daphne -b 0.0.0.0 -p 8000 sistema_fidelizacao.asgi:application
 ```python
 # settings_prod.py
 DEBUG = False
-ALLOWED_HOSTS = ['sistema.fidelizamax.app.br', 'www.sistema.fidelizamax.app.br']
+ALLOWED_HOSTS = ['fidelizamax.app.br', 'www.fidelizamax.app.br']
 
 # Banco de dados de produção
 DATABASES = {
@@ -573,16 +573,16 @@ CSRF_COOKIE_SECURE = True
 # /etc/nginx/sites-available/sisvot
 server {
     listen 80;
-    server_name sistema.fidelizamax.app.br;
+    server_name fidelizamax.app.br;
     return 301 https://$server_name$request_uri;
 }
 
 server {
     listen 443 ssl http2;
-    server_name sistema.fidelizamax.app.br;
+    server_name fidelizamax.app.br;
     
-    ssl_certificate /etc/letsencrypt/live/sistema.fidelizamax.app.br/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/sistema.fidelizamax.app.br/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/fidelizamax.app.br/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/fidelizamax.app.br/privkey.pem;
     
     location / {
         proxy_pass http://unix:/srv/sisvot/run/gunicorn.sock;

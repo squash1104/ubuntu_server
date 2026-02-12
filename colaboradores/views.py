@@ -33,7 +33,8 @@ def lista_colaboradores(request):
     ordenar_por_param = request.GET.get("ordenar_por", "nome")
     direcao = request.GET.get("direcao", "asc")
     per_page = request.GET.get("per_page", "20")
-    grupo = request.GET.get("grupo", "todos")
+    regiao = request.GET.get("regiao", "todos")  # Filtro por região (capital/interior)
+    tipo = request.GET.get("tipo", "todos")  # Filtro por tipo (colaborador/acs_ace)
 
     # Validar per_page
     valid_per_page_options = [20, 50, 100, 200]
@@ -52,13 +53,19 @@ def lista_colaboradores(request):
     # Query base
     colaboradores_qs = Colaborador.objects.select_related("cidade", "bairro")
 
-    # Filtro por grupo (Capital/Interior)
+    # Filtro por região (Capital/Interior)
     capitais = ["Cuiabá", "Várzea Grande"]
-    if grupo == "capital":
+    if regiao == "capital":
         colaboradores_qs = colaboradores_qs.filter(cidade__nome_cidade__in=capitais)
-    elif grupo == "interior":
+    elif regiao == "interior":
         # Interior inclui demais cidades e registros sem cidade
         colaboradores_qs = colaboradores_qs.exclude(cidade__nome_cidade__in=capitais)
+
+    # Filtro por tipo (Colaborador/ACS/ACE)
+    if tipo == "colaborador":
+        colaboradores_qs = colaboradores_qs.filter(tipo="colaborador")
+    elif tipo == "acs_ace":
+        colaboradores_qs = colaboradores_qs.filter(tipo="acs_ace")
 
     # Filtro de busca
     if termo_busca:
@@ -99,7 +106,8 @@ def lista_colaboradores(request):
         "direcao": direcao,
         "per_page": per_page,
         "per_page_options": valid_per_page_options,
-        "grupo": grupo,
+        "regiao": regiao,
+        "tipo": tipo,
         "total_colaboradores_filtrados": total_colaboradores_filtrados,
         "total_convidados_filtrados": total_convidados_filtrados,
         "total_colaboradores_pagina": total_colaboradores_pagina,

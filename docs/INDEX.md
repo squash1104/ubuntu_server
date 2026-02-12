@@ -199,7 +199,7 @@ docs/
 - **Versão**: 1.0.0
 - **Status**: Em Produção
 - **Última Atualização**: Dezembro 2024
-- **Ambiente**: sistema.fidelizamax.app.br
+- **Ambiente**: fidelizamax.app.br
 
 ---
 

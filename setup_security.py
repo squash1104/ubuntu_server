@@ -114,7 +114,7 @@ def create_env_template():
 # ===========================================
 SECRET_KEY=SUA_SECRET_KEY_AQUI
 DEBUG=False
-ALLOWED_HOSTS=sistema.fidelizamax.app.br,www.sistema.fidelizamax.app.br,localhost,127.0.0.1
+ALLOWED_HOSTS=fidelizamax.app.br,www.fidelizamax.app.br,localhost,127.0.0.1
 
 # ===========================================
 # BANCO DE DADOS
