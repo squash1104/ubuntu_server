@@ -58,6 +58,18 @@ Bairro
 
 </th>
 
+<th scope="col" style="width: 10%;">
+
+<a href="?ordenar_por=tipo&direcao={% if ordenar_por == 'tipo' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if termo_busca %}&q={{ termo_busca }}{% endif %}{% if per_page != 20 %}&per_page={{ per_page }}{% endif %}{% if grupo and grupo != 'todos' %}&grupo={{ grupo }}{% endif %}&is_ajax=true">
+
+Tipo
+
+{% if ordenar_por == 'tipo' %}<span class="sort-arrow">{% if direcao == 'asc' %}&#9650;{% else %}&#9660;{% endif %}</span>{% endif %}
+
+</a>
+
+</th>
+
 <th scope="col" class="text-center" style="width: 10%;">
 
 <a href="?ordenar_por=num_convidados&direcao={% if ordenar_por == 'num_convidados' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if termo_busca %}&q={{ termo_busca }}{% endif %}{% if per_page != 20 %}&per_page={{ per_page }}{% endif %}&is_ajax=true">
@@ -112,6 +124,20 @@ table-primary
 
 <td style="width: 15%;">{{ colaborador.bairro.nome_bairro|default:"-" }}</td>
 
+<td style="width: 10%;">
+
+{% if colaborador.tipo == 'acs_ace' %}
+
+<span class="badge bg-info">ACS/ACE</span>
+
+{% else %}
+
+<span class="badge bg-secondary">Colaborador</span>
+
+{% endif %}
+
+</td>
+
 <td class="text-center fw-bold" style="width: 10%;">{{ num_convidados}}</td>
 
 <td class="coluna-acoes" style="width: 15%;">
@@ -158,7 +184,7 @@ table-primary
 
 <tr>
 
-<td colspan="7">
+<td colspan="8">
 
 <div class="alert alert-warning text-center mt-4" role="alert">
 
