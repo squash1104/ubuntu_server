@@ -24,6 +24,11 @@
 
 /* Esconder campo de tipo outro inicialmente */
 #tipo-outro-container { display: none; }
+
+/* Estilo para criar novo bairro */
+#novo-bairro-container { display: none; margin-top: 10px; }
+#novo-bairro-aviso { display: none; margin-top: 5px; }
+#btn-criar-bairro { margin-top: 5px; font-size: 0.875rem; }
 </style>
 <div class="row justify-content-center">
     <div class="col-md-8">
@@ -49,6 +54,25 @@
                                  {{ field }}
                              {% elif field.id_for_label == 'id_tipo_outro' %}
                                  <div id="tipo-outro-container">
+                                     {{ field.label_tag }}
+                                     {{ field }}
+                                 </div>
+                             {% elif field.id_for_label == 'id_bairro' %}
+                                 {{ field.label_tag }}
+                                 {{ field }}
+                                 <button type="button" class="btn btn-link btn-sm p-0" id="btn-criar-bairro">
+                                     <i class="bi bi-plus-circle"></i> Criar novo bairro
+                                 </button>
+                                 <div id="novo-bairro-container">
+                                     <div class="input-group">
+                                         <input type="text" id="id_novo_bairro_input" class="form-control" placeholder="Digite o nome do novo bairro">
+                                         <button type="button" class="btn btn-primary" id="btn-salvar-bairro">Salvar</button>
+                                         <button type="button" class="btn btn-secondary" id="btn-cancelar-bairro">Cancelar</button>
+                                     </div>
+                                     <div id="novo-bairro-aviso" class="alert"></div>
+                                 </div>
+                             {% elif field.id_for_label == 'id_novo_bairro' %}
+                                 <div id="novo-bairro-container">
                                      {{ field.label_tag }}
                                      {{ field }}
                                  </div>
@@ -123,6 +147,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const tipoOutroContainer = $('#tipo-outro-container');
     const tipoOutroInput = $('#id_tipo_outro');
 
+    // Campos de bairro
+    const cidadeSelect = $('#id_cidade');
+    const bairroSelect = $('#id_bairro');
+    const btnCriarBairro = $('#btn-criar-bairro');
+    const novoBairroContainer = $('#novo-bairro-container');
+    const novoBairroInput = $('#id_novo_bairro_input');
+    const btnSalvarBairro = $('#btn-salvar-bairro');
+    const btnCancelarBairro = $('#btn-cancelar-bairro');
+    const novoBairroAviso = $('#novo-bairro-aviso');
+
     let typingTimer;
     const doneTypingInterval = 500; // Tempo em ms para esperar depois de parar de digitar
 
@@ -159,6 +193,105 @@ document.addEventListener('DOMContentLoaded', function() {
     // Listener para mudança no select de tipo
     tipoSelect.on('change', verificarTipoOutro);
 
+
+    // =========================================================================
+    // LÓGICA DE CRIAR NOVO BAIRRO
+    // =========================================================================
+    btnCriarBairro.on('click', function() {
+        const cidadeId = cidadeSelect.val();
+        if (!cidadeId) {
+            novoBairroAviso.removeClass('alert-success alert-danger').addClass('alert-danger');
+            novoBairroAviso.text('Selecione uma cidade primeiro.');
+            novoBairroAviso.show();
+            return;
+        }
+        novoBairroContainer.show();
+        novoBairroInput.focus();
+        novoBairroAviso.hide();
+    });
+
+    btnCancelarBairro.on('click', function() {
+        novoBairroContainer.hide();
+        novoBairroInput.val('');
+        novoBairroAviso.hide();
+    });
+
+    btnSalvarBairro.on('click', function() {
+        const nomeBairro = novoBairroInput.val().trim();
+        const cidadeId = cidadeSelect.val();
+
+        if (!nomeBairro) {
+            novoBairroAviso.removeClass('alert-success alert-danger').addClass('alert-danger');
+            novoBairroAviso.text('Digite o nome do bairro.');
+            novoBairroAviso.show();
+            return;
+        }
+
+        if (!cidadeId) {
+            novoBairroAviso.removeClass('alert-success alert-danger').addClass('alert-danger');
+            novoBairroAviso.text('Selecione uma cidade.');
+            novoBairroAviso.show();
+            return;
+        }
+
+        // Desabilitar botão durante a requisição
+        btnSalvarBairro.prop('disabled', true).text('Salvando...');
+
+        fetch('{% url 'geografia:criar_bairro' %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                nome_bairro: nomeBairro,
+                cidade_id: cidadeId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Bairro criado com sucesso
+                const novoOption = new Option(data.bairro.nome, data.bairro.id, true, true);
+                bairroSelect.append(novoOption);
+                bairroSelect.val(data.bairro.id).trigger('change');
+
+                // Limpar e fechar
+                novoBairroInput.val('');
+                novoBairroContainer.hide();
+                novoBairroAviso.hide();
+
+                // Mostrar mensagem de sucesso temporária
+                novoBairroAviso.removeClass('alert-success alert-danger').addClass('alert-success');
+                novoBairroAviso.text('Bairro criado com sucesso!');
+                novoBairroAviso.show();
+                setTimeout(() => novoBairroAviso.hide(), 3000);
+            } else {
+                // Erro ao criar bairro
+                novoBairroAviso.removeClass('alert-success alert-danger').addClass('alert-danger');
+                novoBairroAviso.text(data.error || 'Erro ao criar bairro.');
+                novoBairroAviso.show();
+
+                // Se o bairro já existe, oferecemos para selecioná-lo
+                if (data.bairro_id) {
+                    const existingOption = new Option(data.nome_existente, data.bairro_id, true, true);
+                    bairroSelect.append(existingOption);
+                    bairroSelect.val(data.bairro_id).trigger('change');
+                    novoBairroInput.val('');
+                    novoBairroContainer.hide();
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao criar bairro:', error);
+            novoBairroAviso.removeClass('alert-success alert-danger').addClass('alert-danger');
+            novoBairroAviso.text('Erro ao criar bairro. Tente novamente.');
+            novoBairroAviso.show();
+        })
+        .finally(() => {
+            btnSalvarBairro.prop('disabled', false).text('Salvar');
+        });
+    });
 
     // =========================================================================
     // INICIALIZAÇÃO DE MÁSCARAS E SELECT2
@@ -286,9 +419,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // =========================================================================
     // LÓGICA EXISTENTE DO DROPDOWN DINÂMICO
     // =========================================================================
-    const cidadeSelect = $('#id_cidade');
-    const bairroSelect = $('#id_bairro');
-
     cidadeSelect.on('change', function() {
         const cidadeId = this.value;
         bairroSelect.empty().append('<option value="">Carregando...</option>').trigger('change');
@@ -318,6 +448,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Inicializa a verificação do nome no carregamento da página (útil na edição)
     checkNome();
+
+    // Função utilitária para obter o CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
 });
 </script>
 {% endblock %}

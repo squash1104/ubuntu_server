@@ -77,6 +77,15 @@ class RelatorioColaboradoresForm(forms.Form):
 
 
 class ColaboradorForm(forms.ModelForm):
+    novo_bairro = forms.CharField(
+        required=False,
+        label="Novo Bairro:",
+        widget=forms.TextInput(attrs={
+            "class": "form-control",
+            "placeholder": "Digite o nome do novo bairro"
+        })
+    )
+
     data_nascimento = forms.DateField(
         required=False,
         input_formats=["%d/%m/%Y"],
@@ -106,6 +115,7 @@ class ColaboradorForm(forms.ModelForm):
             "cidade",
             "bairro",
             "tipo",
+            "novo_bairro",
         ]
         labels: ClassVar = {
             "nome": "Nome:",
@@ -120,6 +130,9 @@ class ColaboradorForm(forms.ModelForm):
         cleaned_data = super().clean()
         nome = cleaned_data.get("nome")
         telefone = cleaned_data.get("telefone")
+        cidade = cleaned_data.get("cidade")
+        bairro = cleaned_data.get("bairro")
+        novo_bairro = cleaned_data.get("novo_bairro", "").strip()
 
         # 1. VALIDAÇÃO DE NOME ÚNICO (Erro - barra o formulário)
         if nome and (
@@ -137,6 +150,31 @@ class ColaboradorForm(forms.ModelForm):
         ):
             self.has_phone_warning = True
 
+        # 3. LÓGICA DE CRIAÇÃO DE NOVO BAIRRO
+        if novo_bairro:
+            if not cidade:
+                self.add_error("novo_bairro", "Selecione uma cidade antes de criar um novo bairro.")
+            else:
+                # Verificar se já existe bairro com o mesmo nome na cidade
+                existing_bairro = Bairro.objects.filter(
+                    nome_bairro__iexact=novo_bairro, cidade=cidade
+                ).first()
+                if existing_bairro:
+                    # Se já existe, usa o bairro existente
+                    cleaned_data["bairro"] = existing_bairro
+                    cleaned_data["novo_bairro"] = ""
+                else:
+                    # Criar o novo bairro
+                    novo_bairro_obj = Bairro.objects.create(
+                        nome_bairro=novo_bairro,
+                        cidade=cidade
+                    )
+                    cleaned_data["bairro"] = novo_bairro_obj
+                    cleaned_data["novo_bairro"] = ""
+        elif not bairro and cidade:
+            # Se não selecionou bairro e não criou um novo, mostrar erro
+            self.add_error("bairro", "Selecione um bairro ou crie um novo.")
+
         return cleaned_data
 
     def __init__(self, *args, **kwargs):
@@ -145,6 +183,7 @@ class ColaboradorForm(forms.ModelForm):
         self.fields["nome"].widget.attrs.update({"class": "form-control"})
         self.fields["telefone"].widget.attrs.update({"class": "form-control"})
         self.fields["data_nascimento"].widget.attrs.update({"class": "form-control"})
+        self.fields["novo_bairro"].widget.attrs.update({"class": "form-control"})
 
         self.fields["cidade"].empty_label = "Selecione uma cidade"
         self.fields["bairro"].empty_label = "Primeiro escolha uma cidade"

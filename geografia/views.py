@@ -1,7 +1,9 @@
+from django.db import transaction
 from django.db.models import F
 from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
 
-from .models import Bairro
+from .models import Bairro, Cidade
 
 
 def get_bairros(request):
@@ -17,3 +19,47 @@ def get_bairros(request):
 
     # 3. Retorna apenas a lista já filtrada em formato JSON
     return JsonResponse(data, safe=False)
+
+
+@require_http_methods(["POST"])
+def criar_bairro(request):
+    """Endpoint AJAX para criar um novo bairro."""
+    import json
+    try:
+        data = json.loads(request.body)
+        nome_bairro = data.get('nome_bairro', '').strip()
+        cidade_id = data.get('cidade_id')
+
+        if not nome_bairro:
+            return JsonResponse({'success': False, 'error': 'Nome do bairro é obrigatório'}, status=400)
+
+        if not cidade_id:
+            return JsonResponse({'success': False, 'error': 'Cidade é obrigatória'}, status=400)
+
+        # Verificar se já existe um bairro com o mesmo nome na mesma cidade
+        existing = Bairro.objects.filter(nome_bairro__iexact=nome_bairro, cidade_id=cidade_id).first()
+        if existing:
+            return JsonResponse({
+                'success': False, 
+                'error': 'Este bairro já existe nesta cidade',
+                'bairro_id': existing.id
+            }, status=400)
+
+        # Criar o novo bairro
+        bairro = Bairro.objects.create(
+            nome_bairro=nome_bairro,
+            cidade_id=cidade_id
+        )
+
+        return JsonResponse({
+            'success': True,
+            'bairro': {
+                'id': bairro.id,
+                'nome': bairro.nome_bairro
+            }
+        })
+
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Dados inválidos'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)

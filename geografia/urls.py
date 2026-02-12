@@ -7,4 +7,5 @@ app_name = "geografia"
 urlpatterns = [
     # A URL que nosso JavaScript está procurando
     path("get-bairros/", views.get_bairros, name="get_bairros"),
+    path("criar-bairro/", views.criar_bairro, name="criar_bairro"),
 ]

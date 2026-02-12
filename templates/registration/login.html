@@ -182,16 +182,20 @@
     </style>
 
     <script>
-        // Script para definir o tema inicial, deve ser executado antes do DOMContentLoaded
-        (function() {
-            const theme = localStorage.getItem('theme') || 'light';
-            document.documentElement.setAttribute('data-bs-theme', theme);
-            document.body.classList.add(theme + '-theme');
-        })();
     </script>
 
 </head>
 <body class="light-theme"> {# Adicione a classe para o tema padrão #}
+    <script>
+        // Script para definir o tema inicial após o body existir
+        (function() {
+            const theme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-bs-theme', theme);
+            if (document.body) {
+                document.body.classList.add(theme + '-theme');
+            }
+        })();
+    </script>
 
     <nav class="navbar navbar-dark bg-dark shadow-sm fixed-top">
         <div class="container">
