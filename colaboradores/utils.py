@@ -6,7 +6,8 @@ from django.utils import timezone
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font
 
-# from xhtml2pdf import pisa  # Temporariamente comentado devido a incompatibilidade com Python 3.12
+# from xhtml2pdf import pisa  # Temporariamente comentado
+# devido a incompatibilidade com Python 3.12
 
 
 def exportar_colaboradores_excel(colaborador_queryset, selected_columns):
@@ -89,12 +90,33 @@ def exportar_colaboradores_pdf(colaborador_queryset, selected_columns):
     # return response
 
 
-def imprimir_relatorio_colaboradores(colaborador_queryset, selected_columns):
+def imprimir_relatorio_colaboradores(
+    colaborador_queryset, selected_columns, filter_obj=None
+):
     template_path = "relatorios/relatorios_colaboradores_pdf.html"
+
+    # Gerar lista de filtros aplicados
+    filtros_aplicados = []
+    if filter_obj:
+        for field_name, filter_field in filter_obj.filters.items():
+            value = getattr(filter_obj.form, field_name, None)
+            if value and value.value():
+                display_value = value.value()
+                if hasattr(filter_field, "label"):
+                    label = filter_field.label
+                else:
+                    label = (
+                        filter_obj.filters[field_name].field.label
+                        if hasattr(filter_obj.filters[field_name], "field")
+                        else field_name
+                    )
+                filtros_aplicados.append(f"{label}: {display_value}")
+
     context = {
         "colaboradores": colaborador_queryset,
         "selected_columns": selected_columns,
         "data_geracao": timezone.now(),
+        "filtros_aplicados": filtros_aplicados,
     }
     template = get_template(template_path)
     html = template.render(context)

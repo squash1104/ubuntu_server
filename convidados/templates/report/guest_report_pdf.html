@@ -40,8 +40,15 @@
         }
         
         .report-info {
-            margin-bottom: 8px;
+            margin-bottom: 5px;
             font-size: 10px;
+        }
+        
+        .filtros-info {
+            margin-bottom: 8px;
+            font-size: 9px;
+            color: #666;
+            font-style: italic;
         }
         
         .report-info strong {
@@ -118,8 +125,14 @@
 
     <div class="report-info">
         <strong>Total:</strong> {{ convidados|length }} convidado{{ convidados|length|pluralize:"s" }}
-        {% if data_geracao %} | Gerado em {{ data_geracao|date:"d/m/Y H:i" }}{% endif %}
+        {% if data_geracao %} | {{ data_geracao|date:"d/m/Y H:i" }}{% endif %}
     </div>
+    
+    {% if filtros_aplicados %}
+    <div class="filtros-info">
+        <strong>Filtros:</strong> {{ filtros_aplicados|join:", " }}
+    </div>
+    {% endif %}
 
     {% if convidados %}
         <div class="table-container">

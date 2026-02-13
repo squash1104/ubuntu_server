@@ -40,8 +40,15 @@
         }
         
         .report-info {
-            margin-bottom: 8px;
+            margin-bottom: 5px;
             font-size: 10px;
+        }
+        
+        .filtros-info {
+            margin-bottom: 8px;
+            font-size: 9px;
+            color: #666;
+            font-style: italic;
         }
         
         .report-info strong {
@@ -141,8 +148,14 @@
 
     <div class="report-info">
         <strong>Total:</strong> {{ colaboradores|length }} colaborador{{ colaboradores|length|pluralize:"es" }}
-        {% if data_geracao %} | Gerado em {{ data_geracao|date:"d/m/Y H:i" }}{% endif %}
+        {% if data_geracao %} | {{ data_geracao|date:"d/m/Y H:i" }}{% endif %}
     </div>
+    
+    {% if filtros_aplicados %}
+    <div class="filtros-info">
+        <strong>Filtros:</strong> {{ filtros_aplicados|join:", " }}
+    </div>
+    {% endif %}
 
     {% if colaboradores %}
         <div class="table-container">
@@ -158,6 +171,7 @@
                                 {% if column == 'bairro' %}Bairro{% endif %}
                                 {% if column == 'total_convidados' %}Convidados{% endif %}
                                 {% if column == 'data_cadastro' %}Data Cadastro{% endif %}
+                                {% if column == 'tipo' %}Tipo{% endif %}
                             </th>
                         {% endfor %}
                         <th style="width: 80px;">Status</th>
@@ -175,6 +189,9 @@
                                     {% if column == 'bairro' %}{{ colaborador.bairro|default:"-" }}{% endif %}
                                     {% if column == 'total_convidados' %}{{ colaborador.total_convidados }}{% endif %}
                                     {% if column == 'data_cadastro' %}{{ colaborador.data_cadastro|date:"d/m/Y H:i" }}{% endif %}
+                                    {% if column == 'tipo' %}
+                                        {% if colaborador.tipo == 'colaborador' %}Colaborador{% elif colaborador.tipo == 'acs_ace' %}ACS/ACE{% else %}{{ colaborador.tipo }}{% endif %}
+                                    {% endif %}
                                 </td>
                             {% endfor %}
                             <td>

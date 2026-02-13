@@ -327,7 +327,7 @@ def relatorio_convidados_view(request):
         return exportar_convidados_pdf(f.qs, selected_columns)
     if "export_print" in request.GET:
         print("Colunas para Impressão:", selected_columns)  # <-- Adicione esta linha
-        return imprimir_relatorio(f.qs, selected_columns)
+        return imprimir_relatorio(f.qs, selected_columns, f)
 
     context = {
         "filter": f,
