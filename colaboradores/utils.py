@@ -64,30 +64,44 @@ def exportar_colaboradores_excel(colaborador_queryset, selected_columns):
     return response
 
 
-def exportar_colaboradores_pdf(colaborador_queryset, selected_columns):
-    # Temporariamente desabilitado devido a incompatibilidade com Python 3.12
-    return HttpResponse("Funcionalidade PDF temporariamente indisponível", status=503)
+def exportar_colaboradores_pdf(colaborador_queryset, selected_columns, filter_obj=None):
+    """
+    Gera um arquivo HTML otimizado para impressao/salvar como PDF.
+    O usuario pode abrir no navegador e salvar como PDF.
+    """
+    template_path = "relatorios/relatorios_colaboradores_pdf.html"
 
-    # template_path = "relatorios/relatorios_colaboradores_pdf.html"
-    # context = {
-    #     "colaboradores": colaborador_queryset,
-    #     "selected_columns": selected_columns,
-    #     "data_geracao": timezone.now(),
-    # }
+    # Gerar lista de filtros aplicados
+    filtros_aplicados = []
+    if filter_obj:
+        for field_name, filter_field in filter_obj.filters.items():
+            value = getattr(filter_obj.form, field_name, None)
+            if value and value.value():
+                display_value = value.value()
+                if hasattr(filter_field, "label"):
+                    label = filter_field.label
+                else:
+                    label = (
+                        filter_obj.filters[field_name].field.label
+                        if hasattr(filter_obj.filters[field_name], "field")
+                        else field_name
+                    )
+                filtros_aplicados.append(f"{label}: {display_value}")
 
-    # template = get_template(template_path)
-    # html = template.render(context)
+    context = {
+        "colaboradores": colaborador_queryset,
+        "selected_columns": selected_columns,
+        "data_geracao": timezone.now(),
+        "filtros_aplicados": filtros_aplicados,
+    }
+    template = get_template(template_path)
+    html = template.render(context)
 
-    # response = HttpResponse(content_type="application/pdf")
-    # response["Content-Disposition"] = (
-    #     'attachment; filename="relatorio_colaboradores.pdf"'
-    # )
-
-    # pisa_status = pisa.CreatePDF(html, dest=response)
-    # if pisa_status.err:
-    #     return HttpResponse("Erro ao gerar o PDF", status=500)
-
-    # return response
+    response = HttpResponse(html, content_type="application/vnd.ms-excel")
+    response["Content-Disposition"] = (
+        'attachment; filename="relatorio_colaboradores.html"'
+    )
+    return response
 
 
 def imprimir_relatorio_colaboradores(

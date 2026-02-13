@@ -46,6 +46,27 @@
             border-bottom-right-radius: 0.375rem;
             font-weight: 500;
         }
+        
+        /* Botao PDF moderno e colorido */
+        .btn-pdf {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 50%, #a71d2a 100%);
+            color: white;
+            border: none;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-pdf:hover {
+            background: linear-gradient(135deg, #c82333 0%, #a71d2a 50%, #8b1524 100%);
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(220, 53, 69, 0.4);
+        }
+        
+        .btn-pdf:active {
+            transform: translateY(0);
+        }
     </style>
 {% endblock %}
 
@@ -218,8 +239,8 @@
                         <button type="submit" name="export_excel" class="btn btn-success">
                             <i class="bi bi-file-earmark-excel"></i>Excel
                         </button>
-                        <button type="submit" name="export_pdf" class="btn btn-danger">
-                            <i class="bi bi-file-earmark-pdf"></i>PDF
+                        <button type="submit" name="export_pdf" class="btn btn-pdf" title="Baixar para PDF">
+                            <i class="bi bi-file-earmark-pdf-fill me-1"></i>PDF
                         </button>
                         <button type="submit" name="export_print" class="btn btn-info">
                             <i class="bi bi-printer"></i>Imprimir

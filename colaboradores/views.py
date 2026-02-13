@@ -256,7 +256,7 @@ def relatorio_colaboradores_view(request):
     if "export_excel" in request.GET:
         return exportar_colaboradores_excel(f.qs, selected_columns)
     if "export_pdf" in request.GET:
-        return exportar_colaboradores_pdf(f.qs, selected_columns)
+        return exportar_colaboradores_pdf(f.qs, selected_columns, f)
     if "export_print" in request.GET:
         return imprimir_relatorio_colaboradores(f.qs, selected_columns, f)
 

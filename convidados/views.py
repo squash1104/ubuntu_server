@@ -324,7 +324,7 @@ def relatorio_convidados_view(request):
         return exportar_convidados_excel(f.qs, selected_columns)
     if "export_pdf" in request.GET:
         print("Colunas para PDF:", selected_columns)  # <-- Adicione esta linha
-        return exportar_convidados_pdf(f.qs, selected_columns)
+        return exportar_convidados_pdf(f.qs, selected_columns, f)
     if "export_print" in request.GET:
         print("Colunas para Impressão:", selected_columns)  # <-- Adicione esta linha
         return imprimir_relatorio(f.qs, selected_columns, f)
