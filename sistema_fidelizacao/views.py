@@ -459,6 +459,9 @@ def dashboard(request):
         eficiencia_media = total_convidados / colaboradores_ativos
     # --- FIM DO NOVO CÓDIGO ---
 
+    # Conta colaboradores do tipo ACS/ACE
+    total_acs_ace = Colaborador.objects.filter(tipo="acs_ace").count()
+
     # --- RANKING DE USUÁRIOS ---
     from django.contrib.auth.models import User
 
@@ -620,6 +623,7 @@ def dashboard(request):
         "data_cidades_interior_colab": json.dumps(data_cidades_interior_colab),
         # --- NOVOS KPIs ---
         "eficiencia_media": eficiencia_media,
+        "total_acs_ace": total_acs_ace,
         # --- RANKING ---
         "ranking_usuarios": ranking_usuarios,
         "top_3_usuarios": top_3_usuarios,
