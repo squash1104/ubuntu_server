@@ -123,7 +123,7 @@ def exportar_convidados_pdf(convidado_queryset, selected_columns, filter_obj=Non
     template = get_template(template_path)
     html = template.render(context)
 
-    response = HttpResponse(html, content_type="application/vnd.ms-excel")
+    response = HttpResponse(html, content_type="text/html")
     response["Content-Disposition"] = 'inline; filename="relatorio_convidados.html"'
     return response
 
