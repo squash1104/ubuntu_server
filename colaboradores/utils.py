@@ -94,12 +94,18 @@ def exportar_colaboradores_pdf(colaborador_queryset, selected_columns, filter_ob
             if hasattr(filter_obj.form, "cleaned_data")
             else None
         )
+        # ordering_value pode ser lista ou tuple, converter para string
+        if ordering_value and isinstance(ordering_value, list | tuple):
+            ordering_value = ordering_value[0] if ordering_value else None
         if not ordering_value:
             ordering_value = (
                 filter_obj.form.initial.get("ordering")
                 if hasattr(filter_obj.form, "initial")
                 else None
             )
+            # Tambem pode ser lista ou tuple
+            if ordering_value and isinstance(ordering_value, list | tuple):
+                ordering_value = ordering_value[0] if ordering_value else None
 
         if ordering_value and ordering_value in ordering_labels:
             filtros_aplicados.append(f"Ordenar por: {ordering_labels[ordering_value]}")
@@ -161,8 +167,13 @@ def imprimir_relatorio_colaboradores(
         ordering_value = None
         if hasattr(filter_obj.form, "cleaned_data"):
             ordering_value = filter_obj.form.cleaned_data.get("ordering")
+        # ordering_value pode ser lista ou tuple, converter para string
+        if ordering_value and isinstance(ordering_value, list | tuple):
+            ordering_value = ordering_value[0] if ordering_value else None
         if not ordering_value and hasattr(filter_obj.form, "initial"):
             ordering_value = filter_obj.form.initial.get("ordering")
+            if ordering_value and isinstance(ordering_value, list | tuple):
+                ordering_value = ordering_value[0] if ordering_value else None
 
         if ordering_value and ordering_value in ordering_labels:
             filtros_aplicados.append(f"Ordenar por: {ordering_labels[ordering_value]}")

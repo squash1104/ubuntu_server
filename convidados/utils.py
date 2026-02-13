@@ -91,8 +91,13 @@ def exportar_convidados_pdf(convidado_queryset, selected_columns, filter_obj=Non
         ordering_value = None
         if hasattr(filter_obj.form, "cleaned_data"):
             ordering_value = filter_obj.form.cleaned_data.get("ordering")
+        # ordering_value pode ser lista ou tuple, converter para string
+        if ordering_value and isinstance(ordering_value, list | tuple):
+            ordering_value = ordering_value[0] if ordering_value else None
         if not ordering_value and hasattr(filter_obj.form, "initial"):
             ordering_value = filter_obj.form.initial.get("ordering")
+            if ordering_value and isinstance(ordering_value, list | tuple):
+                ordering_value = ordering_value[0] if ordering_value else None
 
         if ordering_value and ordering_value in ordering_labels:
             filtros_aplicados.append(f"Ordenar por: {ordering_labels[ordering_value]}")
@@ -151,8 +156,13 @@ def imprimir_relatorio(convidado_queryset, selected_columns, filter_obj=None):
         ordering_value = None
         if hasattr(filter_obj.form, "cleaned_data"):
             ordering_value = filter_obj.form.cleaned_data.get("ordering")
+        # ordering_value pode ser lista ou tuple, converter para string
+        if ordering_value and isinstance(ordering_value, list | tuple):
+            ordering_value = ordering_value[0] if ordering_value else None
         if not ordering_value and hasattr(filter_obj.form, "initial"):
             ordering_value = filter_obj.form.initial.get("ordering")
+            if ordering_value and isinstance(ordering_value, list | tuple):
+                ordering_value = ordering_value[0] if ordering_value else None
 
         if ordering_value and ordering_value in ordering_labels:
             filtros_aplicados.append(f"Ordenar por: {ordering_labels[ordering_value]}")
