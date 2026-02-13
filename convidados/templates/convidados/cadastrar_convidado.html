@@ -99,12 +99,19 @@
                     {% endfor %}
 
                     <div class="mt-4 border-top pt-3">
-                        <button type="submit" class="btn btn-success" id="btn-salvar">Salvar</button>
-                        {% if colaborador_id %}
-                            <a href="{% url 'convidados:colaborador_convidados' colaborador_id %}" class="btn btn-secondary">Cancelar</a>
-                        {% else %}
-                            <a href="{% url 'convidados:lista_convidados' %}" class="btn btn-secondary">Cancelar</a>
-                        {% endif %}
+                        <div class="d-flex gap-2">
+                            <button type="submit" name="salvar_e_adicionar" class="btn btn-primary" id="btn-salvar-adicionar">
+                                <i class="bi bi-plus-circle me-1"></i>Salvar e Adicionar
+                            </button>
+                            <button type="submit" name="salvar_e_fechar" class="btn btn-success" id="btn-salvar-fechar">
+                                <i class="bi bi-check-circle me-1"></i>Salvar e Fechar
+                            </button>
+                            {% if colaborador_id %}
+                                <a href="{% url 'convidados:colaborador_convidados' colaborador_id %}" class="btn btn-secondary">Cancelar</a>
+                            {% else %}
+                                <a href="{% url 'convidados:lista_convidados' %}" class="btn btn-secondary">Cancelar</a>
+                            {% endif %}
+                        </div>
                     </div>
                 </form>
             </div>

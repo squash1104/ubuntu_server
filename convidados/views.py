@@ -177,6 +177,33 @@ def cadastrar_convidado(request, colaborador_id=None):
                         request, f'Convidado "{convidado_nome}" salvo com sucesso!'
                     )
 
+                # Verificar qual botão foi clicado
+                if "salvar_e_adicionar" in request.POST:
+                    # Manter na mesma página com formulário limpo
+                    if colaborador:
+                        form = ConvidadoForm(initial={"colaborador": colaborador})
+                    else:
+                        form = ConvidadoForm()
+                    messages.info(
+                        request,
+                        "Convidado salvo! Preencha os dados do próximo convidado.",
+                    )
+                    context = {
+                        "form": form,
+                        "colaborador": colaborador,
+                        "colaborador_id": colaborador_id,
+                    }
+                    return render(
+                        request, "convidados/cadastrar_convidado.html", context
+                    )
+                if "salvar_e_fechar" in request.POST:
+                    # Redirecionar para a página do colaborador
+                    if colaborador:
+                        return redirect(
+                            "convidados:colaborador_convidados", pk=colaborador_id
+                        )
+                    return redirect("convidados:lista_convidados")
+                # Comportamento padrão (redirecionar)
                 if colaborador:
                     return redirect(
                         "convidados:colaborador_convidados", pk=colaborador_id
@@ -198,6 +225,7 @@ def cadastrar_convidado(request, colaborador_id=None):
     context = {
         "form": form,
         "colaborador": colaborador,
+        "colaborador_id": colaborador_id,
     }
     return render(request, "convidados/cadastrar_convidado.html", context)
 
