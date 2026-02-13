@@ -98,9 +98,7 @@ def exportar_colaboradores_pdf(colaborador_queryset, selected_columns, filter_ob
     html = template.render(context)
 
     response = HttpResponse(html, content_type="application/vnd.ms-excel")
-    response["Content-Disposition"] = (
-        'attachment; filename="relatorio_colaboradores.html"'
-    )
+    response["Content-Disposition"] = 'inline; filename="relatorio_colaboradores.html"'
     return response
 
 
