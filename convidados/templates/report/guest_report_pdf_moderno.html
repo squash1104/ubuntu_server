@@ -211,33 +211,41 @@
                     <thead>
                         <tr>
                             <th class="序号">#</th>
-                            <th>👤 Nome</th>
-                            <th>📞 Telefone</th>
-                            <th>🏙️ Cidade</th>
-                            <th>📍 Bairro</th>
-                            <th>🤝 Convidado por</th>
-                            <th>📅 Data Cadastro</th>
+                            {% for column in selected_columns %}
+                                <th>
+                                    {% if column == 'nome' %}👤 Nome{% endif %}
+                                    {% if column == 'telefone' %}📞 Telefone{% endif %}
+                                    {% if column == 'cidade' %}🏙️ Cidade{% endif %}
+                                    {% if column == 'bairro' %}📍 Bairro{% endif %}
+                                    {% if column == 'convidado_por' %}🤝 Convidado por{% endif %}
+                                    {% if column == 'data_cadastro' %}📅 Data Cadastro{% endif %}
+                                </th>
+                            {% endfor %}
                         </tr>
                     </thead>
                     <tbody>
                         {% for convidado in convidados %}
                             <tr>
                                 <td class="序号">{{ forloop.counter }}</td>
-                                <td><strong>{{ convidado.nome }}</strong></td>
-                                <td>{{ convidado.telefone|default:"-" }}</td>
-                                <td>{{ convidado.cidade|default:"-" }}</td>
-                                <td>{{ convidado.bairro|default:"-" }}</td>
-                                <td>
-                                    {% if convidado.colaborador %}
-                                        {{ convidado.colaborador.nome }}
-                                        <span class="colaborador-badge {% if convidado.colaborador.tipo == 'acs_ace' %}badge-acs{% else %}badge-colaborador{% endif %}">
-                                            {% if convidado.colaborador.tipo == 'acs_ace' %}ACS/ACE{% else %}Colaborador{% endif %}
-                                        </span>
-                                    {% else %}
-                                        -
-                                    {% endif %}
-                                </td>
-                                <td>{{ convidado.data_cadastro|date:"d/m/Y H:i" }}</td>
+                                {% for column in selected_columns %}
+                                    <td>
+                                        {% if column == 'nome' %}<strong>{{ convidado.nome }}</strong>{% endif %}
+                                        {% if column == 'telefone' %}{{ convidado.telefone|default:"-" }}{% endif %}
+                                        {% if column == 'cidade' %}{{ convidado.cidade|default:"-" }}{% endif %}
+                                        {% if column == 'bairro' %}{{ convidado.bairro|default:"-" }}{% endif %}
+                                        {% if column == 'convidado_por' %}
+                                            {% if convidado.colaborador %}
+                                                {{ convidado.colaborador.nome }}
+                                                <span class="colaborador-badge {% if convidado.colaborador.tipo == 'acs_ace' %}badge-acs{% else %}badge-colaborador{% endif %}">
+                                                    {% if convidado.colaborador.tipo == 'acs_ace' %}ACS/ACE{% else %}Colaborador{% endif %}
+                                                </span>
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        {% endif %}
+                                        {% if column == 'data_cadastro' %}{{ convidado.data_cadastro|date:"d/m/Y H:i" }}{% endif %}
+                                    </td>
+                                {% endfor %}
                             </tr>
                         {% endfor %}
                     </tbody>

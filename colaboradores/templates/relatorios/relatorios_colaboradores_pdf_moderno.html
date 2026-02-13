@@ -234,13 +234,17 @@
                     <thead>
                         <tr>
                             <th class="序号">#</th>
-                            <th>👤 Nome</th>
-                            <th>📞 Telefone</th>
-                            <th>🏙️ Cidade</th>
-                            <th>📍 Bairro</th>
-                            <th>🏷️ Tipo</th>
-                            <th>👥 Convidados</th>
-                            <th>📅 Data Cadastro</th>
+                            {% for column in selected_columns %}
+                                <th>
+                                    {% if column == 'nome' %}👤 Nome{% endif %}
+                                    {% if column == 'telefone' %}📞 Telefone{% endif %}
+                                    {% if column == 'cidade' %}🏙️ Cidade{% endif %}
+                                    {% if column == 'bairro' %}📍 Bairro{% endif %}
+                                    {% if column == 'total_convidados' %}👥 Convidados{% endif %}
+                                    {% if column == 'data_cadastro' %}📅 Data Cadastro{% endif %}
+                                    {% if column == 'tipo' %}🏷️ Tipo{% endif %}
+                                </th>
+                            {% endfor %}
                             <th>🎯 Meta</th>
                         </tr>
                     </thead>
@@ -248,17 +252,21 @@
                         {% for colaborador in colaboradores %}
                             <tr>
                                 <td class="序号">{{ forloop.counter }}</td>
-                                <td><strong>{{ colaborador.nome }}</strong></td>
-                                <td>{{ colaborador.telefone|default:"-" }}</td>
-                                <td>{{ colaborador.cidade|default:"-" }}</td>
-                                <td>{{ colaborador.bairro|default:"-" }}</td>
-                                <td>
-                                    <span class="tipo-badge {% if colaborador.tipo == 'acs_ace' %}badge-acs{% else %}badge-colaborador{% endif %}">
-                                        {% if colaborador.tipo == 'acs_ace' %}ACS/ACE{% else %}Colaborador{% endif %}
-                                    </span>
-                                </td>
-                                <td><strong>{{ colaborador.total_convidados }}</strong></td>
-                                <td>{{ colaborador.data_cadastro|date:"d/m/Y H:i" }}</td>
+                                {% for column in selected_columns %}
+                                    <td>
+                                        {% if column == 'nome' %}<strong>{{ colaborador.nome }}</strong>{% endif %}
+                                        {% if column == 'telefone' %}{{ colaborador.telefone|default:"-" }}{% endif %}
+                                        {% if column == 'cidade' %}{{ colaborador.cidade|default:"-" }}{% endif %}
+                                        {% if column == 'bairro' %}{{ colaborador.bairro|default:"-" }}{% endif %}
+                                        {% if column == 'total_convidados' %}<strong>{{ colaborador.total_convidados }}</strong>{% endif %}
+                                        {% if column == 'data_cadastro' %}{{ colaborador.data_cadastro|date:"d/m/Y H:i" }}{% endif %}
+                                        {% if column == 'tipo' %}
+                                            <span class="tipo-badge {% if colaborador.tipo == 'acs_ace' %}badge-acs{% else %}badge-colaborador{% endif %}">
+                                                {% if colaborador.tipo == 'acs_ace' %}ACS/ACE{% else %}Colaborador{% endif %}
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                {% endfor %}
                                 <td>
                                     {% if colaborador.total_convidados < 20 %}
                                         <span class="status-badge status-pendente">Pendente</span>
