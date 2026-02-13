@@ -71,10 +71,43 @@ def exportar_colaboradores_pdf(colaborador_queryset, selected_columns, filter_ob
     """
     template_path = "relatorios/relatorios_colaboradores_pdf_moderno.html"
 
+    # Mapeamento de valores de ordenacao para labels legiveis
+    ordering_labels = {
+        "nome": "Nome (A-Z)",
+        "-nome": "Nome (Z-A)",
+        "cidade__nome_cidade": "Cidade (A-Z)",
+        "-cidade__nome_cidade": "Cidade (Z-A)",
+        "bairro__nome_bairro": "Bairro (A-Z)",
+        "-bairro__nome_bairro": "Bairro (Z-A)",
+        "total_convidados": "Convidados (Menor para Maior)",
+        "-total_convidados": "Convidados (Maior para Menor)",
+        "data_cadastro": "Data (Mais antiga)",
+        "-data_cadastro": "Data (Mais recente)",
+    }
+
     # Gerar lista de filtros aplicados
     filtros_aplicados = []
     if filter_obj:
+        # Primeiro, verificar o campo de ordenacao
+        ordering_value = (
+            filter_obj.form.cleaned_data.get("ordering")
+            if hasattr(filter_obj.form, "cleaned_data")
+            else None
+        )
+        if not ordering_value:
+            ordering_value = (
+                filter_obj.form.initial.get("ordering")
+                if hasattr(filter_obj.form, "initial")
+                else None
+            )
+
+        if ordering_value and ordering_value in ordering_labels:
+            filtros_aplicados.append(f"Ordenar por: {ordering_labels[ordering_value]}")
+
+        # Depois, verificar os outros filtros
         for field_name, filter_field in filter_obj.filters.items():
+            if field_name == "ordering":
+                continue  # Ja tratado acima
             value = getattr(filter_obj.form, field_name, None)
             if value and value.value():
                 display_value = value.value()
@@ -107,10 +140,37 @@ def imprimir_relatorio_colaboradores(
 ):
     template_path = "relatorios/relatorios_colaboradores_pdf.html"
 
+    # Mapeamento de valores de ordenacao para labels legiveis
+    ordering_labels = {
+        "nome": "Nome (A-Z)",
+        "-nome": "Nome (Z-A)",
+        "cidade__nome_cidade": "Cidade (A-Z)",
+        "-cidade__nome_cidade": "Cidade (Z-A)",
+        "bairro__nome_bairro": "Bairro (A-Z)",
+        "-bairro__nome_bairro": "Bairro (Z-A)",
+        "total_convidados": "Convidados (Menor para Maior)",
+        "-total_convidados": "Convidados (Maior para Menor)",
+        "data_cadastro": "Data (Mais antiga)",
+        "-data_cadastro": "Data (Mais recente)",
+    }
+
     # Gerar lista de filtros aplicados
     filtros_aplicados = []
     if filter_obj:
+        # Primeiro, verificar o campo de ordenacao
+        ordering_value = None
+        if hasattr(filter_obj.form, "cleaned_data"):
+            ordering_value = filter_obj.form.cleaned_data.get("ordering")
+        if not ordering_value and hasattr(filter_obj.form, "initial"):
+            ordering_value = filter_obj.form.initial.get("ordering")
+
+        if ordering_value and ordering_value in ordering_labels:
+            filtros_aplicados.append(f"Ordenar por: {ordering_labels[ordering_value]}")
+
+        # Depois, verificar os outros filtros
         for field_name, filter_field in filter_obj.filters.items():
+            if field_name == "ordering":
+                continue
             value = getattr(filter_obj.form, field_name, None)
             if value and value.value():
                 display_value = value.value()
