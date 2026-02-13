@@ -72,60 +72,83 @@
             <div class="filter-section">
                 <h6><i class="bi bi-search me-2"></i>Filtros Básicos</h6>
                 <div class="row g-3 align-items-end">
-                    <div class="col-lg-4 col-md-6">
+                    <div class="col-lg-3 col-md-6">
                         <label for="id_nome" class="form-label">
                             <i class="bi bi-person-badge-fill me-1"></i>Nome do Colaborador
                         </label>
-                        {{ filter.form.nome }}
+                        <input type="text" name="nome" id="id_nome" class="form-control" placeholder="Buscar por nome...">
                     </div>
-                    <div class="col-lg-4 col-md-6">
+                    <div class="col-lg-3 col-md-6">
                         <label for="id_cidade" class="form-label">
                             <i class="bi bi-geo-alt-fill me-1"></i>Cidade
                         </label>
-                        {% with filter.form.cidade as cidade_field %}
-                            <select name="{{ cidade_field.name }}" id="id_cidade" class="form-control" data-ajax-url="{% url 'colaboradores:get_bairros_ajax' %}">
-                                {% for choice in cidade_field.field.choices %}
-                                    <option value="{{ choice.0 }}" {% if choice.0 == cidade_field.value %}selected{% endif %}>{{ choice.1 }}</option>
-                                {% endfor %}
-                            </select>
-                        {% endwith %}
+                        <select name="cidade" id="id_cidade" class="form-select" data-ajax-url="{% url 'colaboradores:get_bairros_ajax' %}">
+                            <option value="">---------</option>
+                            {% for choice in filter.form.cidade.field.choices %}
+                                <option value="{{ choice.0 }}" {% if choice.0 == filter.form.cidade.value %}selected{% endif %}>{{ choice.1 }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
-                    <div class="col-lg-4 col-md-6">
+                    <div class="col-lg-3 col-md-6">
                         <label for="id_bairro" class="form-label">
                             <i class="bi bi-pin-map-fill me-1"></i>Bairro
                         </label>
-                        {{ filter.form.bairro }}
+                        <select name="bairro" id="id_bairro" class="form-select">
+                            <option value="">---------</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <label for="id_tipo" class="form-label">
+                            <i class="bi bi-person-badge me-1"></i>Tipo de Colaborador
+                        </label>
+                        <select name="tipo" id="id_tipo" class="form-select">
+                            <option value="">Todos os Tipos</option>
+                            <option value="colaborador" {% if request.GET.tipo == 'colaborador' %}selected{% endif %}>Colaborador</option>
+                            <option value="acs_ace" {% if request.GET.tipo == 'acs_ace' %}selected{% endif %}>ACS/ACE</option>
+                        </select>
                     </div>
                 </div>
             </div>
 
             <!-- Filtros de Data e Performance -->
-            <div class="filter-section">
+            <div class="filter-section mt-3">
                 <h6><i class="bi bi-calendar-event me-2"></i>Período e Performance</h6>
                 <div class="row g-3 align-items-end">
                     <div class="col-lg-3 col-md-6">
                         <label for="id_data_inicio" class="form-label">
                             <i class="bi bi-calendar-plus me-1"></i>Data Início
                         </label>
-                        {{ filter.form.data_cadastro__gte }}
+                        <input type="date" name="data_cadastro__gte" id="id_data_cadastro__gte" class="form-control">
                     </div>
                     <div class="col-lg-3 col-md-6">
                         <label for="id_data_fim" class="form-label">
                             <i class="bi bi-calendar-minus me-1"></i>Data Fim
                         </label>
-                        {{ filter.form.data_cadastro__lte }}
+                        <input type="date" name="data_cadastro__lte" id="id_data_cadastro__lte" class="form-control">
                     </div>
                     <div class="col-lg-3 col-md-6">
                         <label for="id_ordering" class="form-label">
                             <i class="bi bi-sort-down me-1"></i>Ordenar por
                         </label>
-                        {{ filter.form.ordering }}
+                        <select name="ordering" id="id_ordering" class="form-select">
+                            <option value="">---------</option>
+                            <option value="nome">Nome (A-Z)</option>
+                            <option value="-nome">Nome (Z-A)</option>
+                            <option value="cidade__nome_cidade">Cidade (A-Z)</option>
+                            <option value="-cidade__nome_cidade">Cidade (Z-A)</option>
+                            <option value="bairro__nome_bairro">Bairro (A-Z)</option>
+                            <option value="-bairro__nome_bairro">Bairro (Z-A)</option>
+                            <option value="total_convidados">Convidados (Menor&gt;Maior)</option>
+                            <option value="-total_convidados">Convidados (Maior&gt;Menor)</option>
+                            <option value="data_cadastro">Data (Mais antiga)</option>
+                            <option value="-data_cadastro">Data (Mais recente)</option>
+                        </select>
                     </div>
                     <div class="col-lg-3 col-md-6">
                         <label for="id_meta_status" class="form-label">
                             <i class="bi bi-bullseye me-1"></i>Status da Meta
                         </label>
-                        <select name="meta_status" id="id_meta_status" class="form-control">
+                        <select name="meta_status" id="id_meta_status" class="form-select">
                             <option value="---">Todos os Status</option>
                             <option value="pendente" {% if request.GET.meta_status == 'pendente' %}selected{% endif %}>Meta Pendente (0-19)</option>
                             <option value="atingida" {% if request.GET.meta_status == 'atingida' %}selected{% endif %}>Meta Atingida (20)</option>
@@ -136,54 +159,62 @@
             </div>
 
             <!-- Seleção de Colunas -->
-            <div class="filter-section">
+            <div class="filter-section mt-3">
                 <h6><i class="bi bi-table me-2"></i>Colunas do Relatório</h6>
-                <div class="row g-3">
-                    <div class="col-lg-4 col-md-6">
+                <div class="row g-2">
+                    <div class="col-lg-3 col-md-4 col-sm-6">
                         <div class="form-check">
                             <input type="checkbox" class="form-check-input" name="columns" value="nome" id="col_nome" {% if 'nome' in selected_columns %}checked{% endif %}>
                             <label class="form-check-label" for="col_nome">
-                                <i class="bi bi-person-badge-fill"></i>Nome
+                                <i class="bi bi-person-badge-fill me-1"></i>Nome
                             </label>
                         </div>
                     </div>
-                    <div class="col-lg-4 col-md-6">
+                    <div class="col-lg-3 col-md-4 col-sm-6">
                         <div class="form-check">
                             <input type="checkbox" class="form-check-input" name="columns" value="telefone" id="col_telefone" {% if 'telefone' in selected_columns %}checked{% endif %}>
                             <label class="form-check-label" for="col_telefone">
-                                <i class="bi bi-telephone-fill"></i>Telefone
+                                <i class="bi bi-telephone-fill me-1"></i>Telefone
                             </label>
                         </div>
                     </div>
-                    <div class="col-lg-4 col-md-6">
+                    <div class="col-lg-3 col-md-4 col-sm-6">
                         <div class="form-check">
                             <input type="checkbox" class="form-check-input" name="columns" value="cidade" id="col_cidade" {% if 'cidade' in selected_columns %}checked{% endif %}>
                             <label class="form-check-label" for="col_cidade">
-                                <i class="bi bi-geo-alt-fill"></i>Cidade
+                                <i class="bi bi-geo-alt-fill me-1"></i>Cidade
                             </label>
                         </div>
                     </div>
-                    <div class="col-lg-4 col-md-6">
+                    <div class="col-lg-3 col-md-4 col-sm-6">
                         <div class="form-check">
                             <input type="checkbox" class="form-check-input" name="columns" value="bairro" id="col_bairro" {% if 'bairro' in selected_columns %}checked{% endif %}>
                             <label class="form-check-label" for="col_bairro">
-                                <i class="bi bi-pin-map-fill"></i>Bairro
+                                <i class="bi bi-pin-map-fill me-1"></i>Bairro
                             </label>
                         </div>
                     </div>
-                    <div class="col-lg-4 col-md-6">
+                    <div class="col-lg-3 col-md-4 col-sm-6">
                         <div class="form-check">
                             <input type="checkbox" class="form-check-input" name="columns" value="total_convidados" id="col_total_convidados" {% if 'total_convidados' in selected_columns %}checked{% endif %}>
                             <label class="form-check-label" for="col_total_convidados">
-                                <i class="bi bi-people-fill"></i>Total Convidados
+                                <i class="bi bi-people-fill me-1"></i>Total Convidados
                             </label>
                         </div>
                     </div>
-                    <div class="col-lg-4 col-md-6">
+                    <div class="col-lg-3 col-md-4 col-sm-6">
                         <div class="form-check">
                             <input type="checkbox" class="form-check-input" name="columns" value="data_cadastro" id="col_data_cadastro" {% if 'data_cadastro' in selected_columns %}checked{% endif %}>
                             <label class="form-check-label" for="col_data_cadastro">
-                                <i class="bi bi-calendar-date"></i>Data Cadastro
+                                <i class="bi bi-calendar-date me-1"></i>Data Cadastro
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-4 col-sm-6">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" name="columns" value="tipo" id="col_tipo" {% if 'tipo' in selected_columns %}checked{% endif %}>
+                            <label class="form-check-label" for="col_tipo">
+                                <i class="bi bi-person-badge me-1"></i>Tipo
                             </label>
                         </div>
                     </div>
@@ -191,23 +222,25 @@
             </div>
 
             <!-- Botões de Ação -->
-            <div class="buttons-container">
-                <div class="buttons-row">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-funnel"></i>Aplicar Filtros
-                    </button>
-                    <button type="button" onclick="window.location.href='{% url 'colaboradores:relatorio_colaboradores_form' %}'" class="btn btn-secondary">
-                        <i class="bi bi-arrow-clockwise"></i>Limpar
-                    </button>
-                    <button type="submit" name="export_excel" class="btn btn-success">
-                        <i class="bi bi-file-earmark-excel"></i>Excel
-                    </button>
-                    <button type="submit" name="export_pdf" class="btn btn-danger">
-                        <i class="bi bi-file-earmark-pdf"></i>PDF
-                    </button>
-                    <button type="submit" name="export_print" class="btn btn-info">
-                        <i class="bi bi-printer"></i>Imprimir
-                    </button>
+            <div class="mt-4">
+                <div class="buttons-container">
+                    <div class="buttons-row">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-funnel"></i>Aplicar Filtros
+                        </button>
+                        <button type="button" onclick="window.location.href='{% url 'colaboradores:relatorio_colaboradores_form' %}'" class="btn btn-secondary">
+                            <i class="bi bi-arrow-clockwise"></i>Limpar
+                        </button>
+                        <button type="submit" name="export_excel" class="btn btn-success">
+                            <i class="bi bi-file-earmark-excel"></i>Excel
+                        </button>
+                        <button type="submit" name="export_pdf" class="btn btn-danger">
+                            <i class="bi bi-file-earmark-pdf"></i>PDF
+                        </button>
+                        <button type="submit" name="export_print" class="btn btn-info">
+                            <i class="bi bi-printer"></i>Imprimir
+                        </button>
+                    </div>
                 </div>
             </div>
         </form>
@@ -228,6 +261,7 @@
                                     {% if column == 'bairro' %}<i class="bi bi-pin-map-fill me-1"></i>Bairro{% endif %}
                                     {% if column == 'total_convidados' %}<i class="bi bi-people-fill me-1"></i>Convidados{% endif %}
                                     {% if column == 'data_cadastro' %}<i class="bi bi-calendar-date me-1"></i>Data Cadastro{% endif %}
+                                    {% if column == 'tipo' %}<i class="bi bi-person-badge me-1"></i>Tipo{% endif %}
                                 </th>
                             {% endfor %}
                             <th><i class="bi bi-bullseye me-1"></i>Status Meta</th>
@@ -266,6 +300,13 @@
                                             <small class="text-muted">
                                                 <i class="bi bi-calendar-date me-1"></i>{{ colaborador.data_cadastro|date:"d/m/Y H:i" }}
                                             </small>
+                                        {% endif %}
+                                        {% if column == 'tipo' %}
+                                            {% if colaborador.tipo == 'acs_ace' %}
+                                                <span class="badge" style="background-color: #fd7e14; color: white;">ACS/ACE</span>
+                                            {% else %}
+                                                <span class="badge bg-success">Colaborador</span>
+                                            {% endif %}
                                         {% endif %}
                                     </td>
                                 {% endfor %}

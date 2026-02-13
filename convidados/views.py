@@ -160,14 +160,16 @@ def cadastrar_convidado(request, colaborador_id=None):
                         messages.warning(
                             request,
                             f'AVISO: O telefone "{convidado.telefone}" já está '
-                            f'cadastrado no convidado "{form.duplicate_phone_convidado}". '
+                            f"cadastrado no convidado "
+                            f'"{form.duplicate_phone_convidado}". '
                             f'Convidado "{convidado_nome}" salvo com sucesso!',
                         )
                     elif hasattr(form, "duplicate_phone_colaborador"):
                         messages.warning(
                             request,
                             f'AVISO: O telefone "{convidado.telefone}" já está '
-                            f'cadastrado no colaborador "{form.duplicate_phone_colaborador}". '
+                            f"cadastrado no colaborador "
+                            f'"{form.duplicate_phone_colaborador}". '
                             f'Convidado "{convidado_nome}" salvo com sucesso!',
                         )
                 else:
@@ -284,6 +286,10 @@ def relatorio_convidados_view(request):
     f = ConvidadoFilter(request.GET, queryset=Convidado.objects.all())
 
     selected_columns = request.GET.getlist("columns")
+
+    # Definir colunas padrão: todas exceto data_cadastro
+    if not selected_columns:
+        selected_columns = ["nome", "telefone", "cidade", "bairro", "convidado_por"]
 
     if "export_excel" in request.GET:
         print("Colunas para Excel:", selected_columns)  # <-- Adicione esta linha

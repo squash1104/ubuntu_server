@@ -250,8 +250,8 @@ def relatorio_colaboradores_view(request):
             "cidade",
             "bairro",
             "total_convidados",
-            "data_cadastro",
-        ]  # Colunas padrão
+            "tipo",
+        ]  # Colunas padrão (exceto data_cadastro)
 
     if "export_excel" in request.GET:
         return exportar_colaboradores_excel(f.qs, selected_columns)

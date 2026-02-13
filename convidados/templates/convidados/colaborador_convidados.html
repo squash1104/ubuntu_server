@@ -250,7 +250,14 @@
                 <div class="card info-card h-100">
                     <div class="card-body">
                         <h5 class="mb-3">Informações do Colaborador</h5>
-                        <p class="mb-1"><strong>Nome:</strong> {{ colaborador.nome }}</p>
+                        <p class="mb-1"><strong>Nome:</strong>
+                            {{ colaborador.nome }}
+                            {% if colaborador.tipo == 'acs_ace' %}
+                                <span class="badge" style="background-color: #fd7e14; color: white;">ACS/ACE</span>
+                            {% else %}
+                                <span class="badge bg-success">Colaborador</span>
+                            {% endif %}
+                        </p>
                         <p class="mb-1"><strong>Telefone:</strong> {{ colaborador.telefone|format_telefone|default:"-" }}</p>
                         <p class="mb-1"><strong>Cidade:</strong> {{ colaborador.cidade.nome_cidade|default:"-" }}</p>
                         <p class="mb-0"><strong>Bairro:</strong> {{ colaborador.bairro.nome_bairro|default:"-" }}</p>

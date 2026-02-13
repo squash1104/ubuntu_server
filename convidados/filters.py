@@ -8,6 +8,16 @@ from .models import Bairro, Cidade, Convidado
 
 class ConvidadoFilter(django_filters.FilterSet):
     nome = django_filters.CharFilter(lookup_expr="icontains", label="Nome do Convidado")
+    colaborador__nome = django_filters.CharFilter(
+        lookup_expr="icontains", label="Nome do Colaborador"
+    )
+    colaborador__tipo = django_filters.ChoiceFilter(
+        label="Tipo de Colaborador",
+        choices=(
+            ("colaborador", "Colaborador"),
+            ("acs_ace", "ACS/ACE"),
+        ),
+    )
 
     data_cadastro__gte = django_filters.DateFilter(
         field_name="data_cadastro",
