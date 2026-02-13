@@ -69,7 +69,7 @@ def exportar_colaboradores_pdf(colaborador_queryset, selected_columns, filter_ob
     Gera um arquivo HTML otimizado para impressao/salvar como PDF.
     O usuario pode abrir no navegador e salvar como PDF.
     """
-    template_path = "relatorios/relatorios_colaboradores_pdf.html"
+    template_path = "relatorios/relatorios_colaboradores_pdf_moderno.html"
 
     # Gerar lista de filtros aplicados
     filtros_aplicados = []

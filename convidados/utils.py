@@ -70,7 +70,7 @@ def exportar_convidados_pdf(convidado_queryset, selected_columns, filter_obj=Non
     Gera um arquivo HTML otimizado para impressão/salvar como PDF.
     O usuário pode abrir no navegador e salvar como PDF.
     """
-    template_path = "report/guest_report_pdf.html"
+    template_path = "report/guest_report_pdf_moderno.html"
 
     # Gerar lista de filtros aplicados
     filtros_aplicados = []

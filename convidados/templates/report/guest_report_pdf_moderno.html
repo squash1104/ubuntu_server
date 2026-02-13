@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório de Convidados</title>
+    <style>
+        @page {
+            margin: 0;
+            size: A4 landscape;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0; 
+            padding: 0;
+            color: #333;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 0;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .header .subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+            margin: 5px 0 0 0;
+        }
+        
+        .header-info {
+            text-align: right;
+            font-size: 12px;
+        }
+        
+        .content {
+            padding: 20px 30px;
+        }
+        
+        .report-info {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%);
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 5px solid #667eea;
+        }
+        
+        .report-info strong {
+            color: #667eea;
+        }
+        
+        .filtros-badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+        
+        .table-container {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border: 1px solid #e0e0e0;
+        }
+        
+        table { 
+            width: 100%; 
+            border-collapse: collapse;
+        }
+        
+        thead th { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: none;
+        }
+        
+        tbody td {
+            padding: 10px 15px;
+            border-bottom: 1px solid #eee;
+            font-size: 11px;
+            vertical-align: middle;
+        }
+        
+        tbody tr:nth-child(even) { 
+            background-color: #f8f9fa;
+        }
+        
+        tbody tr:hover {
+            background-color: #e8f0fe;
+        }
+        
+        .colaborador-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 500;
+        }
+        
+        .badge-colaborador {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+        
+        .badge-acs {
+            background: linear-gradient(135deg, #fd7e14 0%, #e83e8c 100%);
+            color: white;
+        }
+        
+        .序号 {
+            background: rgba(0,0,0,0.1);
+            width: 50px;
+            text-align: center;
+        }
+        
+        .footer {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            margin-top: 20px;
+            font-size: 11px;
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 60px;
+            font-size: 16px;
+            color: #666;
+        }
+        
+        @media print {
+            body { 
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+            thead th { 
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            }
+            .header {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            }
+            .footer {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div>
+                <h1>👥 Relatório de Convidados</h1>
+                <p class="subtitle">Sistema de Fidelização - SisVot</p>
+            </div>
+            <div class="header-info">
+                <strong>Data:</strong> {{ data_geracao|date:"d/m/Y" }}<br>
+                <strong>Hora:</strong> {{ data_geracao|date:"H:i" }}
+            </div>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="report-info">
+            <strong>Total de Convidados:</strong> {{ convidados|length }}
+            {% if filtros_aplicados %}
+                <div style="margin-top: 10px;">
+                    <strong>Filtros aplicados:</strong><br>
+                    {% for filtro in filtros_aplicados %}
+                        <span class="filtros-badge">{{ filtro }}</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        {% if convidados %}
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="序号">#</th>
+                            <th>👤 Nome</th>
+                            <th>📞 Telefone</th>
+                            <th>🏙️ Cidade</th>
+                            <th>📍 Bairro</th>
+                            <th>🤝 Convidado por</th>
+                            <th>📅 Data Cadastro</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for convidado in convidados %}
+                            <tr>
+                                <td class="序号">{{ forloop.counter }}</td>
+                                <td><strong>{{ convidado.nome }}</strong></td>
+                                <td>{{ convidado.telefone|default:"-" }}</td>
+                                <td>{{ convidado.cidade|default:"-" }}</td>
+                                <td>{{ convidado.bairro|default:"-" }}</td>
+                                <td>
+                                    {% if convidado.colaborador %}
+                                        {{ convidado.colaborador.nome }}
+                                        <span class="colaborador-badge {% if convidado.colaborador.tipo == 'acs_ace' %}badge-acs{% else %}badge-colaborador{% endif %}">
+                                            {% if convidado.colaborador.tipo == 'acs_ace' %}ACS/ACE{% else %}Colaborador{% endif %}
+                                        </span>
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>{{ convidado.data_cadastro|date:"d/m/Y H:i" }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="no-data">
+                <p>📋 Nenhum convidado encontrado.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="footer">
+        <div class="footer-content">
+            <div>
+                <strong>SisVot - Sistema de Fidelização</strong>
+            </div>
+            <div>
+                Relatório gerado em {{ data_geracao|date:"d/m/Y às H:i" }}
+            </div>
+        </div>
+    </div>
+</body>
+</html>
