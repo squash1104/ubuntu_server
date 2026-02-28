@@ -26,6 +26,7 @@ from django.contrib.auth import (
 from django.http import HttpResponse
 from django.urls import include, path
 
+from historico.views import PasswordResetCompleteWithLogView
 from utils_aniversarios.views import aniversariantes_view
 
 from . import views
@@ -65,7 +66,7 @@ urlpatterns = [
     ),
     path(
         "reset/<uidb64>/<token>/",
-        auth_views.PasswordResetConfirmView.as_view(
+        PasswordResetCompleteWithLogView.as_view(
             template_name="registration/password_reset_confirm.html"
         ),
         name="password_reset_confirm",

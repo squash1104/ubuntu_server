@@ -374,6 +374,20 @@ def registrar_logout(usuario, request=None):
     )
 
 
+def registrar_reset_senha(usuario, request=None):
+    """Registra o reset de senha de um usuário"""
+    nome_completo = usuario.get_full_name() or usuario.username
+    return registrar_acao(
+        acao=TipoAcao.RESET,
+        tipo_objeto=TipoObjeto.USUARIO,
+        objeto_nome=nome_completo,
+        descricao=f"Senha do usuário '{nome_completo}' foi redefinida",
+        usuario=usuario,
+        objeto_id=usuario.id,
+        request=request,
+    )
+
+
 def registrar_criacao_usuario(usuario_criado, criado_por, request=None):
     """Registra a criação de um novo usuário"""
     nome_completo = usuario_criado.get_full_name() or usuario_criado.username

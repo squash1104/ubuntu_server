@@ -253,6 +253,31 @@ def relatorio_colaboradores_view(request):
             "tipo",
         ]  # Colunas padrão (exceto data_cadastro)
 
+    # Verificar se é uma requisição de exportação (não paginar)
+    is_export = "export_excel" in request.GET or "export_pdf" in request.GET or "export_print" in request.GET
+
+    if not is_export:
+        # Parâmetros de paginação
+        per_page = request.GET.get("per_page", "20")
+        valid_per_page_options = [20, 50, 100, 200]
+        try:
+            per_page = int(per_page)
+            if per_page not in valid_per_page_options:
+                per_page = 20
+        except (ValueError, TypeError):
+            per_page = 20
+
+        # Paginação
+        paginator = Paginator(f.qs, per_page)
+        page_number = request.GET.get("page")
+        page_obj = paginator.get_page(page_number)
+        colaboradores_page = page_obj.object_list
+    else:
+        # Sem paginação para exportação
+        per_page = 20
+        page_obj = None
+        colaboradores_page = f.qs
+
     if "export_excel" in request.GET:
         return exportar_colaboradores_excel(f.qs, selected_columns)
     if "export_pdf" in request.GET:
@@ -262,8 +287,12 @@ def relatorio_colaboradores_view(request):
 
     context = {
         "filter": f,
-        "colaboradores": f.qs,
+        "colaboradores": colaboradores_page,
         "selected_columns": selected_columns,
+        "total_geral_convidados": f.qs.aggregate(total=Sum("total_convidados"))["total"] or 0,
+        "page_obj": page_obj,
+        "per_page": per_page,
+        "per_page_options": [20, 50, 100, 200],
     }
     return render(request, "relatorios/relatorio_colaboradores_form.html", context)
 

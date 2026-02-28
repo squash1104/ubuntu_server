@@ -11,6 +11,7 @@ from django.utils import timezone
 from colaboradores.models import Colaborador
 from convidados.models import Convidado
 from historico.models import Historico, TipoAcao, TipoObjeto
+from historico.utils import registrar_reset_senha
 
 from .forms import CustomPasswordChangeForm, ProfileForm
 from .models import Profile, UserSession
@@ -252,6 +253,11 @@ def user_settings(request):
             if password_form.is_valid():
                 password_form.save()
                 update_session_auth_hash(request, password_form.user)
+                # Registra a mudança de senha no histórico
+                try:
+                    registrar_reset_senha(request.user, request=request)
+                except Exception as e:
+                    print(f"Erro ao registrar mudança de senha no histórico: {e}")
                 messages.success(request, "Senha alterada com sucesso!")
                 return redirect("user_profiles:user_settings")
 

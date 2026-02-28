@@ -16,6 +16,7 @@ class TipoAcao(models.TextChoices):
     CANCELAR_ATENDIMENTO = "CANCELAR_ATENDIMENTO", "Cancelar Atendimento"
     LOGIN = "LOGIN", "Login"
     LOGOUT = "LOGOUT", "Logout"
+    RESET = "RESET", "Reset"
 
 
 class TipoObjeto(models.TextChoices):
@@ -105,6 +106,7 @@ class Historico(models.Model):
             TipoAcao.CANCELAR_ATENDIMENTO: "bi-x-circle",
             TipoAcao.LOGIN: "bi-box-arrow-in-right",
             TipoAcao.LOGOUT: "bi-box-arrow-right",
+            TipoAcao.RESET: "bi-key",
         }
         return icons.get(self.acao, "bi-info-circle")
 
@@ -122,6 +124,7 @@ class Historico(models.Model):
             TipoAcao.CANCELAR_ATENDIMENTO: "danger",
             TipoAcao.LOGIN: "info",
             TipoAcao.LOGOUT: "secondary",
+            TipoAcao.RESET: "info",
         }
         return colors.get(self.acao, "secondary")
 

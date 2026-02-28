@@ -319,6 +319,31 @@ def relatorio_convidados_view(request):
     if not selected_columns:
         selected_columns = ["nome", "telefone", "cidade", "bairro", "convidado_por"]
 
+    # Verificar se é uma requisição de exportação (não paginar)
+    is_export = "export_excel" in request.GET or "export_pdf" in request.GET or "export_print" in request.GET
+
+    if not is_export:
+        # Parâmetros de paginação
+        per_page = request.GET.get("per_page", "20")
+        valid_per_page_options = [20, 50, 100, 200]
+        try:
+            per_page = int(per_page)
+            if per_page not in valid_per_page_options:
+                per_page = 20
+        except (ValueError, TypeError):
+            per_page = 20
+
+        # Paginação
+        paginator = Paginator(f.qs, per_page)
+        page_number = request.GET.get("page")
+        page_obj = paginator.get_page(page_number)
+        convidados_page = page_obj.object_list
+    else:
+        # Sem paginação para exportação
+        per_page = 20
+        page_obj = None
+        convidados_page = f.qs
+
     if "export_excel" in request.GET:
         print("Colunas para Excel:", selected_columns)  # <-- Adicione esta linha
         return exportar_convidados_excel(f.qs, selected_columns)
@@ -331,8 +356,11 @@ def relatorio_convidados_view(request):
 
     context = {
         "filter": f,
-        "convidados": f.qs,
+        "convidados": convidados_page,
         "selected_columns": selected_columns,
+        "page_obj": page_obj,
+        "per_page": per_page,
+        "per_page_options": [20, 50, 100, 200],
     }
     return render(request, "report/guest_report_form.html", context)
 
