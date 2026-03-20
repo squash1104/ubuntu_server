@@ -173,6 +173,7 @@ class PasswordResetCompleteWithLogView(PasswordResetConfirmView):
     View customizada que herda do PasswordResetConfirmView do Django
     e registra no histórico quando a senha é redefinida com sucesso.
     """
+
     template_name = "registration/password_reset_confirm.html"
     success_url = reverse_lazy("password_reset_complete")
     post_reset_login = False
@@ -180,13 +181,13 @@ class PasswordResetCompleteWithLogView(PasswordResetConfirmView):
     def form_valid(self, form):
         # Salva a nova senha primeiro
         response = super().form_valid(form)
-        
+
         # Após redefinir a senha com sucesso, registra no histórico
         # O usuário é obtido através do método get_user() da view
         # O uidb64 está disponível em self.kwargs
-        uidb64 = self.kwargs.get('uidb64')
+        uidb64 = self.kwargs.get("uidb64")
         user = self.get_user(uidb64) if uidb64 else None
-        
+
         if user is not None:
             try:
                 # Registra o reset de senha no histórico
@@ -194,5 +195,5 @@ class PasswordResetCompleteWithLogView(PasswordResetConfirmView):
             except Exception as e:
                 # Não queremos que um erro no histórico impeça o reset de senha
                 print(f"Erro ao registrar reset de senha no histórico: {e}")
-        
+
         return response

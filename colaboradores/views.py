@@ -254,7 +254,11 @@ def relatorio_colaboradores_view(request):
         ]  # Colunas padrão (exceto data_cadastro)
 
     # Verificar se é uma requisição de exportação (não paginar)
-    is_export = "export_excel" in request.GET or "export_pdf" in request.GET or "export_print" in request.GET
+    is_export = (
+        "export_excel" in request.GET
+        or "export_pdf" in request.GET
+        or "export_print" in request.GET
+    )
 
     if not is_export:
         # Parâmetros de paginação
@@ -289,7 +293,8 @@ def relatorio_colaboradores_view(request):
         "filter": f,
         "colaboradores": colaboradores_page,
         "selected_columns": selected_columns,
-        "total_geral_convidados": f.qs.aggregate(total=Sum("total_convidados"))["total"] or 0,
+        "total_geral_convidados": f.qs.aggregate(total=Sum("total_convidados"))["total"]
+        or 0,
         "page_obj": page_obj,
         "per_page": per_page,
         "per_page_options": [20, 50, 100, 200],

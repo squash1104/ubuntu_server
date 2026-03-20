@@ -320,7 +320,11 @@ def relatorio_convidados_view(request):
         selected_columns = ["nome", "telefone", "cidade", "bairro", "convidado_por"]
 
     # Verificar se é uma requisição de exportação (não paginar)
-    is_export = "export_excel" in request.GET or "export_pdf" in request.GET or "export_print" in request.GET
+    is_export = (
+        "export_excel" in request.GET
+        or "export_pdf" in request.GET
+        or "export_print" in request.GET
+    )
 
     if not is_export:
         # Parâmetros de paginação

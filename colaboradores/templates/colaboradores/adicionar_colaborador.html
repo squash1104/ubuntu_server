@@ -449,6 +449,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Inicializa a verificação do nome no carregamento da página (útil na edição)
     checkNome();
 
+    // =========================================================================
+    // FOCO AUTOMÁTICO NO CAMPO NOME
+    // =========================================================================
+    // Define o foco automaticamente no campo nome ao carregar a página
+    if (nomeInput.length) {
+        nomeInput.focus();
+    }
+
     // Função utilitária para obter o CSRF token
     function getCookie(name) {
         let cookieValue = null;

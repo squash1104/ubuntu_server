@@ -24,6 +24,25 @@
         text-align: center;
     }
     
+    .settings-card .card-header {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-bottom: 2px solid #dee2e6;
+        padding: 1rem 1.5rem;
+        border-radius: 0.75rem 0.75rem 0 0 !important;
+    }
+    
+    .settings-card .card-header h5 {
+        color: #495057;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .settings-card .card-header h5 i {
+        color: #667eea;
+    }
+    
     .profile-photo {
         width: 120px;
         height: 120px;
@@ -64,37 +83,121 @@
         border-radius: 0.5rem;
         margin-right: 0.5rem;
         margin-bottom: 0.5rem;
+        padding: 0.75rem 1rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .nav-pills .nav-link:hover {
+        background-color: #e9ecef;
+        transform: translateY(-2px);
     }
     
     .nav-pills .nav-link.active {
-        background-color: #667eea;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
     }
     
+    /* Estilos para campos de formulário */
+    .form-control, .form-select {
+        border: 2px solid #e9ecef;
+        border-radius: 0.5rem;
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .form-label i {
+        color: #667eea;
+    }
+    
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+    
+    .form-group:last-child {
+        margin-bottom: 0;
+    }
+    
+    /* Cards de estatísticas */
     .stats-card {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        color: white;
+        border: none;
         border-radius: 0.75rem;
         padding: 1.5rem;
         text-align: center;
         margin-bottom: 1rem;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
     
-    .stats-number {
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    
+    .stats-card.total { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; color: white !important; }
+    .stats-card.today { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important; color: white !important; }
+    .stats-card.week { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important; color: white !important; }
+    .stats-card.month { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important; color: white !important; }
+    
+    .stats-card .card-body {
+        padding: 1.5rem;
+    }
+    
+    .stats-card .stats-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.25) !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 0.75rem;
+    }
+    
+    .stats-card .stats-icon i {
+        font-size: 1.5rem;
+        color: white !important;
+    }
+    
+    .stats-card .stats-number {
         font-size: 2rem;
         font-weight: bold;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.25rem;
+        color: white !important;
     }
     
-    .stats-label {
+    .stats-card .stats-label {
         font-size: 0.875rem;
         opacity: 0.9;
+        color: white !important;
     }
     
-    .form-section {
-        background: #f8f9fa;
+    /* Info cards */
+    .info-card {
+        background: white;
         border-radius: 0.75rem;
-        padding: 2rem;
-        margin-bottom: 2rem;
+        padding: 1.25rem;
+        border-left: 4px solid #667eea;
+        margin-bottom: 1rem;
+    }
+    
+    .info-card h6 {
+        color: #667eea;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
     }
     
     .btn-save {
@@ -121,9 +224,61 @@
         border: 3px solid #e2e8f0;
         margin-top: 1rem;
     }
+    
     /* Garantir moldura circular mesmo após reload */
     img#current-photo { border-radius: 50% !important; object-fit: cover !important; }
     
+    /* Tabela de histórico */
+    .table thead th {
+        background-color: #f8f9fa;
+        border-bottom: 2px solid #dee2e6;
+        color: #495057;
+        font-weight: 600;
+    }
+    
+    .table tbody tr {
+        transition: background-color 0.2s ease;
+    }
+    
+    .table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+    
+    /* Seção de informações da conta */
+    .account-info {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+    
+    .account-info-item {
+        display: flex;
+        flex-direction: column;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 0.5rem;
+    }
+    
+    .account-info-item strong {
+        color: #667eea;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.25rem;
+    }
+    
+    .account-info-item span {
+        color: #495057;
+        font-weight: 500;
+    }
+    
+    /* Badges */
+    .badge {
+        padding: 0.5rem 0.75rem;
+        font-weight: 500;
+    }
+    
+    /* Responsivo */
     @media (max-width: 768px) {
         .settings-header {
             padding: 1.5rem;
@@ -134,8 +289,14 @@
             height: 80px;
         }
         
-        .form-section {
-            padding: 1.5rem;
+        .nav-pills {
+            flex-direction: column;
+        }
+        
+        .nav-pills .nav-link {
+            margin-right: 0;
+            margin-bottom: 0.5rem;
+            text-align: center;
         }
     }
 </style>
@@ -203,19 +364,19 @@
                 <div class="card settings-card">
                     <div class="card-header">
                         <h5 class="mb-0">
-                            <i class="bi bi-person me-2"></i>Informações do Perfil
+                            <i class="bi bi-person-badge"></i>Informações do Perfil
                         </h5>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body p-4">
                         <form method="post" enctype="multipart/form-data">
                             {% csrf_token %}
                             <input type="hidden" name="profile_submit" value="1">
                             
                             <div class="row">
                                 <div class="col-md-6">
-                                    <div class="form-group mb-3">
+                                    <div class="form-group">
                                         <label for="{{ profile_form.first_name.id_for_label }}" class="form-label">
-                                            <i class="bi bi-person me-1"></i>Nome
+                                            <i class="bi bi-person"></i>Nome
                                         </label>
                                         {{ profile_form.first_name }}
                                         {% if profile_form.first_name.errors %}
@@ -228,9 +389,9 @@
                                     </div>
                                 </div>
                                 <div class="col-md-6">
-                                    <div class="form-group mb-3">
+                                    <div class="form-group">
                                         <label for="{{ profile_form.last_name.id_for_label }}" class="form-label">
-                                            <i class="bi bi-person me-1"></i>Sobrenome
+                                            <i class="bi bi-person"></i>Sobrenome
                                         </label>
                                         {{ profile_form.last_name }}
                                         {% if profile_form.last_name.errors %}
@@ -246,9 +407,9 @@
 
                             <div class="row">
                                 <div class="col-md-6">
-                                    <div class="form-group mb-3">
+                                    <div class="form-group">
                                         <label for="{{ profile_form.email.id_for_label }}" class="form-label">
-                                            <i class="bi bi-envelope me-1"></i>Email
+                                            <i class="bi bi-envelope"></i>Email
                                         </label>
                                         {{ profile_form.email }}
                                         {% if profile_form.email.errors %}
@@ -260,9 +421,7 @@
                                         {% endif %}
                                     </div>
                                 </div>
-                                
                             </div>
-
 
                             <!-- Campo de foto oculto -->
                             <div style="display: none;">
@@ -276,7 +435,7 @@
                                 {% endif %}
                             </div>
 
-                            <div class="d-flex justify-content-end">
+                            <div class="d-flex justify-content-end mt-4">
                                 <button type="submit" class="btn btn-save">
                                     <i class="bi bi-check-lg me-2"></i>Salvar Alterações
                                 </button>
@@ -291,17 +450,17 @@
                 <div class="card settings-card">
                     <div class="card-header">
                         <h5 class="mb-0">
-                            <i class="bi bi-lock me-2"></i>Alterar Senha
+                            <i class="bi bi-shield-lock"></i>Alterar Senha
                         </h5>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body p-4">
                         <form method="post">
                             {% csrf_token %}
                             <input type="hidden" name="password_submit" value="1">
                             
-                            <div class="form-group mb-3">
+                            <div class="form-group">
                                 <label for="{{ password_form.old_password.id_for_label }}" class="form-label">
-                                    <i class="bi bi-key me-1"></i>Senha Atual
+                                    <i class="bi bi-key"></i>Senha Atual
                                 </label>
                                 {{ password_form.old_password }}
                                 {% if password_form.old_password.errors %}
@@ -313,35 +472,45 @@
                                 {% endif %}
                             </div>
 
-                            <div class="form-group mb-3">
-                                <label for="{{ password_form.new_password1.id_for_label }}" class="form-label">
-                                    <i class="bi bi-key-fill me-1"></i>Nova Senha
-                                </label>
-                                {{ password_form.new_password1 }}
-                                {% if password_form.new_password1.errors %}
-                                    <div class="text-danger small mt-1">
-                                        {% for error in password_form.new_password1.errors %}
-                                            {{ error }}
-                                        {% endfor %}
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="{{ password_form.new_password1.id_for_label }}" class="form-label">
+                                            <i class="bi bi-key-fill"></i>Nova Senha
+                                        </label>
+                                        {{ password_form.new_password1 }}
+                                        {% if password_form.new_password1.errors %}
+                                            <div class="text-danger small mt-1">
+                                                {% for error in password_form.new_password1.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
                                     </div>
-                                {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="{{ password_form.new_password2.id_for_label }}" class="form-label">
+                                            <i class="bi bi-key-fill"></i>Confirmar Nova Senha
+                                        </label>
+                                        {{ password_form.new_password2 }}
+                                        {% if password_form.new_password2.errors %}
+                                            <div class="text-danger small mt-1">
+                                                {% for error in password_form.new_password2.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
                             </div>
 
-                            <div class="form-group mb-4">
-                                <label for="{{ password_form.new_password2.id_for_label }}" class="form-label">
-                                    <i class="bi bi-key-fill me-1"></i>Confirmar Nova Senha
-                                </label>
-                                {{ password_form.new_password2 }}
-                                {% if password_form.new_password2.errors %}
-                                    <div class="text-danger small mt-1">
-                                        {% for error in password_form.new_password2.errors %}
-                                            {{ error }}
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
+                            <div class="alert alert-info mt-3" role="alert">
+                                <i class="bi bi-info-circle me-2"></i>
+                                <strong>Dica:</strong> Use uma senha forte com pelo menos 8 caracteres, incluindo letras, números e símbolos.
                             </div>
 
-                            <div class="d-flex justify-content-end">
+                            <div class="d-flex justify-content-end mt-4">
                                 <button type="submit" class="btn btn-save">
                                     <i class="bi bi-check-lg me-2"></i>Alterar Senha
                                 </button>
@@ -355,47 +524,47 @@
             <div class="tab-pane fade" id="stats" role="tabpanel">
                 <!-- Cards de Estatísticas -->
                 <div class="row mb-4">
-                    <div class="col-md-3 mb-3">
-                        <div class="card stats-card border-0 shadow-sm">
+                    <div class="col-md-6 mb-3">
+                        <div class="card stats-card total border-0 shadow-sm">
                             <div class="card-body text-center">
-                                <div class="stats-icon mb-2">
-                                    <i class="bi bi-people-fill text-primary" style="font-size: 2rem;"></i>
+                                <div class="stats-icon">
+                                    <i class="bi bi-people-fill"></i>
                                 </div>
-                                <h3 class="stats-number text-primary mb-1">{{ stats.total_cadastros_usuario }}</h3>
-                                <p class="stats-label text-muted mb-0">Total de Cadastros</p>
+                                <h3 class="stats-number mb-1">{{ stats.total_cadastros_usuario }}</h3>
+                                <p class="stats-label mb-0">Total de Cadastros</p>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3 mb-3">
-                        <div class="card stats-card border-0 shadow-sm">
+                    <div class="col-md-6 mb-3">
+                        <div class="card stats-card today border-0 shadow-sm">
                             <div class="card-body text-center">
-                                <div class="stats-icon mb-2">
-                                    <i class="bi bi-calendar-day text-success" style="font-size: 2rem;"></i>
+                                <div class="stats-icon">
+                                    <i class="bi bi-calendar-day"></i>
                                 </div>
-                                <h3 class="stats-number text-success mb-1">{{ stats.convidados_hoje }}</h3>
-                                <p class="stats-label text-muted mb-0">Cadastrados Hoje</p>
+                                <h3 class="stats-number mb-1">{{ stats.convidados_hoje }}</h3>
+                                <p class="stats-label mb-0">Cadastrados Hoje</p>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3 mb-3">
-                        <div class="card stats-card border-0 shadow-sm">
+                    <div class="col-md-6 mb-3">
+                        <div class="card stats-card week border-0 shadow-sm">
                             <div class="card-body text-center">
-                                <div class="stats-icon mb-2">
-                                    <i class="bi bi-calendar-week text-warning" style="font-size: 2rem;"></i>
+                                <div class="stats-icon">
+                                    <i class="bi bi-calendar-week"></i>
                                 </div>
-                                <h3 class="stats-number text-warning mb-1">{{ stats.convidados_semana }}</h3>
-                                <p class="stats-label text-muted mb-0">Esta Semana</p>
+                                <h3 class="stats-number mb-1">{{ stats.convidados_semana }}</h3>
+                                <p class="stats-label mb-0">Esta Semana</p>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3 mb-3">
-                        <div class="card stats-card border-0 shadow-sm">
+                    <div class="col-md-6 mb-3">
+                        <div class="card stats-card month border-0 shadow-sm">
                             <div class="card-body text-center">
-                                <div class="stats-icon mb-2">
-                                    <i class="bi bi-calendar-month text-info" style="font-size: 2rem;"></i>
+                                <div class="stats-icon">
+                                    <i class="bi bi-calendar-month"></i>
                                 </div>
-                                <h3 class="stats-number text-info mb-1">{{ stats.convidados_mes }}</h3>
-                                <p class="stats-label text-muted mb-0">Este Mês</p>
+                                <h3 class="stats-number mb-1">{{ stats.convidados_mes }}</h3>
+                                <p class="stats-label mb-0">Este Mês</p>
                             </div>
                         </div>
                     </div>
@@ -407,15 +576,18 @@
                         <div class="card settings-card">
                             <div class="card-header">
                                 <h5 class="mb-0">
-                                    <i class="bi bi-trophy me-2"></i>Ranking
+                                    <i class="bi bi-trophy"></i>Ranking
                                 </h5>
                             </div>
-                            <div class="card-body">
-                                <h6 class="text-primary mb-2">
-                                    <i class="bi bi-trophy-fill me-1"></i>
+                            <div class="card-body text-center py-4">
+                                <div class="mb-3">
+                                    <i class="bi bi-trophy-fill text-warning" style="font-size: 3rem;"></i>
+                                </div>
+                                <h6 class="text-muted mb-2">
+                                    <i class="bi bi-star-fill me-1"></i>
                                     Posição no Ranking Geral
                                 </h6>
-                                <p class="display-6 mb-0">{{ stats.posicao_ranking|default:'-' }}º</p>
+                                <p class="display-4 mb-0 text-primary fw-bold">{{ stats.posicao_ranking|default:'-' }}º</p>
                             </div>
                         </div>
                     </div>
@@ -423,22 +595,31 @@
                         <div class="card settings-card">
                             <div class="card-header">
                                 <h5 class="mb-0">
-                                    <i class="bi bi-clock me-2"></i>Tempo de Uso
+                                    <i class="bi bi-clock-history"></i>Tempo de Uso
                                 </h5>
                             </div>
                             <div class="card-body">
                                 <div class="row text-center">
                                     <div class="col-4">
+                                        <div class="p-3 bg-primary bg-opacity-10 rounded mb-2">
+                                            <i class="bi bi-hourglass-split text-primary" style="font-size: 1.5rem;"></i>
+                                        </div>
                                         <h4 class="text-primary mb-1">{{ stats.horas_logado|default:"0" }}</h4>
-                                        <small class="text-muted">Horas Logado</small>
+                                        <small class="text-muted">Horas</small>
                                     </div>
                                     <div class="col-4">
+                                        <div class="p-3 bg-success bg-opacity-10 rounded mb-2">
+                                            <i class="bi bi-lightning text-success" style="font-size: 1.5rem;"></i>
+                                        </div>
                                         <h4 class="text-success mb-1">{{ stats.sessoes_hoje|default:"0" }}</h4>
-                                        <small class="text-muted">Sessões Hoje</small>
+                                        <small class="text-muted">Sessões</small>
                                     </div>
                                     <div class="col-4">
+                                        <div class="p-3 bg-warning bg-opacity-10 rounded mb-2">
+                                            <i class="bi bi-calendar-check text-warning" style="font-size: 1.5rem;"></i>
+                                        </div>
                                         <h4 class="text-warning mb-1">{{ stats.dias_ativo|default:"0" }}</h4>
-                                        <small class="text-muted">Dias Ativo</small>
+                                        <small class="text-muted">Dias</small>
                                     </div>
                                 </div>
                             </div>
@@ -452,16 +633,16 @@
                         <div class="card settings-card">
                             <div class="card-header">
                                 <h5 class="mb-0">
-                                    <i class="bi bi-award me-2"></i>Conquistas
+                                    <i class="bi bi-award"></i>Conquistas
                                 </h5>
                             </div>
-                            <div class="card-body">
+                            <div class="card-body p-4">
                                 {% if stats.badges %}
-                                    <div class="row g-2">
+                                    <div class="row g-3">
                                         {% for badge in stats.badges %}
                                             <div class="col-6 col-md-4 col-lg-3">
-                                                <div class="d-flex align-items-center gap-2 p-2 border rounded" data-bs-toggle="tooltip" title="{{ badge.nome }}: {{ badge.min|default:0 }}+ cadastros">
-                                                    <span class="badge {{ badge.cor }}">{{ badge.emoji }}</span>
+                                                <div class="d-flex align-items-center gap-3 p-3 border rounded bg-light" data-bs-toggle="tooltip" title="{{ badge.nome }}: {{ badge.min|default:0 }}+ cadastros">
+                                                    <span class="badge {{ badge.cor }} fs-5">{{ badge.emoji }}</span>
                                                     <div>
                                                         <div class="fw-semibold">{{ badge.nome }}</div>
                                                         {% if badge.data %}
@@ -473,7 +654,11 @@
                                         {% endfor %}
                                     </div>
                                 {% else %}
-                                    <p class="text-muted mb-0">Nenhuma badge conquistada ainda.</p>
+                                    <div class="text-center py-4">
+                                        <i class="bi bi-emoji-smile text-muted" style="font-size: 3rem;"></i>
+                                        <p class="text-muted mb-0 mt-2">Nenhuma badge conquistada ainda.</p>
+                                        <small class="text-muted">Continue cadastrando para desbloquear conquistas!</small>
+                                    </div>
                                 {% endif %}
                             </div>
                         </div>
@@ -485,10 +670,10 @@
                     <div class="col-12">
                         <div class="card settings-card">
                             <div class="card-header">
-                                <h5 class="mb-0">
-                                    <i class="bi bi-graph-up me-2"></i>Produtividade
-                                </h5>
-                                <div class="d-flex gap-2 mt-2">
+                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                    <h5 class="mb-0">
+                                        <i class="bi bi-graph-up"></i>Produtividade
+                                    </h5>
                                     <div class="btn-group" role="group" aria-label="Filtro de período">
                                         <button type="button" class="btn btn-sm btn-outline-primary prod-range" data-range="day">Dia</button>
                                         <button type="button" class="btn btn-sm btn-outline-primary prod-range active" data-range="week">Semana</button>
@@ -497,8 +682,8 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="card-body">
-                                <canvas id="productivityChart" width="400" height="100"></canvas>
+                            <div class="card-body" style="min-height: 300px;">
+                                <canvas id="productivityChart"></canvas>
                             </div>
                         </div>
                     </div>
@@ -510,25 +695,26 @@
                         <div class="card settings-card">
                             <div class="card-header">
                                 <h5 class="mb-0">
-                                    <i class="bi bi-clock-history me-2"></i>Seu Histórico de Atividades
+                                    <i class="bi bi-clock-history"></i>Seu Histórico de Atividades
                                 </h5>
                             </div>
-                            <div class="card-body">
+                            <div class="card-body p-0">
                                 {% if stats.page_obj %}
                                     <div class="table-responsive">
-                                        <table class="table table-hover">
+                                        <table class="table table-hover mb-0">
                                             <thead class="table-light">
                                                 <tr>
-                                                    <th>Data/Hora</th>
-                                                    <th>Ação</th>
-                                                    <th>Objeto</th>
-                                                    <th>Descrição</th>
+                                                    <th><i class="bi bi-calendar3 me-1"></i>Data/Hora</th>
+                                                    <th><i class="bi bi-lightning me-1"></i>Ação</th>
+                                                    <th><i class="bi bi-tag me-1"></i>Objeto</th>
+                                                    <th><i class="bi bi-text-left me-1"></i>Descrição</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 {% for historico in stats.page_obj %}
                                                     <tr>
                                                         <td class="text-muted small">
+                                                            <i class="bi bi-clock me-1"></i>
                                                             {{ historico.data_hora|date:"d/m/Y H:i" }}
                                                         </td>
                                                         <td>
@@ -538,7 +724,7 @@
                                                             </span>
                                                         </td>
                                                         <td>
-                                                            <span class="badge bg-secondary">
+                                                            <span class="badge bg-secondary bg-opacity-10 text-secondary">
                                                                 <i class="bi {{ historico.tipo_objeto_icon }} me-1"></i>
                                                                 {{ historico.get_tipo_objeto_display }}
                                                             </span>
@@ -547,7 +733,7 @@
                                                     </tr>
                                                 {% empty %}
                                                     <tr>
-                                                        <td colspan="4" class="text-center text-muted">
+                                                        <td colspan="4" class="text-center text-muted py-4">
                                                             <i class="bi bi-inbox me-2"></i>
                                                             Nenhuma atividade registrada ainda.
                                                         </td>
@@ -602,20 +788,34 @@
                 <div class="card settings-card">
                     <div class="card-header">
                         <h5 class="mb-0">
-                            <i class="bi bi-info-circle me-2"></i>Informações da Conta
+                            <i class="bi bi-info-circle"></i>Informações da Conta
                         </h5>
                     </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <p><strong>Usuário:</strong> {{ request.user.username }}</p>
-                                <p><strong>Nome Completo:</strong> {{ profile.display_name }}</p>
-                                <p><strong>Email:</strong> {{ request.user.email|default:"Não informado" }}</p>
+                    <div class="card-body p-4">
+                        <div class="account-info">
+                            <div class="account-info-item">
+                                <strong><i class="bi bi-person me-1"></i>Usuário</strong>
+                                <span>{{ request.user.username }}</span>
                             </div>
-                            <div class="col-md-6">
-                                <p><strong>Último Login:</strong> {{ request.user.last_login|date:"d/m/Y H:i"|default:"Nunca" }}</p>
-                                <p><strong>Membro desde:</strong> {{ request.user.date_joined|date:"d/m/Y" }}</p>
-                                <p><strong>Perfil criado:</strong> {{ profile.created_at|date:"d/m/Y H:i" }}</p>
+                            <div class="account-info-item">
+                                <strong><i class="bi bi-person-badge me-1"></i>Nome Completo</strong>
+                                <span>{{ profile.display_name }}</span>
+                            </div>
+                            <div class="account-info-item">
+                                <strong><i class="bi bi-envelope me-1"></i>Email</strong>
+                                <span>{{ request.user.email|default:"Não informado" }}</span>
+                            </div>
+                            <div class="account-info-item">
+                                <strong><i class="bi bi-clock me-1"></i>Último Login</strong>
+                                <span>{{ request.user.last_login|date:"d/m/Y H:i"|default:"Nunca" }}</span>
+                            </div>
+                            <div class="account-info-item">
+                                <strong><i class="bi bi-calendar-plus me-1"></i>Membro desde</strong>
+                                <span>{{ request.user.date_joined|date:"d/m/Y" }}</span>
+                            </div>
+                            <div class="account-info-item">
+                                <strong><i class="bi bi-calendar-check me-1"></i>Perfil criado</strong>
+                                <span>{{ profile.created_at|date:"d/m/Y H:i" }}</span>
                             </div>
                         </div>
                     </div>

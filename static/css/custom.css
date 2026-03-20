@@ -865,7 +865,7 @@ td .btn-sm {
 @media (max-width: 767px) {
     /* Títulos de página */
     .card-title.h3 {
-        font-size: 1.25rem !important;
+        font-size: 1.1rem !important;
     }
     
     /* Cabeçalho com botões */
@@ -969,7 +969,7 @@ td .btn-sm {
     .stat-card .h3 {
         text-transform: lowercase !important;
         letter-spacing: normal !important;
-        font-size: 1.5rem !important;
+        font-size: 1.1rem !important;
     }
     .stat-card h3::first-letter,
     .stat-card .h3::first-letter {

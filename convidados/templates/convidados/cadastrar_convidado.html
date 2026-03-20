@@ -406,6 +406,11 @@
 
         checkNome();
         checkTelefone();
+
+        // Foco automático no campo nome ao carregar a página
+        if (nomeInput.length) {
+            nomeInput.focus();
+        }
     });
 </script>
 {% endblock %}
