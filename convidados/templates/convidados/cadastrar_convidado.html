@@ -411,6 +411,14 @@
         if (nomeInput.length) {
             nomeInput.focus();
         }
+
+        // Converter texto para maiúsculas automaticamente no campo nome
+        nomeInput.on('input', function() {
+            const start = this.selectionStart;
+            const end = this.selectionEnd;
+            this.value = this.value.toUpperCase();
+            this.setSelectionRange(start, end);
+        });
     });
 </script>
 {% endblock %}

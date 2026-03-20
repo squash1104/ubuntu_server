@@ -220,6 +220,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     nomeInput.on('keyup', function(){ clearTimeout(typingTimer); typingTimer = setTimeout(checkNome, doneTypingInterval); });
     nomeInput.on('blur', checkNome);
+
+    // Converter texto para maiúsculas automaticamente no campo nome
+    nomeInput.on('input', function() {
+        const start = this.selectionStart;
+        const end = this.selectionEnd;
+        this.value = this.value.toUpperCase();
+        this.setSelectionRange(start, end);
+    });
+
     telefoneInput.on('keyup', function(){ clearTimeout(typingTimer); typingTimer = setTimeout(checkTelefone, doneTypingInterval); });
     telefoneInput.on('blur', checkTelefone);
 });

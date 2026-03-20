@@ -343,6 +343,14 @@
                 return new bootstrap.Tooltip(tooltipTriggerEl);
             });
 
+            // Atalho de teclado para adicionar novo convidado (Ctrl + Enter)
+            document.addEventListener('keydown', function(e) {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                    e.preventDefault();
+                    window.location.href = "{% url 'convidados:cadastrar_convidado' %}";
+                }
+            });
+
             const searchInput = document.getElementById('id_search');
             const searchForm = document.getElementById('search-form');
             let typingTimer;

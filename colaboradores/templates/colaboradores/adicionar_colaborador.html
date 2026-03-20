@@ -457,6 +457,14 @@ document.addEventListener('DOMContentLoaded', function() {
         nomeInput.focus();
     }
 
+    // Converter texto para maiúsculas automaticamente no campo nome
+    nomeInput.on('input', function() {
+        const start = this.selectionStart;
+        const end = this.selectionEnd;
+        this.value = this.value.toUpperCase();
+        this.setSelectionRange(start, end);
+    });
+
     // Função utilitária para obter o CSRF token
     function getCookie(name) {
         let cookieValue = null;

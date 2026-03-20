@@ -459,6 +459,15 @@ document.addEventListener('DOMContentLoaded', function() {
         return new bootstrap.Tooltip(tooltipTriggerEl);
     });
     
+    // Atalho de teclado para adicionar novo colaborador (Ctrl + Enter)
+    document.addEventListener('keydown', function(e) {
+        // Verifica se Ctrl + Enter foi pressionado
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            e.preventDefault();
+            window.location.href = "{% url 'colaboradores:adicionar_colaborador' %}";
+        }
+    });
+    
     // Busca em tempo real
     const searchInput = document.getElementById('id_search');
     const searchForm = document.getElementById('search-form');
