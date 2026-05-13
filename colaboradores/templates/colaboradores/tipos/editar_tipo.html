@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}SisAps - Editar Tipo de Colaborador{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-pencil me-2"></i>
+                        Editar Tipo: {{ tipo.nome }}
+                    </h5>
+                </div>
+
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label for="nome" class="form-label">
+                                Nome do Tipo <span class="text-danger">*</span>
+                            </label>
+                            <input type="text"
+                                   class="form-control"
+                                   id="nome"
+                                   name="nome"
+                                   value="{{ tipo.nome }}"
+                                   required
+                                   maxlength="100"
+                                   placeholder="Ex: Colaborador, ACS/ACE, Voluntário">
+                            <div class="form-text">
+                                Nome único que identificará este tipo de colaborador.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="descricao" class="form-label">
+                                Descrição
+                            </label>
+                            <textarea class="form-control"
+                                      id="descricao"
+                                      name="descricao"
+                                      rows="3"
+                                      placeholder="Descrição opcional do tipo de colaborador">{{ tipo.descricao }}</textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="cor" class="form-label">
+                                Cor da Badge <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="cor" name="cor" required>
+                                <option value="success" {% if tipo.cor == 'success' %}selected{% endif %} data-color="#198754">Verde</option>
+                                <option value="primary" {% if tipo.cor == 'primary' %}selected{% endif %} data-color="#0d6efd">Azul</option>
+                                <option value="danger" {% if tipo.cor == 'danger' %}selected{% endif %} data-color="#dc3545">Vermelho</option>
+                                <option value="warning" {% if tipo.cor == 'warning' %}selected{% endif %} data-color="#ffc107">Amarelo</option>
+                                <option value="info" {% if tipo.cor == 'info' %}selected{% endif %} data-color="#0dcaf0">Azul Claro</option>
+                                <option value="secondary" {% if tipo.cor == 'secondary' %}selected{% endif %} data-color="#6c757d">Cinza</option>
+                                <option value="dark" {% if tipo.cor == 'dark' %}selected{% endif %} data-color="#212529">Preto</option>
+                                <option value="purple" {% if tipo.cor == 'purple' %}selected{% endif %} data-color="#6f42c1">Roxo</option>
+                                <option value="pink" {% if tipo.cor == 'pink' %}selected{% endif %} data-color="#d63384">Rosa</option>
+                                <option value="orange" {% if tipo.cor == 'orange' %}selected{% endif %} data-color="#fd7e14">Laranja</option>
+                                <option value="teal" {% if tipo.cor == 'teal' %}selected{% endif %} data-color="#20c997">Verde Azulado</option>
+                                <option value="cyan" {% if tipo.cor == 'cyan' %}selected{% endif %} data-color="#0dcaf0">Ciano</option>
+                                <option value="indigo" {% if tipo.cor == 'indigo' %}selected{% endif %} data-color="#6610f2">Índigo</option>
+                                <option value="brown" {% if tipo.cor == 'brown' %}selected{% endif %} data-color="#795548">Marrom</option>
+                                <option value="lime" {% if tipo.cor == 'lime' %}selected{% endif %} data-color="#8bc34a">Lima</option>
+                                <option value="coral" {% if tipo.cor == 'coral' %}selected{% endif %} data-color="#e86f6f">Coral</option>
+                                <option value="navy" {% if tipo.cor == 'navy' %}selected{% endif %} data-color="#001f3f">Marinho</option>
+                                <option value="olive" {% if tipo.cor == 'olive' %}selected{% endif %} data-color="#808000">Oliva</option>
+                            </select>
+                            <div class="form-text">
+                                Cor da badge exibida ao lado do nome nas listas de colaboradores.
+                            </div>
+                            <div class="mt-2">
+                                <span class="badge preview-badge">Prévia</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       id="ativo"
+                                       name="ativo"
+                                       {% if tipo.ativo %}checked{% endif %}>
+                                <label class="form-check-label" for="ativo">
+                                    Tipo ativo
+                                </label>
+                            </div>
+                            <div class="form-text">
+                                Tipos inativos não aparecem nas opções de cadastro e filtro.
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'colaboradores:listar_tipos_colaborador' %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left me-1"></i>
+                                Voltar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-1"></i>
+                                Salvar Alterações
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const select = document.getElementById('cor');
+    const preview = document.querySelector('.preview-badge');
+    function updatePreview() {
+        const opt = select.options[select.selectedIndex];
+        preview.className = 'badge preview-badge bg-' + opt.value;
+    }
+    select.addEventListener('change', updatePreview);
+    updatePreview();
+});
+</script>
+{% endblock %}

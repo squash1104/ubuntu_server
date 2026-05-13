@@ -190,7 +190,7 @@
                                     {% if column == 'total_convidados' %}{{ colaborador.total_convidados }}{% endif %}
                                     {% if column == 'data_cadastro' %}{{ colaborador.data_cadastro|date:"d/m/Y H:i" }}{% endif %}
                                     {% if column == 'tipo' %}
-                                        {% if colaborador.tipo == 'colaborador' %}Colaborador{% elif colaborador.tipo == 'acs_ace' %}ACS/ACE{% else %}{{ colaborador.tipo }}{% endif %}
+                                        {{ colaborador.tipo.nome }}
                                     {% endif %}
                                 </td>
                             {% endfor %}

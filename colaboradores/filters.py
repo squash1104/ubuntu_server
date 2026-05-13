@@ -4,7 +4,7 @@ import django_filters
 from django import forms
 from django.db.models.fields import return_None
 
-from .models import TIPO_CHOICES, Bairro, Cidade, Colaborador
+from .models import Bairro, Cidade, Colaborador, TipoColaborador
 
 META_STATUS_CHOICES = (
     ("pendente", "Meta Pendente (0-19)"),
@@ -65,8 +65,10 @@ class ColaboradorFilter(django_filters.FilterSet):
         choices=META_STATUS_CHOICES, label="Meta Status", method="filter_by_meta_status"
     )
 
-    # Filtro por tipo (colaborador ou ACS/ACE)
-    tipo = django_filters.ChoiceFilter(choices=TIPO_CHOICES, label="Tipo")
+    # Filtro por tipo (usando ForeignKey)
+    tipo = django_filters.ModelChoiceFilter(
+        queryset=TipoColaborador.objects.filter(ativo=True), label="Tipo"
+    )
 
     def filter_by_meta_status(self, queryset, name, value):
         if value == "---":

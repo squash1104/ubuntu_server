@@ -4,7 +4,7 @@ from django import forms
 
 from geografia.models import Bairro, Cidade
 
-from .models import TIPO_CHOICES, Colaborador
+from .models import Colaborador, TipoColaborador
 
 
 class RelatorioColaboradoresForm(forms.Form):
@@ -80,10 +80,12 @@ class ColaboradorForm(forms.ModelForm):
     novo_bairro = forms.CharField(
         required=False,
         label="Novo Bairro:",
-        widget=forms.TextInput(attrs={
-            "class": "form-control",
-            "placeholder": "Digite o nome do novo bairro"
-        })
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "Digite o nome do novo bairro",
+            }
+        ),
     )
 
     data_nascimento = forms.DateField(
@@ -100,10 +102,11 @@ class ColaboradorForm(forms.ModelForm):
         label="Data de Nascimento:",
     )
 
-    tipo = forms.ChoiceField(
-        choices=TIPO_CHOICES,
-        label="Tipo:",
+    tipo = forms.ModelChoiceField(
+        queryset=TipoColaborador.objects.filter(ativo=True),
+        label="Grupo:",
         widget=forms.Select(attrs={"class": "form-control"}),
+        empty_label="Selecione um grupo",
     )
 
     class Meta:
@@ -153,7 +156,9 @@ class ColaboradorForm(forms.ModelForm):
         # 3. LÓGICA DE CRIAÇÃO DE NOVO BAIRRO
         if novo_bairro:
             if not cidade:
-                self.add_error("novo_bairro", "Selecione uma cidade antes de criar um novo bairro.")
+                self.add_error(
+                    "novo_bairro", "Selecione uma cidade antes de criar um novo bairro."
+                )
             else:
                 # Verificar se já existe bairro com o mesmo nome na cidade
                 existing_bairro = Bairro.objects.filter(
@@ -166,8 +171,7 @@ class ColaboradorForm(forms.ModelForm):
                 else:
                     # Criar o novo bairro
                     novo_bairro_obj = Bairro.objects.create(
-                        nome_bairro=novo_bairro,
-                        cidade=cidade
+                        nome_bairro=novo_bairro, cidade=cidade
                     )
                     cleaned_data["bairro"] = novo_bairro_obj
                     cleaned_data["novo_bairro"] = ""

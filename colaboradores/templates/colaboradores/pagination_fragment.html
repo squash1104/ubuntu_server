@@ -66,10 +66,10 @@
                 <!-- Primeira página -->
                 {% if page_obj.has_previous %}
                     <li class="page-item">
-                        <a class="page-link" href="?page=1{% if termo_busca %}&q={{ termo_busca }}{% endif %}{% if per_page != 20 %}&per_page={{ per_page }}{% endif %}{% if ordenar_por != 'nome' %}&ordenar_por={{ ordenar_por }}{% endif %}{% if direcao != 'asc' %}&direcao={{ direcao }}{% endif %}{% if grupo and grupo != 'todos' %}&grupo={{ grupo }}{% endif %}">Primeira</a>
+                        <a class="page-link" href="?page=1{% if termo_busca %}&q={{ termo_busca }}{% endif %}{% if per_page != 20 %}&per_page={{ per_page }}{% endif %}{% if ordenar_por != 'nome' %}&ordenar_por={{ ordenar_por }}{% endif %}{% if direcao != 'asc' %}&direcao={{ direcao }}{% endif %}{% if tipo and tipo != 'todos' %}&tipo={{ tipo }}{% endif %}">Primeira</a>
                     </li>
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if termo_busca %}&q={{ termo_busca }}{% endif %}{% if per_page != 20 %}&per_page={{ per_page }}{% endif %}{% if ordenar_por != 'nome' %}&ordenar_por={{ ordenar_por }}{% endif %}{% if direcao != 'asc' %}&direcao={{ direcao }}{% endif %}{% if grupo and grupo != 'todos' %}&grupo={{ grupo }}{% endif %}">Anterior</a>
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if termo_busca %}&q={{ termo_busca }}{% endif %}{% if per_page != 20 %}&per_page={{ per_page }}{% endif %}{% if ordenar_por != 'nome' %}&ordenar_por={{ ordenar_por }}{% endif %}{% if direcao != 'asc' %}&direcao={{ direcao }}{% endif %}{% if tipo and tipo != 'todos' %}&tipo={{ tipo }}{% endif %}">Anterior</a>
                     </li>
                 {% else %}
                     <li class="page-item disabled">
@@ -88,7 +88,7 @@
                         </li>
                     {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ num }}{% if termo_busca %}&q={{ termo_busca }}{% endif %}{% if per_page != 20 %}&per_page={{ per_page }}{% endif %}{% if ordenar_por != 'nome' %}&ordenar_por={{ ordenar_por }}{% endif %}{% if direcao != 'asc' %}&direcao={{ direcao }}{% endif %}{% if grupo and grupo != 'todos' %}&grupo={{ grupo }}{% endif %}">{{ num }}</a>
+                            <a class="page-link" href="?page={{ num }}{% if termo_busca %}&q={{ termo_busca }}{% endif %}{% if per_page != 20 %}&per_page={{ per_page }}{% endif %}{% if ordenar_por != 'nome' %}&ordenar_por={{ ordenar_por }}{% endif %}{% if direcao != 'asc' %}&direcao={{ direcao }}{% endif %}{% if tipo and tipo != 'todos' %}&tipo={{ tipo }}{% endif %}">{{ num }}</a>
                         </li>
                     {% endif %}
                 {% endfor %}
@@ -96,10 +96,10 @@
                 <!-- Próxima página -->
                 {% if page_obj.has_next %}
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if termo_busca %}&q={{ termo_busca }}{% endif %}{% if per_page != 20 %}&per_page={{ per_page }}{% endif %}{% if ordenar_por != 'nome' %}&ordenar_por={{ ordenar_por }}{% endif %}{% if direcao != 'asc' %}&direcao={{ direcao }}{% endif %}{% if grupo and grupo != 'todos' %}&grupo={{ grupo }}{% endif %}">Próxima</a>
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if termo_busca %}&q={{ termo_busca }}{% endif %}{% if per_page != 20 %}&per_page={{ per_page }}{% endif %}{% if ordenar_por != 'nome' %}&ordenar_por={{ ordenar_por }}{% endif %}{% if direcao != 'asc' %}&direcao={{ direcao }}{% endif %}{% if tipo and tipo != 'todos' %}&tipo={{ tipo }}{% endif %}">Próxima</a>
                     </li>
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ paginator.num_pages }}{% if termo_busca %}&q={{ termo_busca }}{% endif %}{% if per_page != 20 %}&per_page={{ per_page }}{% endif %}{% if ordenar_por != 'nome' %}&ordenar_por={{ ordenar_por }}{% endif %}{% if direcao != 'asc' %}&direcao={{ direcao }}{% endif %}{% if grupo and grupo != 'todos' %}&grupo={{ grupo }}{% endif %}">Última</a>
+                        <a class="page-link" href="?page={{ paginator.num_pages }}{% if termo_busca %}&q={{ termo_busca }}{% endif %}{% if per_page != 20 %}&per_page={{ per_page }}{% endif %}{% if ordenar_por != 'nome' %}&ordenar_por={{ ordenar_por }}{% endif %}{% if direcao != 'asc' %}&direcao={{ direcao }}{% endif %}{% if tipo and tipo != 'todos' %}&tipo={{ tipo }}{% endif %}">Última</a>
                     </li>
                 {% else %}
                     <li class="page-item disabled">

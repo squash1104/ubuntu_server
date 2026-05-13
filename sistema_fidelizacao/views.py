@@ -5,7 +5,10 @@ from django.contrib.auth.decorators import login_required  # Importe este decora
 from django.db.models import Count
 from django.shortcuts import render
 
-from colaboradores.models import Colaborador  # Importe o modelo Colaborador
+from colaboradores.models import (  # Importe o modelo Colaborador
+    Colaborador,
+    TipoColaborador,
+)
 from convidados.models import Convidado
 
 CIDADE_PARA_MESORREGIAO = {
@@ -459,8 +462,16 @@ def dashboard(request):
         eficiencia_media = total_convidados / colaboradores_ativos
     # --- FIM DO NOVO CÓDIGO ---
 
-    # Conta colaboradores do tipo ACS/ACE
-    total_acs_ace = Colaborador.objects.filter(tipo="acs_ace").count()
+    # Contagem de colaboradores e convidados por grupo
+    grupos_qs = (
+        TipoColaborador.objects.filter(ativo=True)
+        .annotate(
+            total_colab=Count("colaboradores", distinct=True),
+            total_conv=Count("colaboradores__convidados", distinct=True),
+        )
+        .order_by("-total_colab")
+    )
+    total_grupos = grupos_qs.count()
 
     # --- RANKING DE USUÁRIOS ---
     from django.contrib.auth.models import User
@@ -623,7 +634,8 @@ def dashboard(request):
         "data_cidades_interior_colab": json.dumps(data_cidades_interior_colab),
         # --- NOVOS KPIs ---
         "eficiencia_media": eficiencia_media,
-        "total_acs_ace": total_acs_ace,
+        "grupos_qs": grupos_qs,
+        "total_grupos": total_grupos,
         # --- RANKING ---
         "ranking_usuarios": ranking_usuarios,
         "top_3_usuarios": top_3_usuarios,

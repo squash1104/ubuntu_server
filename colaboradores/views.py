@@ -18,7 +18,7 @@ from historico.utils import (
 
 from .filters import ColaboradorFilter
 from .forms import ColaboradorForm
-from .models import Colaborador
+from .models import Colaborador, TipoColaborador
 from .utils import (
     exportar_colaboradores_excel,
     exportar_colaboradores_pdf,
@@ -30,8 +30,8 @@ from .utils import (
 def lista_colaboradores(request):
     # Parâmetros de busca e ordenação
     termo_busca = request.GET.get("q", "")
-    ordenar_por_param = request.GET.get("ordenar_por", "nome")
-    direcao = request.GET.get("direcao", "asc")
+    ordenar_por_param = request.GET.get("ordenar_por", "num_convidados")
+    direcao = request.GET.get("direcao", "desc")
     per_page = request.GET.get("per_page", "20")
     regiao = request.GET.get("regiao", "todos")  # Filtro por região (capital/interior)
     tipo = request.GET.get("tipo", "todos")  # Filtro por tipo (colaborador/acs_ace)
@@ -61,11 +61,18 @@ def lista_colaboradores(request):
         # Interior inclui demais cidades e registros sem cidade
         colaboradores_qs = colaboradores_qs.exclude(cidade__nome_cidade__in=capitais)
 
-    # Filtro por tipo (Colaborador/ACS/ACE)
-    if tipo == "colaborador":
-        colaboradores_qs = colaboradores_qs.filter(tipo="colaborador")
-    elif tipo == "acs_ace":
-        colaboradores_qs = colaboradores_qs.filter(tipo="acs_ace")
+    # Filtro por tipo (usando ForeignKey)
+    if tipo and tipo != "todos":
+        try:
+            # Tentar converter para int (ID do tipo)
+            tipo_id = int(tipo)
+            colaboradores_qs = colaboradores_qs.filter(tipo_id=tipo_id)
+        except ValueError:
+            # Se não for ID, tentar filtrar por nome (para compatibilidade)
+            if tipo == "colaborador":
+                colaboradores_qs = colaboradores_qs.filter(tipo__nome="Colaborador")
+            elif tipo == "acs_ace":
+                colaboradores_qs = colaboradores_qs.filter(tipo__nome="ACS/ACE")
 
     # Filtro de busca
     if termo_busca:
@@ -98,6 +105,9 @@ def lista_colaboradores(request):
     soma_convidados_pagina = page_obj.object_list.aggregate(total=Sum("num_convidados"))
     total_convidados_pagina = soma_convidados_pagina["total"] or 0
 
+    # Buscar tipos de colaborador para o filtro
+    tipos_colaborador = TipoColaborador.objects.filter(ativo=True).order_by("nome")
+
     context = {
         "page_obj": page_obj,  # Usar page_obj (padrão Django)
         "paginator": paginator,  # Adicionar paginator também
@@ -108,6 +118,7 @@ def lista_colaboradores(request):
         "per_page_options": valid_per_page_options,
         "regiao": regiao,
         "tipo": tipo,
+        "tipos_colaborador": tipos_colaborador,
         "total_colaboradores_filtrados": total_colaboradores_filtrados,
         "total_convidados_filtrados": total_convidados_filtrados,
         "total_colaboradores_pagina": total_colaboradores_pagina,
@@ -298,6 +309,9 @@ def relatorio_colaboradores_view(request):
         "page_obj": page_obj,
         "per_page": per_page,
         "per_page_options": [20, 50, 100, 200],
+        "tipos_colaborador": TipoColaborador.objects.filter(ativo=True).order_by(
+            "nome"
+        ),
     }
     return render(request, "relatorios/relatorio_colaboradores_form.html", context)
 
@@ -386,19 +400,16 @@ def check_nome_exists(request):
     colaborador_id = request.GET.get("pk", None)
 
     if nome:
-        # Checa se o nome existe em colaboradores
         colaboradores_queryset = Colaborador.objects.filter(nome__iexact=nome)
         if colaborador_id:
             colaboradores_queryset = colaboradores_queryset.exclude(pk=colaborador_id)
 
-        # Checa se o nome existe em convidados
         from convidados.models import Convidado
 
         convidados_queryset = Convidado.objects.filter(nome__iexact=nome)
 
         exists = colaboradores_queryset.exists() or convidados_queryset.exists()
 
-        # Determinar onde o nome existe
         tipo_existente = None
         if colaboradores_queryset.exists():
             tipo_existente = "colaboradores"
@@ -406,4 +417,111 @@ def check_nome_exists(request):
             tipo_existente = "convidados"
 
         return JsonResponse({"exists": exists, "tipo_existente": tipo_existente})
+
+    return JsonResponse({"exists": False, "tipo_existente": None})
+
+
+# ===========================================
+# VIEWS PARA GERENCIAR TIPOS DE COLABORADORES
+# ===========================================
+
+
+@login_required
+def listar_tipos_colaborador(request):
+    tipos = TipoColaborador.objects.all().order_by("nome")
+    context = {
+        "tipos": tipos,
+        "total_tipos": tipos.count(),
+    }
+    return render(request, "colaboradores/tipos/listar_tipos.html", context)
+
+
+@login_required
+def adicionar_tipo_colaborador(request):
+    if request.method == "POST":
+        nome = request.POST.get("nome", "").strip()
+        descricao = request.POST.get("descricao", "").strip()
+
+        if not nome:
+            messages.error(request, "O nome do tipo é obrigatório.")
+            return redirect("colaboradores:listar_tipos_colaborador")
+
+        # Verificar se já existe um tipo com esse nome
+        if TipoColaborador.objects.filter(nome__iexact=nome).exists():
+            messages.error(request, f"Já existe um tipo com o nome '{nome}'.")
+            return redirect("colaboradores:listar_tipos_colaborador")
+
+        cor = request.POST.get("cor", "success")
+
+        tipo = TipoColaborador.objects.create(
+            nome=nome,
+            descricao=descricao if descricao else None,
+            cor=cor,
+        )
+
+        messages.success(request, f"Tipo '{tipo.nome}' criado com sucesso!")
+        return redirect("colaboradores:listar_tipos_colaborador")
+
+    return render(request, "colaboradores/tipos/adicionar_tipo.html")
+
+
+@login_required
+def editar_tipo_colaborador(request, pk):
+    tipo = get_object_or_404(TipoColaborador, pk=pk)
+
+    if request.method == "POST":
+        nome = request.POST.get("nome", "").strip()
+        descricao = request.POST.get("descricao", "").strip()
+        ativo = request.POST.get("ativo") == "on"
+
+        if not nome:
+            messages.error(request, "O nome do tipo é obrigatório.")
+            return redirect("colaboradores:editar_tipo_colaborador", pk=pk)
+
+        # Verificar se já existe outro tipo com esse nome
+        if TipoColaborador.objects.filter(nome__iexact=nome).exclude(pk=pk).exists():
+            messages.error(request, f"Já existe outro tipo com o nome '{nome}'.")
+            return redirect("colaboradores:editar_tipo_colaborador", pk=pk)
+
+        cor = request.POST.get("cor", "success")
+
+        tipo.nome = nome
+        tipo.descricao = descricao if descricao else None
+        tipo.ativo = ativo
+        tipo.cor = cor
+        tipo.save()
+
+        messages.success(request, f"Tipo '{tipo.nome}' atualizado com sucesso!")
+        return redirect("colaboradores:listar_tipos_colaborador")
+
+    context = {
+        "tipo": tipo,
+    }
+    return render(request, "colaboradores/tipos/editar_tipo.html", context)
+
+
+@login_required
+def excluir_tipo_colaborador(request, pk):
+    tipo = get_object_or_404(TipoColaborador, pk=pk)
+
+    # Verificar se há colaboradores usando este tipo
+    if tipo.colaboradores.exists():
+        messages.error(
+            request,
+            f"Não é possível excluir o tipo '{tipo.nome}' porque há"
+            f" {tipo.colaboradores.count()} colaborador(es) usando este tipo.",
+        )
+        return redirect("colaboradores:listar_tipos_colaborador")
+
+    if request.method == "POST":
+        nome_tipo = tipo.nome
+        tipo.delete()
+        messages.success(request, f"Tipo '{nome_tipo}' excluído com sucesso!")
+        return redirect("colaboradores:listar_tipos_colaborador")
+
+    context = {
+        "tipo": tipo,
+        "colaboradores_count": tipo.colaboradores.count(),
+    }
+    return render(request, "colaboradores/tipos/excluir_tipo.html", context)
     return JsonResponse({"exists": False, "tipo_existente": None})

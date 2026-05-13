@@ -23,12 +23,14 @@ from django.contrib.messages import constants as messages
 # CONFIGURAÇÕES DE SEGURANÇA
 # ===========================================
 try:
-    from security_config import apply_security_settings
+    import importlib
+
+    importlib.util.find_spec("security_config")
 
     SECURITY_ENABLED = True
-except ImportError:
+except (ImportError, AttributeError):
     SECURITY_ENABLED = False
-    print("⚠️  Configurações de segurança não encontradas. Execute setup_security.py")
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -40,20 +42,23 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config(
     "SECRET_KEY",
-    default="django-insecure-ld%33t$+_#cw)_ssw(++i^9s*xc57@jssh(m!8w@wm65@jwm(=",
+    default="django-insecure-change-me-in-production",
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DEBUG", default=False, cast=bool)
 
-ALLOWED_HOSTS = config(
-    "ALLOWED_HOSTS",
-    default="fidelizamax.app.br,www.fidelizamax.app.br,localhost,127.0.0.1",
-    cast=Csv(),
-) + ["testserver"]
+ALLOWED_HOSTS = [
+    *config(
+        "ALLOWED_HOSTS",
+        default="fidelizamax.app.br,www.fidelizamax.app.br,localhost,127.0.0.1",
+        cast=Csv(),
+    ),
+    "testserver",
+]
 
 # CSRF trusted origins
-# In production, read from environment (comma-separated). In development, also allow local hosts over HTTP.
+# In production, read from env. In development, also allow local hosts over HTTP.
 CSRF_TRUSTED_ORIGINS = config(
     "CSRF_TRUSTED_ORIGINS",
     default="https://fidelizamax.app.br,https://www.fidelizamax.app.br",
@@ -172,7 +177,7 @@ DATABASES = {
         "ENGINE": config("DB_ENGINE", default="django.db.backends.postgresql"),
         "NAME": config("DB_NAME", default="sisvot_db"),
         "USER": config("DB_USER", default="sisuserdb"),
-        "PASSWORD": config("DB_PASSWORD", default="lu531676"),
+        "PASSWORD": config("DB_PASSWORD"),
         "HOST": config("DB_HOST", default="127.0.0.1"),
         "PORT": config("DB_PORT", default="5432"),
     }
@@ -323,7 +328,7 @@ EMAIL_USE_TLS = config("EMAIL_USE_TLS", default=True, cast=bool)
 # EMAIL_USE_SSL = False
 # Se usar SSL (porta 465), defina como True e EMAIL_USE_TLS como False
 EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="lucianolrv@gmail.com")
-EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="fdww ubmc vjqm xdos")
+EMAIL_HOST_PASSWORD = (config("EMAIL_HOST_PASSWORD"),)
 DEFAULT_FROM_EMAIL = "suporte@fidelizamax.app.br"  # E-mail que aparecerá como remetente
 SERVER_EMAIL = "suporte@fidelizamax.app.br"  # E-mail para erros de servidor
 
@@ -387,19 +392,19 @@ if False:  # SECURITY_ENABLED:
         # Configurações de senha mais rigorosas
         AUTH_PASSWORD_VALIDATORS = [
             {
-                "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+                "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",  # noqa: E501
             },
             {
-                "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+                "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",  # noqa: E501
                 "OPTIONS": {
-                    "min_length": 12,  # Aumentar para 12 caracteres
+                    "min_length": 12,
                 },
             },
             {
-                "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+                "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",  # noqa: E501
             },
             {
-                "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+                "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",  # noqa: E501
             },
         ]
 
@@ -409,7 +414,7 @@ if False:  # SECURITY_ENABLED:
         #     'disable_existing_loggers': False,
         #     'formatters': {
         #         'verbose': {
-        #             'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+        #             'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',  # noqa: E501
         #             'style': '{',
         #         },
         #         'simple': {
@@ -464,12 +469,10 @@ else:
 # ===========================================
 # CONFIGURAÇÕES DE MENSAGENS (TWILIO)
 # ===========================================
-TWILIO_ACCOUNT_SID = config("TWILIO_ACCOUNT_SID", default="")
-TWILIO_AUTH_TOKEN = config("TWILIO_AUTH_TOKEN", default="")
-TWILIO_WHATSAPP_NUMBER = config(
-    "TWILIO_WHATSAPP_NUMBER", default="whatsapp:+14155238886"
-)
-TWILIO_SMS_NUMBER = config("TWILIO_SMS_NUMBER", default="")
+TWILIO_ACCOUNT_SID = config("TWILIO_ACCOUNT_SID")
+TWILIO_AUTH_TOKEN = config("TWILIO_AUTH_TOKEN")
+TWILIO_WHATSAPP_NUMBER = config("TWILIO_WHATSAPP_NUMBER")
+TWILIO_SMS_NUMBER = config("TWILIO_SMS_NUMBER")
 
 # Configurações de Rate Limiting para mensagens
 MAX_MESSAGES_PER_MINUTE = config("MAX_MESSAGES_PER_MINUTE", default=10, cast=int)
@@ -478,7 +481,7 @@ MAX_MESSAGES_PER_HOUR = config("MAX_MESSAGES_PER_HOUR", default=100, cast=int)
 # ===========================================
 # CONFIGURAÇÕES WHATSAPP CLOUD API (META)
 # ===========================================
-WHATSAPP_PHONE_NUMBER_ID = config("WHATSAPP_PHONE_NUMBER_ID", default="")
-WHATSAPP_ACCESS_TOKEN = config("WHATSAPP_ACCESS_TOKEN", default="")
-WHATSAPP_BUSINESS_ACCOUNT_ID = config("WHATSAPP_BUSINESS_ACCOUNT_ID", default="")
+WHATSAPP_PHONE_NUMBER_ID = config("WHATSAPP_PHONE_NUMBER_ID")
+WHATSAPP_ACCESS_TOKEN = config("WHATSAPP_ACCESS_TOKEN")
+WHATSAPP_BUSINESS_ACCOUNT_ID = config("WHATSAPP_BUSINESS_ACCOUNT_ID")
 USAR_WHATSAPP_CLOUD_API = config("USAR_WHATSAPP_CLOUD_API", default=False, cast=bool)

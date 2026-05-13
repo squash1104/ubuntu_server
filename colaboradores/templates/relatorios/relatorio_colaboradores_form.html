@@ -99,12 +99,13 @@
                     </div>
                     <div class="col-lg-3 col-md-6">
                         <label for="id_tipo" class="form-label">
-                            <i class="bi bi-person-badge me-1"></i>Tipo de Colaborador
+                            <i class="bi bi-person-badge me-1"></i>Grupo
                         </label>
                         <select name="tipo" id="id_tipo" class="form-select">
-                            <option value="">Todos os Tipos</option>
-                            <option value="colaborador" {% if request.GET.tipo == 'colaborador' %}selected{% endif %}>Colaborador</option>
-                            <option value="acs_ace" {% if request.GET.tipo == 'acs_ace' %}selected{% endif %}>ACS/ACE</option>
+                            <option value="">Todos os Grupos</option>
+                            {% for tipo_option in tipos_colaborador %}
+                            <option value="{{ tipo_option.id }}" {% if request.GET.tipo == tipo_option.id|stringformat:'s' %}selected{% endif %}>{{ tipo_option.nome }}</option>
+                            {% endfor %}
                         </select>
                     </div>
                 </div>
@@ -213,9 +214,9 @@
                     <div class="col-lg-3 col-md-4 col-sm-6">
                         <div class="form-check">
                             <input type="checkbox" class="form-check-input" name="columns" value="tipo" id="col_tipo" {% if 'tipo' in selected_columns %}checked{% endif %}>
-                            <label class="form-check-label" for="col_tipo">
-                                <i class="bi bi-person-badge me-1"></i>Tipo
-                            </label>
+                                    <label class="form-check-label" for="col_tipo">
+                                        <i class="bi bi-person-badge me-1"></i>Grupo
+                                    </label>
                         </div>
                     </div>
                 </div>
@@ -307,7 +308,7 @@
                                     {% if column == 'bairro' %}<i class="bi bi-pin-map-fill me-1"></i>Bairro{% endif %}
                                     {% if column == 'total_convidados' %}<i class="bi bi-people-fill me-1"></i>Convidados{% endif %}
                                     {% if column == 'data_cadastro' %}<i class="bi bi-calendar-date me-1"></i>Data Cadastro{% endif %}
-                                    {% if column == 'tipo' %}<i class="bi bi-person-badge me-1"></i>Tipo{% endif %}
+                                    {% if column == 'tipo' %}<i class="bi bi-person-badge me-1"></i>Grupo{% endif %}
                                 </th>
                             {% endfor %}
                             <th><i class="bi bi-bullseye me-1"></i>Status Meta</th>
@@ -348,11 +349,7 @@
                                             </small>
                                         {% endif %}
                                         {% if column == 'tipo' %}
-                                            {% if colaborador.tipo == 'acs_ace' %}
-                                                <span class="badge" style="background-color: #fd7e14; color: white;">ACS/ACE</span>
-                                            {% else %}
-                                                <span class="badge bg-success">Colaborador</span>
-                                            {% endif %}
+                                            <span class="badge bg-{{ colaborador.tipo.cor }}">{{ colaborador.tipo.nome }}</span>
                                         {% endif %}
                                     </td>
                                 {% endfor %}

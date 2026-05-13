@@ -322,11 +322,7 @@
                                         {% if column == 'convidado_por' %}
                                             {% if convidado.colaborador %}
                                                 {{ convidado.colaborador.nome }}
-                                                {% if convidado.colaborador.tipo == 'acs_ace' %}
-                                                    <span class="badge" style="background-color: #fd7e14; color: white;">ACS/ACE</span>
-                                                {% else %}
-                                                    <span class="badge bg-success">Colaborador</span>
-                                                {% endif %}
+                                                <span class="badge bg-{{ convidado.colaborador.tipo.cor }}">{{ convidado.colaborador.tipo.nome }}</span>
                                             {% else %}
                                                 <span class="text-muted fst-italic">Não informado</span>
                                             {% endif %}

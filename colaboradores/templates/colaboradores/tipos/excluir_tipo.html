@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}SisAps - Excluir Tipo de Colaborador{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Confirmar Exclusão
+                    </h5>
+                </div>
+
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <div class="alert alert-warning">
+                        <h6><i class="bi bi-exclamation-triangle me-1"></i> Atenção!</h6>
+                        <p>Você está prestes a excluir o tipo de colaborador <strong>"{{ tipo.nome }}"</strong>.</p>
+                        {% if colaboradores_count > 0 %}
+                            <p class="text-danger">
+                                <strong>Este tipo não pode ser excluído</strong> porque está sendo usado por
+                                <strong>{{ colaboradores_count }}</strong> colaborador(es).
+                            </p>
+                        {% else %}
+                            <p>Esta ação não pode ser desfeita.</p>
+                        {% endif %}
+                    </div>
+
+                    {% if colaboradores_count == 0 %}
+                        <div class="card">
+                            <div class="card-body">
+                                <h6>Detalhes do Tipo:</h6>
+                                <ul class="list-unstyled">
+                                    <li><strong>Nome:</strong> {{ tipo.nome }}</li>
+                                    <li><strong>Descrição:</strong> {{ tipo.descricao|default:"Sem descrição" }}</li>
+                                    <li><strong>Status:</strong>
+                                        {% if tipo.ativo %}
+                                            <span class="badge bg-success">Ativo</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Inativo</span>
+                                        {% endif %}
+                                    </li>
+                                    <li><strong>Data de Cadastro:</strong> {{ tipo.data_cadastro|date:"d/m/Y H:i" }}</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <form method="post" class="mt-4">
+                            {% csrf_token %}
+                            <div class="d-flex justify-content-between">
+                                <a href="{% url 'colaboradores:listar_tipos_colaborador' %}" class="btn btn-secondary">
+                                    <i class="bi bi-arrow-left me-1"></i>
+                                    Cancelar
+                                </a>
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="bi bi-trash me-1"></i>
+                                    Confirmar Exclusão
+                                </button>
+                            </div>
+                        </form>
+                    {% else %}
+                        <div class="text-center mt-4">
+                            <a href="{% url 'colaboradores:listar_tipos_colaborador' %}" class="btn btn-primary">
+                                <i class="bi bi-arrow-left me-1"></i>
+                                Voltar para Lista
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
