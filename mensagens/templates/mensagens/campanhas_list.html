@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Campanhas de Mensagens{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="card-title h3 mb-0">Campanhas de Mensagens</h1>
+            <a href="{% url 'mensagens:painel_mensagens' %}" class="btn btn-primary">
+                <i class="bi bi-send"></i> Nova Campanha
+            </a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Título</th>
+                        <th>Tipo</th>
+                        <th>Destinatários</th>
+                        <th>Enviadas</th>
+                        <th>Falhas</th>
+                        <th>Status</th>
+                        <th>Data</th>
+                        <th>Criado por</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for campanha in campanhas %}
+                    <tr>
+                        <td><strong>{{ campanha.titulo }}</strong></td>
+                        <td>
+                            {% if campanha.tipo_mensagem == 'sms' %}
+                                <span class="badge bg-info">SMS</span>
+                            {% else %}
+                                <span class="badge bg-success">WhatsApp</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ campanha.total_destinatarios }}</td>
+                        <td>{{ campanha.total_enviadas }}</td>
+                        <td>{{ campanha.total_falhas }}</td>
+                        <td>
+                            {% if campanha.status == 'concluido' %}
+                                <span class="badge bg-success">Concluído</span>
+                            {% elif campanha.status == 'enviando' %}
+                                <span class="badge bg-warning">Enviando</span>
+                            {% elif campanha.status == 'pendente' %}
+                                <span class="badge bg-secondary">Pendente</span>
+                            {% elif campanha.status == 'parcial' %}
+                                <span class="badge bg-warning text-dark">Parcial</span>
+                            {% elif campanha.status == 'cancelado' %}
+                                <span class="badge bg-danger">Cancelado</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ campanha.criado_em|date:"d/m/Y H:i" }}</td>
+                        <td>{{ campanha.criado_por.get_full_name|default:campanha.criado_por.username }}</td>
+                        <td>
+                            <a href="{% url 'mensagens:campanha_detail' campanha.id %}" class="btn btn-sm btn-outline-info">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center text-muted">Nenhuma campanha encontrada</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

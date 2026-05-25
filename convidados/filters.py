@@ -3,6 +3,8 @@ from typing import ClassVar
 import django_filters
 from django import forms
 
+from colaboradores.models import TipoColaborador
+
 from .models import Bairro, Cidade, Convidado
 
 
@@ -11,12 +13,9 @@ class ConvidadoFilter(django_filters.FilterSet):
     colaborador__nome = django_filters.CharFilter(
         lookup_expr="icontains", label="Nome do Colaborador"
     )
-    colaborador__tipo = django_filters.ChoiceFilter(
-        label="Tipo de Colaborador",
-        choices=(
-            ("colaborador", "Colaborador"),
-            ("acs_ace", "ACS/ACE"),
-        ),
+    colaborador__tipo = django_filters.ModelChoiceFilter(
+        label="Grupo",
+        queryset=TipoColaborador.objects.filter(ativo=True),
     )
 
     data_cadastro__gte = django_filters.DateFilter(

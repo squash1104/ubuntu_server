@@ -43,11 +43,9 @@ class Command(BaseCommand):
         # Obter lista de bairros
         if arquivo:
             try:
-                with open(arquivo, "r", encoding="utf-8") as f:
+                with open(arquivo, encoding="utf-8") as f:
                     bairros_lista = [
-                        linha.strip()
-                        for linha in f.readlines()
-                        if linha.strip()
+                        linha.strip() for linha in f.readlines() if linha.strip()
                     ]
             except FileNotFoundError:
                 raise CommandError(f"Arquivo não encontrado: {arquivo}")
@@ -71,9 +69,7 @@ class Command(BaseCommand):
             return
         except Cidade.MultipleObjectsReturned:
             self.stdout.write(
-                self.style.ERROR(
-                    f"Múltiplas cidades encontradas: {nome_cidade}-{uf}"
-                )
+                self.style.ERROR(f"Múltiplas cidades encontradas: {nome_cidade}-{uf}")
             )
             return
 
@@ -94,9 +90,7 @@ class Command(BaseCommand):
             ).first()
 
             if existente:
-                self.stdout.write(
-                    f"  ⏭️ {nome_bairro} (já existe)"
-                )
+                self.stdout.write(f"  ⏭️ {nome_bairro} (já existe)")
                 ja_existem += 1
                 continue
 
@@ -111,14 +105,10 @@ class Command(BaseCommand):
                     nome_bairro=nome_bairro.strip(),
                     cidade=cidade,
                 )
-                self.stdout.write(
-                    self.style.SUCCESS(f"  ✅ {bairro.nome_bairro}")
-                )
+                self.stdout.write(self.style.SUCCESS(f"  ✅ {bairro.nome_bairro}"))
                 criados += 1
             except Exception as e:
-                self.stdout.write(
-                    self.style.ERROR(f"  ❌ {nome_bairro}: {e}")
-                )
+                self.stdout.write(self.style.ERROR(f"  ❌ {nome_bairro}: {e}"))
                 erros += 1
 
         # Resumo

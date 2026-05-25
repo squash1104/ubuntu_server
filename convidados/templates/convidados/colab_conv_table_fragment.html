@@ -34,10 +34,7 @@
             </thead>
             <tbody>
                 {% for convidado in convidados %}
-                <tr class="
-					{% if total_convidados < meta %}table-danger
-                    {% elif total_convidados == meta %}table-success
-                    {% else %}table-primary{% endif %}">
+                <tr class="{% if convidado.cidade.nome_cidade == 'Cuiabá' %}capital-row{% elif convidado.cidade %}interior-row{% endif %}">
 				    <td>{{ forloop.counter }}</td>
                     <td><strong>{{ convidado.nome }}</strong></td>
                     <td>{{ convidado.telefone|default:"-" }}</td>

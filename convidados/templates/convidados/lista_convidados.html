@@ -201,6 +201,23 @@
             color: #f8f9fa;
             --bs-table-hover-bg: #495057;
         }
+
+        .capital-row {
+            --bs-table-bg: #367962;
+            --bs-table-color: #ffffff;
+            --bs-table-striped-bg: #2e644f;
+            --bs-table-striped-color: #ffffff;
+            --bs-table-hover-bg: #2c5f4e;
+            --bs-table-hover-color: #ffffff;
+        }
+        .interior-row {
+            --bs-table-bg: #D4A373;
+            --bs-table-color: #ffffff;
+            --bs-table-striped-bg: #c49363;
+            --bs-table-striped-color: #ffffff;
+            --bs-table-hover-bg: #ba8a59;
+            --bs-table-hover-color: #ffffff;
+        }
     </style>
 {% endblock %}
 
@@ -257,7 +274,7 @@
                 </thead>
                 <tbody>
                     {% for convidado in page_obj %}
-                        <tr>
+                        <tr class="{% if convidado.cidade.nome_cidade == 'Cuiabá' %}capital-row{% elif convidado.cidade %}interior-row{% endif %}">
                             <td>{{ page_obj.start_index|add:forloop.counter0 }}</td>
                             <td><strong>{{ convidado.nome }}</strong></td>
                             <td>{{ convidado.telefone|format_telefone|default:"-" }}</td>
@@ -296,7 +313,9 @@
             <div class="row">
                 <div class="col-md-12">
                     <span>
-                        <strong>Totais desta página:</strong> {{ total_convidados_filtrados }} convidado(s).
+                        <strong>Totais desta página:</strong> {{ total_convidados_filtrados }} convidado(s).<br>
+                        <strong>Capital:</strong> {{ convidados_capital_pagina }} convidado(s).<br>
+                        <strong>Interior:</strong> {{ convidados_interior_pagina }} convidado(s).
                     </span>
                 </div>
             </div>

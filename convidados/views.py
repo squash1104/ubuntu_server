@@ -61,6 +61,14 @@ def lista_convidados(request):
     # Totais apenas da página atual
     total_convidados_filtrados = page_obj.object_list.count()
 
+    convidados_page = page_obj.object_list
+    convidados_capital_pagina = sum(
+        1 for c in convidados_page if c.cidade and c.cidade.nome_cidade == "Cuiabá"
+    )
+    convidados_interior_pagina = sum(
+        1 for c in convidados_page if c.cidade and c.cidade.nome_cidade != "Cuiabá"
+    )
+
     context = {
         "convidados": page_obj,
         "page_obj": page_obj,
@@ -71,6 +79,8 @@ def lista_convidados(request):
         "per_page": per_page,
         "per_page_options": per_page_options,
         "total_convidados_filtrados": total_convidados_filtrados,
+        "convidados_capital_pagina": convidados_capital_pagina,
+        "convidados_interior_pagina": convidados_interior_pagina,
     }
 
     return render(request, "convidados/lista_convidados.html", context)
@@ -117,15 +127,26 @@ def colaborador_convidados(request, pk):
     elif total_convidados > meta:
         meta_status = "superada"
 
+    convidados_capital = convidados_do_colaborador.filter(
+        cidade__nome_cidade="Cuiabá"
+    ).count()
+    convidados_interior = (
+        convidados_do_colaborador.exclude(cidade__nome_cidade="Cuiabá")
+        .exclude(cidade__isnull=True)
+        .count()
+    )
+
     context = {
         "colaborador": colaborador,
         "convidados": convidados_do_colaborador,
         "total_convidados": convidados_do_colaborador.count(),
-        "ordenar_por": ordenar_por,  # Passa o campo de ordenação atual para o template
-        "direcao": direcao,  # Passa a direção de ordenação atual para o template
+        "ordenar_por": ordenar_por,
+        "direcao": direcao,
         "meta": meta,
         "meta_status": meta_status,
         "porcentagem_meta": porcentagem_meta,
+        "convidados_capital": convidados_capital,
+        "convidados_interior": convidados_interior,
     }
     return render(request, "convidados/colaborador_convidados.html", context)
 

@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Editar Template{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="card-title h3 mb-0">Editar Template</h1>
+            <a href="{% url 'mensagens:gerenciar_templates' %}" class="btn btn-primary">
+                <i class="bi bi-arrow-left"></i> Voltar
+            </a>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="nome" class="form-label">Nome do Template:</label>
+                        <input type="text" class="form-control" id="nome" name="nome" value="{{ template.nome }}" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="tipo_mensagem" class="form-label">Tipo de Mensagem:</label>
+                        <select class="form-select" id="tipo_mensagem" name="tipo_mensagem" required>
+                            {% for value, label in tipos_mensagem %}
+                                <option value="{{ value }}" {% if template.tipo_mensagem == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="conteudo" class="form-label">Conteúdo do Template:</label>
+                <textarea class="form-control" id="conteudo" name="conteudo" rows="4" required>{{ template.conteudo }}</textarea>
+                <small class="form-text text-muted">
+                    Use <code>{nome}</code> para o nome da pessoa e <code>{idade}</code> para a idade
+                </small>
+            </div>
+            <button type="submit" class="btn btn-success">
+                <i class="bi bi-save"></i> Salvar Alterações
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

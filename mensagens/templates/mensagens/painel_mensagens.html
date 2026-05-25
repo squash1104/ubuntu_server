@@ -1,0 +1,560 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mensagens{% endblock %}
+
+{% csrf_token %}
+
+{% block content %}
+<div class="card shadow-sm">
+	<div class="card-body">
+		<div class="d-flex justify-content-between align-items-center mb-4">
+			<h1 class="card-title h3 mb-0">Mensagens</h1>
+			<div class="d-flex align-items-center" style="gap:.5rem">
+				<a href="{% url 'mensagens:campanhas_list' %}" class="btn btn-outline-info btn-sm">
+					<i class="bi bi-megaphone"></i> Campanhas
+				</a>
+				<a href="{% url 'mensagens:historico_mensagens' %}" class="btn btn-outline-secondary btn-sm">
+					<i class="bi bi-clock-history"></i> Histórico
+				</a>
+				<a href="{% url 'mensagens:gerenciar_templates' %}" class="btn btn-outline-primary btn-sm">
+					<i class="bi bi-file-text"></i> Templates
+				</a>
+			</div>
+		</div>
+
+		<!-- Filtros -->
+		<form method="get" class="row g-3 mb-4" id="form-filtros">
+			<div class="col-md-3">
+				<label for="tipo" class="form-label">Tipo</label>
+				<select name="tipo" id="tipo" class="form-select form-select-sm">
+					<option value="todos" {% if tipo == 'todos' %}selected{% endif %}>Todos</option>
+					<option value="colaboradores" {% if tipo == 'colaboradores' %}selected{% endif %}>Colaboradores</option>
+					<option value="convidados" {% if tipo == 'convidados' %}selected{% endif %}>Convidados</option>
+				</select>
+			</div>
+			<div class="col-md-3">
+				<label for="grupo" class="form-label">Grupo</label>
+				<select name="grupo" id="grupo" class="form-select form-select-sm">
+					<option value="">Todos os grupos</option>
+					{% for g in tipos_colaborador %}
+						<option value="{{ g.id }}" {% if grupo_id == g.id %}selected{% endif %}>{{ g.nome }}</option>
+					{% endfor %}
+				</select>
+			</div>
+			<div class="col-md-3">
+				<label for="cidade" class="form-label">Cidade</label>
+				<select name="cidade" id="cidade" class="form-select form-select-sm" onchange="carregarBairros()">
+					<option value="">Todas as cidades</option>
+					{% for c in cidades %}
+						<option value="{{ c.id }}" {% if cidade_id == c.id %}selected{% endif %}>{{ c.nome_cidade }} - {{ c.uf_cidade }}</option>
+					{% endfor %}
+				</select>
+			</div>
+			<div class="col-md-3">
+				<label for="bairro" class="form-label">Bairro</label>
+				<select name="bairro" id="bairro" class="form-select form-select-sm">
+					<option value="">Todos os bairros</option>
+					{% for b in bairros %}
+						<option value="{{ b.id }}" data-cidade="{{ b.cidade_id }}" {% if bairro_id == b.id %}selected{% endif %}>{{ b.nome_bairro }}</option>
+					{% endfor %}
+				</select>
+			</div>
+			<div class="col-12">
+				<button type="submit" class="btn btn-primary btn-sm">
+					<i class="bi bi-funnel"></i> Aplicar Filtros
+				</button>
+				<a href="{% url 'mensagens:painel_mensagens' %}" class="btn btn-outline-secondary btn-sm">
+					<i class="bi bi-x-circle"></i> Limpar Filtros
+				</a>
+			</div>
+		</form>
+
+		<!-- Total de contatos -->
+		<div class="d-flex justify-content-between align-items-center mb-3">
+			<h5 class="mb-0">Contatos Encontrados: <span class="badge bg-primary">{{ total_contatos }}</span></h5>
+			<button class="btn btn-success btn-sm" onclick="abrirModalEnvio()" id="btn-enviar-mensagens" style="display: none;">
+				<i class="bi bi-send"></i> Enviar Mensagens
+			</button>
+		</div>
+
+		<!-- Tabela de contatos -->
+		<div class="table-responsive">
+			<table class="table table-striped table-hover">
+				<thead class="table-light">
+					<tr>
+						<th width="50">
+							<input type="checkbox" id="select-all" onchange="toggleAllCheckboxes()">
+						</th>
+						<th>Nome</th>
+						<th>Tipo</th>
+						<th>Grupo</th>
+						{% if tipo == 'todos' or tipo == 'convidados' %}
+							<th>Convidado por</th>
+						{% endif %}
+						<th>Telefone</th>
+						<th>Cidade</th>
+						<th>Bairro</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for c in contatos %}
+					<tr>
+						<td>
+							<input type="checkbox" class="contato-checkbox"
+								   data-nome="{{ c.nome }}" data-telefone="{{ c.telefone }}"
+								   data-tipo="{{ c.tipo_registro }}" data-id="{{ c.id }}"
+								   onchange="updateEnvioButton()">
+						</td>
+						<td>{{ c.nome }}</td>
+						<td>
+							{% if c.tipo_registro == 'colaborador' %}
+								<span class="badge bg-primary">Colaborador</span>
+							{% else %}
+								<span class="badge bg-success">Convidado</span>
+							{% endif %}
+						</td>
+						<td>{{ c.tipo__nome|default:'-' }}</td>
+						{% if tipo == 'todos' or tipo == 'convidados' %}
+							<td>{% if c.tipo_registro == 'convidado' %}{{ c.colaborador_nome|default:'-' }}{% else %}-{% endif %}</td>
+						{% endif %}
+						<td>{{ c.telefone|default:'-' }}</td>
+						<td>{{ c.cidade__nome_cidade|default:'-' }}</td>
+						<td>{{ c.bairro__nome_bairro|default:'-' }}</td>
+					</tr>
+					{% empty %}
+					<tr>
+						<td colspan="8" class="text-center text-muted">Nenhum contato encontrado com os filtros selecionados.</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+
+<!-- Modal para Envio de Mensagens -->
+<div class="modal fade" id="modalEnvioMensagens" tabindex="-1" aria-labelledby="modalEnvioMensagensLabel" aria-hidden="true">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="modalEnvioMensagensLabel">Enviar Mensagens</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body">
+				<div class="mb-3">
+					<label for="titulo-campanha" class="form-label">Título da Campanha:</label>
+					<input type="text" id="titulo-campanha" class="form-control" placeholder="Ex: Campanha de Fim de Ano" value="Disparo em Massa">
+				</div>
+
+				<div class="mb-3">
+					<label class="form-label">Destinatários Selecionados:</label>
+					<div id="destinatarios-selecionados" class="border rounded p-2" style="max-height: 150px; overflow-y: auto;">
+						<p class="text-muted mb-0">Nenhum destinatário selecionado</p>
+					</div>
+				</div>
+
+				<div class="mb-3">
+					<label for="tipo-mensagem" class="form-label">Tipo de Mensagem:</label>
+					<select id="tipo-mensagem" class="form-select" onchange="carregarTemplates()">
+						<option value="">Selecione o tipo</option>
+						<option value="sms">SMS</option>
+						<option value="whatsapp">WhatsApp</option>
+					</select>
+				</div>
+
+				<div class="mb-3">
+					<label for="template-mensagem" class="form-label">Template:</label>
+					<select id="template-mensagem" class="form-select" onchange="aplicarTemplate()">
+						<option value="">Selecione um template</option>
+					</select>
+				</div>
+
+				<div class="mb-3">
+					<label class="form-label">Conteúdo da Mensagem:</label>
+					<div class="btn-toolbar mb-2 gap-1" role="toolbar">
+						<button type="button" class="btn btn-sm btn-outline-secondary" onclick="inserirFormatacao('bold')" title="Negrito"><b>B</b></button>
+						<button type="button" class="btn btn-sm btn-outline-secondary" onclick="inserirFormatacao('italic')" title="Itálico"><i>I</i></button>
+						<button type="button" class="btn btn-sm btn-outline-secondary" onclick="inserirFormatacao('strike')" title="Riscado"><s>S</s></button>
+						<button type="button" class="btn btn-sm btn-outline-secondary" onclick="inserirFormatacao('mono')" title="Monoespaçado"><code>T</code></button>
+						<div class="vr mx-1"></div>
+						<button type="button" class="btn btn-sm btn-outline-success" onclick="salvarComoTemplate()" title="Salvar como template">
+							<i class="bi bi-bookmark-plus"></i> Salvar Template
+						</button>
+						<button type="button" class="btn btn-sm btn-outline-info" onclick="document.getElementById('input-imagem').click()" title="Anexar imagem">
+							<i class="bi bi-image"></i> Anexar Imagem
+						</button>
+						<input type="file" id="input-imagem" accept="image/*" style="display:none" onchange="uploadImagem(event)">
+					</div>
+					<textarea id="conteudo-mensagem" class="form-control" rows="4"
+							  placeholder="Digite sua mensagem aqui... Use {nome} para o nome da pessoa. Use *texto* para negrito, _texto_ para itálico (WhatsApp)."></textarea>
+					<small class="form-text text-muted">
+						Use <code>{nome}</code> para o nome da pessoa. No WhatsApp: <code>*negrito*</code> <code>_itálico_</code> <code>~riscado~</code> <code>```mono```</code>
+					</small>
+					<div id="preview-imagem" class="mt-2 d-none">
+						<img id="img-preview" class="img-thumbnail" style="max-height:200px" alt="Preview">
+						<button type="button" class="btn btn-sm btn-outline-danger mt-1" onclick="removerImagem()">
+							<i class="bi bi-trash"></i> Remover imagem
+						</button>
+					</div>
+				</div>
+
+				<div class="alert alert-info">
+					<strong>Preview:</strong>
+					<div id="preview-mensagem" class="mt-2 p-3 bg-white rounded border" style="max-width:360px;font-family:sans-serif;word-wrap:break-word">
+						<div id="preview-imagem-mobile" class="mb-2 d-none">
+							<img id="img-preview-mobile" class="rounded w-100" style="max-height:250px;object-fit:cover" alt="Preview">
+						</div>
+						<div id="preview-texto">Selecione um destinatário para ver o preview</div>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+				<button type="button" class="btn btn-success" onclick="enviarMensagens()" id="btn-confirmar-envio">
+					<i class="bi bi-send"></i> Enviar Mensagens
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+let destinatariosSelecionados = [];
+let filtrosAtuais = {};
+let imagemUrl = '';
+
+function inserirFormatacao(tipo) {
+	const textarea = document.getElementById('conteudo-mensagem');
+	const start = textarea.selectionStart;
+	const end = textarea.selectionEnd;
+	const text = textarea.value;
+	const selected = text.substring(start, end);
+
+	const markers = {
+		bold: ['*', '*'],
+		italic: ['_', '_'],
+		strike: ['~', '~'],
+		mono: ['```', '```'],
+	};
+
+	const [open, close] = markers[tipo] || ['', ''];
+	const replacement = open + (selected || 'texto') + close;
+
+	textarea.value = text.substring(0, start) + replacement + text.substring(end);
+	textarea.focus();
+	const newPos = start + replacement.length;
+	textarea.setSelectionRange(newPos, newPos);
+	atualizarPreview();
+}
+
+function salvarComoTemplate() {
+	const tipoMensagem = document.getElementById('tipo-mensagem').value;
+	const conteudo = document.getElementById('conteudo-mensagem').value;
+
+	if (!tipoMensagem || !conteudo) {
+		alert('Selecione o tipo de mensagem e escreva o conteúdo primeiro.');
+		return;
+	}
+
+	const nome = prompt('Nome do novo template:');
+	if (!nome || !nome.trim()) return;
+
+	fetch('/mensagens/salvar-template-rapido/', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+		},
+		body: JSON.stringify({
+			nome: nome.trim(),
+			tipo_mensagem: tipoMensagem,
+			conteudo: conteudo,
+		})
+	})
+	.then(r => r.json())
+	.then(data => {
+		if (data.success) {
+			alert(`Template "${nome}" salvo com sucesso!`);
+			carregarTemplates();
+		} else {
+			alert('Erro ao salvar template: ' + data.error);
+		}
+	})
+	.catch(e => alert('Erro ao salvar template'));
+}
+
+function uploadImagem(event) {
+	const file = event.target.files[0];
+	if (!file) return;
+
+	if (file.size > 5 * 1024 * 1024) {
+		alert('A imagem deve ter no máximo 5MB.');
+		return;
+	}
+
+	const formData = new FormData();
+	formData.append('imagem', file);
+
+	fetch('/mensagens/upload-imagem/', {
+		method: 'POST',
+		headers: {
+			'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+		},
+		body: formData
+	})
+	.then(r => r.json())
+	.then(data => {
+		if (data.success) {
+			imagemUrl = data.url;
+			const textarea = document.getElementById('conteudo-mensagem');
+			const placeholder = '\n[📷 Imagem anexada]\n';
+			if (!textarea.value.includes('[📷 Imagem anexada]')) {
+				textarea.value += placeholder;
+			}
+			document.getElementById('img-preview').src = data.url;
+			document.getElementById('preview-imagem').classList.remove('d-none');
+			document.getElementById('img-preview-mobile').src = data.url;
+			document.getElementById('preview-imagem-mobile').classList.remove('d-none');
+			atualizarPreview();
+		} else {
+			alert('Erro ao fazer upload: ' + data.error);
+		}
+	})
+	.catch(e => alert('Erro ao fazer upload'));
+}
+
+function removerImagem() {
+	imagemUrl = '';
+	const textarea = document.getElementById('conteudo-mensagem');
+	textarea.value = textarea.value.replace('\n[📷 Imagem anexada]\n', '').replace('[📷 Imagem anexada]', '');
+	document.getElementById('preview-imagem').classList.add('d-none');
+	document.getElementById('preview-imagem-mobile').classList.add('d-none');
+	document.getElementById('input-imagem').value = '';
+	document.getElementById('img-preview').src = '';
+	document.getElementById('img-preview-mobile').src = '';
+	atualizarPreview();
+}
+
+function toggleAllCheckboxes() {
+	const selectAll = document.getElementById('select-all');
+	const checkboxes = document.querySelectorAll('.contato-checkbox');
+	checkboxes.forEach(cb => cb.checked = selectAll.checked);
+	updateEnvioButton();
+}
+
+function updateEnvioButton() {
+	const checkboxes = document.querySelectorAll('.contato-checkbox:checked');
+	const btnEnviar = document.getElementById('btn-enviar-mensagens');
+
+	if (checkboxes.length > 0) {
+		btnEnviar.style.display = 'inline-block';
+		btnEnviar.innerHTML = `<i class="bi bi-send"></i> Enviar Mensagens (${checkboxes.length})`;
+	} else {
+		btnEnviar.style.display = 'none';
+	}
+}
+
+function abrirModalEnvio() {
+	destinatariosSelecionados = [];
+	const checkboxes = document.querySelectorAll('.contato-checkbox:checked');
+
+	checkboxes.forEach(checkbox => {
+		destinatariosSelecionados.push({
+			nome: checkbox.dataset.nome,
+			telefone: checkbox.dataset.telefone,
+			tipo: checkbox.dataset.tipo,
+			id: checkbox.dataset.id
+		});
+	});
+
+	atualizarListaDestinatarios();
+	document.getElementById('preview-texto').innerHTML = 'Selecione um destinatário para ver o preview';
+
+	// Capturar filtros atuais
+	filtrosAtuais = {
+		tipo: document.getElementById('tipo').value,
+		grupo_id: document.getElementById('grupo').value,
+		cidade_id: document.getElementById('cidade').value,
+		bairro_id: document.getElementById('bairro').value,
+	};
+
+	const modal = new bootstrap.Modal(document.getElementById('modalEnvioMensagens'));
+	modal.show();
+}
+
+function atualizarListaDestinatarios() {
+	const container = document.getElementById('destinatarios-selecionados');
+
+	if (destinatariosSelecionados.length === 0) {
+		container.innerHTML = '<p class="text-muted mb-0">Nenhum destinatário selecionado</p>';
+		return;
+	}
+
+	let html = '<div class="d-flex flex-wrap gap-2">';
+	destinatariosSelecionados.forEach((dest, index) => {
+		html += `
+			<span class="badge bg-primary d-flex align-items-center gap-1">
+				${dest.nome}
+				<button type="button" class="btn-close btn-close-white" style="font-size: 0.7em;"
+						onclick="removerDestinatario(${index})"></button>
+			</span>
+		`;
+	});
+	html += '</div>';
+
+	container.innerHTML = html;
+}
+
+function removerDestinatario(index) {
+	destinatariosSelecionados.splice(index, 1);
+	atualizarListaDestinatarios();
+	updateEnvioButton();
+}
+
+function carregarTemplates() {
+	const tipo = document.getElementById('tipo-mensagem').value;
+	const selectTemplate = document.getElementById('template-mensagem');
+
+	selectTemplate.innerHTML = '<option value="">Selecione um template</option>';
+
+	if (!tipo) return;
+
+	fetch(`/mensagens/templates/?tipo=${tipo}`)
+		.then(response => response.json())
+		.then(data => {
+			data.templates.forEach(template => {
+				const option = document.createElement('option');
+				option.value = template.id;
+				option.textContent = template.nome;
+				option.dataset.conteudo = template.conteudo;
+				selectTemplate.appendChild(option);
+			});
+		})
+		.catch(error => {
+			console.error('Erro ao carregar templates:', error);
+		});
+}
+
+function aplicarTemplate() {
+	const selectTemplate = document.getElementById('template-mensagem');
+	const textarea = document.getElementById('conteudo-mensagem');
+
+	if (selectTemplate.value) {
+		const template = selectTemplate.options[selectTemplate.selectedIndex];
+		textarea.value = template.dataset.conteudo;
+		atualizarPreview();
+	}
+}
+
+function formatarPreview(texto) {
+	let html = texto
+		.replace(/{nome}/g, '<span class="text-primary fw-bold">[NOME]</span>')
+		.replace(/{idade}/g, '<span class="text-primary fw-bold">[IDADE]</span>')
+		.replace(/\*(.*?)\*/g, '<strong>$1</strong>')
+		.replace(/_(.*?)_/g, '<em>$1</em>')
+		.replace(/~(.*?)~/g, '<s>$1</s>')
+		.replace(/```(.*?)```/g, '<code>$1</code>')
+		.replace(/\n/g, '<br>');
+	return html;
+}
+
+function atualizarPreview() {
+	const conteudo = document.getElementById('conteudo-mensagem').value;
+	const previewTexto = document.getElementById('preview-texto');
+
+	if (imagemUrl) {
+		document.getElementById('preview-imagem-mobile').classList.remove('d-none');
+		document.getElementById('img-preview-mobile').src = imagemUrl;
+	} else {
+		document.getElementById('preview-imagem-mobile').classList.add('d-none');
+	}
+
+	if (destinatariosSelecionados.length > 0) {
+		const primeiro = destinatariosSelecionados[0];
+		const texto = conteudo.replace(/{nome}/g, primeiro.nome).replace('[📷 Imagem anexada]', '');
+		previewTexto.innerHTML = formatarPreview(texto);
+	} else {
+		previewTexto.innerHTML = 'Selecione um destinatário para ver o preview';
+	}
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+	const textarea = document.getElementById('conteudo-mensagem');
+	if (textarea) {
+		textarea.addEventListener('input', atualizarPreview);
+	}
+});
+
+function enviarMensagens() {
+	const tipoMensagem = document.getElementById('tipo-mensagem').value;
+	const conteudo = document.getElementById('conteudo-mensagem').value;
+	const templateId = document.getElementById('template-mensagem').value;
+	const tituloCampanha = document.getElementById('titulo-campanha').value;
+
+	if (!tipoMensagem || !conteudo || destinatariosSelecionados.length === 0) {
+		alert('Por favor, preencha todos os campos obrigatórios');
+		return;
+	}
+
+	const btnEnviar = document.getElementById('btn-confirmar-envio');
+	btnEnviar.disabled = true;
+	btnEnviar.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Enviando...';
+
+	const data = {
+		destinatarios: destinatariosSelecionados,
+		tipo_mensagem: tipoMensagem,
+		conteudo: conteudo,
+		template_id: templateId,
+		titulo_campanha: tituloCampanha,
+		imagem_url: imagemUrl,
+	};
+
+	fetch('/mensagens/enviar-massa/', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+		},
+		body: JSON.stringify(data)
+	})
+	.then(response => response.json())
+	.then(data => {
+		if (data.success) {
+			alert(`Campanha enviada com sucesso!\n\nTotal: ${data.total_destinatarios}\nEnviadas: ${data.total_enviadas}\nFalhas: ${data.total_falhas}`);
+			bootstrap.Modal.getInstance(document.getElementById('modalEnvioMensagens')).hide();
+			document.querySelectorAll('.contato-checkbox:checked').forEach(cb => cb.checked = false);
+			updateEnvioButton();
+		} else {
+			alert('Erro ao enviar mensagens: ' + data.error);
+		}
+	})
+	.catch(error => {
+		console.error('Erro:', error);
+		alert('Erro ao enviar mensagens');
+	})
+	.finally(() => {
+		btnEnviar.disabled = false;
+		btnEnviar.innerHTML = '<i class="bi bi-send"></i> Enviar Mensagens';
+	});
+}
+
+function carregarBairros() {
+	const cidadeId = document.getElementById('cidade').value;
+	const selectBairro = document.getElementById('bairro');
+
+	for (const option of selectBairro.options) {
+		if (!cidadeId || option.dataset.cidade === cidadeId) {
+			option.style.display = '';
+		} else {
+			option.style.display = 'none';
+		}
+	}
+	selectBairro.value = '';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+	carregarBairros();
+});
+</script>
+{% endblock %}

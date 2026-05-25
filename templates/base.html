@@ -956,6 +956,7 @@ text-align: left;
         })();
     </script>
 
+    {% block extra_css %}{% endblock %}
 
 </head>
 
@@ -1048,6 +1049,7 @@ text-align: left;
 </li>
 
                     <li class="nav-item"><a class="nav-link" href="{% url 'mapa_apoiadores' %}"><i class="bi bi-map-fill me-2"></i>Mapa</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'mensagens:painel_mensagens' %}"><i class="bi bi-chat-dots-fill me-2"></i>Mensagens</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'aniversariantes' %}"><i class="bi bi-gift-fill me-2"></i>Aniversariantes</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'historico:historico_list' %}"><i class="bi bi-clock-history me-2"></i>Logs</a></li>
                     {# Link para o módulo de recepção visível apenas para recepcionistas/supervisores/admins #}
@@ -1110,6 +1112,7 @@ text-align: left;
                 </ul>
             </li>
             <li class="nav-item"><a class="nav-link d-flex align-items-center {% if request.path|startswith:'/mapa' %}active{% endif %}" href="{% url 'mapa_apoiadores' %}"><i class="bi bi-map-fill me-2"></i><span>Mapa</span></a></li>
+            <li class="nav-item"><a class="nav-link d-flex align-items-center {% if request.path|startswith:'/mensagens' %}active{% endif %}" href="{% url 'mensagens:painel_mensagens' %}"><i class="bi bi-chat-dots-fill me-2"></i><span>Mensagens</span></a></li>
             <li class="nav-item"><a class="nav-link d-flex align-items-center {% if request.path == '/aniversariantes/' %}active{% endif %}" href="{% url 'aniversariantes' %}"><i class="bi bi-gift-fill me-2"></i><span>Aniversariantes</span></a></li>
             <li class="nav-item"><a class="nav-link d-flex align-items-center {% if request.path|startswith:'/historico' %}active{% endif %}" href="{% url 'historico:historico_list' %}"><i class="bi bi-clock-history me-2"></i><span>Logs</span></a></li>
             {% if user.is_authenticated %}

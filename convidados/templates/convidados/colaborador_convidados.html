@@ -7,106 +7,27 @@
 {% block extra_css %}
     <style>
 
-        /* Cores das metas - consistentes com outras páginas - CSS mais específico */
-        .table-scroll-container .table.table-hover tbody tr.meta-abaixo td,
-        .table-scroll-container .table.table-hover tbody tr.meta-abaixo:hover td,
-        .table-scroll-container .table tbody tr.meta-abaixo td {
-            background-color: #f8d7da !important;
-            border-color: #f5c6cb !important;
-            color: #721c24 !important;
+        .capital-row {
+            --bs-table-bg: #367962;
+            --bs-table-color: #ffffff;
+            --bs-table-striped-bg: #2e644f;
+            --bs-table-striped-color: #ffffff;
+            --bs-table-hover-bg: #2c5f4e;
+            --bs-table-hover-color: #ffffff;
         }
-
-        .table-scroll-container .table.table-hover tbody tr.meta-atingida td,
-        .table-scroll-container .table.table-hover tbody tr.meta-atingida:hover td,
-        .table-scroll-container .table tbody tr.meta-atingida td {
-            background-color: #d1e7dd !important;
-            border-color: #badbcc !important;
-            color: #0f5132 !important;
-        }
-
-        .table-scroll-container .table.table-hover tbody tr.meta-superada td,
-        .table-scroll-container .table.table-hover tbody tr.meta-superada:hover td,
-        .table-scroll-container .table tbody tr.meta-superada td {
-            background-color: #cfe2ff !important;
-            border-color: #b6d7ff !important;
-            color: #084298 !important;
-        }
-
-        /* Cores das metas - iguais à lista de colaboradores */
-        .table-danger {
-            background-color: #f8d7da !important;
-            border-color: #f5c6cb !important;
-            color: #721c24 !important;
-        }
-        
-        .table-success {
-            background-color: #d1e7dd !important;
-            border-color: #badbcc !important;
-            color: #0f5132 !important;
-        }
-        
-        .table-primary {
-            background-color: #cfe2ff !important;
-            border-color: #b6d7ff !important;
-            color: #084298 !important;
+        .interior-row {
+            --bs-table-bg: #D4A373;
+            --bs-table-color: #ffffff;
+            --bs-table-striped-bg: #c49363;
+            --bs-table-striped-color: #ffffff;
+            --bs-table-hover-bg: #ba8a59;
+            --bs-table-hover-color: #ffffff;
         }
 
         body.dark-theme {
             background: linear-gradient(to right, #333, #555);
             color: #f0f0f0;
         }
-
-        /* Cores das metas para tema escuro - iguais ao tema claro - CSS mais específico */
-        body.dark-theme .table-scroll-container .table.table-hover tbody tr.meta-abaixo td,
-        body.dark-theme .table-scroll-container .table.table-hover tbody tr.meta-abaixo:hover td,
-        body.dark-theme .table-scroll-container .table tbody tr.meta-abaixo td {
-            background-color: #f8d7da !important;
-            border-color: #f5c6cb !important;
-            color: #721c24 !important;
-        }
-
-        body.dark-theme .table-scroll-container .table.table-hover tbody tr.meta-atingida td,
-        body.dark-theme .table-scroll-container .table.table-hover tbody tr.meta-atingida:hover td,
-        body.dark-theme .table-scroll-container .table tbody tr.meta-atingida td {
-            background-color: #d1e7dd !important;
-            border-color: #badbcc !important;
-            color: #0f5132 !important;
-        }
-
-        body.dark-theme .table-scroll-container .table.table-hover tbody tr.meta-superada td,
-        body.dark-theme .table-scroll-container .table.table-hover tbody tr.meta-superada:hover td,
-        body.dark-theme .table-scroll-container .table tbody tr.meta-superada td {
-            background-color: #cfe2ff !important;
-            border-color: #b6d7ff !important;
-            color: #084298 !important;
-        }
-
-        /* Cores das metas para tema escuro - iguais ao tema claro */
-        body.dark-theme .table-danger {
-            background-color: #f8d7da !important;
-            border-color: #f5c6cb !important;
-            color: #721c24 !important;
-        }
-        
-        body.dark-theme .table-success {
-            background-color: #d1e7dd !important;
-            border-color: #badbcc !important;
-            color: #0f5132 !important;
-        }
-        
-        body.dark-theme .table-primary {
-            background-color: #cfe2ff !important;
-            border-color: #b6d7ff !important;
-            color: #084298 !important;
-        }
-
-        body.dark-theme .table-light {
-             background-color: #4a4a4a;
-        }
-        body.dark-theme .table-success {
-    --bs-table-bg: #146c43; /* Verde escuro e vibrante */
-    --bs-table-hover-bg: #1d8250;
-}
 
 
         /* Estilos específicos para os cards de informação desta página */
@@ -298,6 +219,13 @@
                                 aria-valuemin="0"
                                 aria-valuemax="{{ meta }}">
                                 {{ porcentagem_meta|floatformat:0 }}%
+                            </div>
+                        </div>
+
+                        <div class="mt-3 text-start small">
+                            <div class="d-flex justify-content-between px-1">
+                                <span><span class="badge" style="background-color: #367962;">Capital</span> {{ convidados_capital }}</span>
+                                <span><span class="badge" style="background-color: #D4A373;">Interior</span> {{ convidados_interior }}</span>
                             </div>
                         </div>
                     </div>

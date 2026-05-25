@@ -8,8 +8,8 @@
     <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1 class="card-title h3 mb-0">Gerenciar Templates</h1>
-            <a href="{% url 'aniversariantes' %}" class="btn btn-primary">
-                <i class="bi bi-arrow-left"></i> Voltar para Aniversariantes
+            <a href="{% url 'mensagens:painel_mensagens' %}" class="btn btn-primary">
+                <i class="bi bi-arrow-left"></i> Voltar para Mensagens
             </a>
         </div>
         
@@ -92,10 +92,9 @@
                                     </td>
                                     <td>{{ template.criado_em|date:"d/m/Y H:i" }}</td>
                                     <td>
-                                        <button class="btn btn-sm btn-outline-primary" 
-                                                onclick="editarTemplate({{ template.id }})">
+                                        <a href="{% url 'mensagens:editar_template' template.id %}" class="btn btn-sm btn-outline-primary">
                                             <i class="bi bi-pencil"></i>
-                                        </button>
+                                        </a>
                                         <button class="btn btn-sm btn-outline-danger" 
                                                 onclick="excluirTemplate({{ template.id }})">
                                             <i class="bi bi-trash"></i>
@@ -115,15 +114,25 @@
 </div>
 
 <script>
-function editarTemplate(id) {
-    // Implementar edição de template
-    alert('Funcionalidade de edição será implementada em breve!');
-}
-
 function excluirTemplate(id) {
     if (confirm('Tem certeza que deseja excluir este template?')) {
-        // Implementar exclusão de template
-        alert('Funcionalidade de exclusão será implementada em breve!');
+        fetch(`/mensagens/templates/excluir/${id}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Erro ao excluir template: ' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('Erro ao excluir template');
+        });
     }
 }
 </script>

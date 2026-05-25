@@ -73,9 +73,8 @@ class WhatsAppSelenium:
 
     def enviar_mensagem(self, telefone, mensagem):
         """Envia uma mensagem para um número"""
-        if not self.is_logged_in:
-            if not self.login():
-                return False
+        if not self.is_logged_in and not self.login():
+            return False
 
         try:
             # Formatar telefone (remover caracteres especiais)
