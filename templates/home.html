@@ -61,6 +61,13 @@
         background: linear-gradient(135deg, #22d3ee 0%, #06b6d4 100%);
     }
 
+    [data-bs-theme="light"] .mensagens-bg { 
+        background: linear-gradient(135deg, #0088cc 0%, #006699 100%);
+    }
+    [data-bs-theme="dark"] .mensagens-bg { 
+        background: linear-gradient(135deg, #00a3e0 0%, #0088cc 100%);
+    }
+
     /* Título da home */
     .home-title {
         font-size: 2.5rem;
@@ -193,6 +200,15 @@
                     <i class="bi bi-calendar-event" style="font-size: 2.5rem;"></i>
                     <span class="mt-2">Aniversariantes</span>
                 </a>
+            </div>
+
+            {# Botão Mensagens #}
+            <div class="col-6 col-md-4 col-lg-3">
+                <a href="{% url 'mensagens:painel_mensagens' %}" class="custom-nav-btn mensagens-bg">
+                    <i class="bi bi-send" style="font-size: 2.5rem;"></i>
+                    <span class="mt-2">Mensagens</span>
+                </a>
+            </div>
             </div>
             
         </div>

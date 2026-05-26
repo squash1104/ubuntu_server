@@ -35,10 +35,28 @@
             </div>
             <div class="mb-3">
                 <label for="conteudo" class="form-label">Conteúdo do Template:</label>
-                <textarea class="form-control" id="conteudo" name="conteudo" rows="4" required>{{ template.conteudo }}</textarea>
+                <div class="btn-toolbar mb-2 gap-1" role="toolbar">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="inserirFormatacao('bold')" title="Negrito"><b>B</b></button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="inserirFormatacao('italic')" title="Itálico"><i>I</i></button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="inserirFormatacao('strike')" title="Riscado"><s>S</s></button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="inserirFormatacao('mono')" title="Monoespaçado"><code>T</code></button>
+                    <div class="vr mx-1"></div>
+                    <button type="button" class="btn btn-sm btn-outline-info" onclick="document.getElementById('input-imagem').click()" title="Anexar imagem">
+                        <i class="bi bi-image"></i> Anexar Imagem
+                    </button>
+                    <input type="file" id="input-imagem" accept="image/*" style="display:none" onchange="uploadImagem(event)">
+                </div>
+                <textarea class="form-control" id="conteudo" name="conteudo" rows="4"
+                          placeholder="Digite o conteúdo do template... Use {nome} para o nome da pessoa e {idade} para a idade. Use *texto* para negrito, _texto_ para itálico (WhatsApp)." required>{{ template.conteudo }}</textarea>
                 <small class="form-text text-muted">
-                    Use <code>{nome}</code> para o nome da pessoa e <code>{idade}</code> para a idade
+                    Use <code>{nome}</code> para o nome e <code>{idade}</code> para a idade. No WhatsApp: <code>*negrito*</code> <code>_itálico_</code> <code>~riscado~</code> <code>```mono```</code>
                 </small>
+                <div id="preview-imagem" class="mt-2 d-none">
+                    <img id="img-preview" class="img-thumbnail" style="max-height:200px" alt="Preview">
+                    <button type="button" class="btn btn-sm btn-outline-danger mt-1" onclick="removerImagem()">
+                        <i class="bi bi-trash"></i> Remover imagem
+                    </button>
+                </div>
             </div>
             <button type="submit" class="btn btn-success">
                 <i class="bi bi-save"></i> Salvar Alterações
@@ -46,4 +64,77 @@
         </form>
     </div>
 </div>
+
+<script>
+let imagemUrl = '';
+
+function inserirFormatacao(tipo) {
+    const textarea = document.getElementById('conteudo');
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = textarea.value;
+    const selected = text.substring(start, end);
+
+    const markers = {
+        bold: ['*', '*'],
+        italic: ['_', '_'],
+        strike: ['~', '~'],
+        mono: ['```', '```'],
+    };
+
+    const [open, close] = markers[tipo] || ['', ''];
+    const replacement = open + (selected || 'texto') + close;
+
+    textarea.value = text.substring(0, start) + replacement + text.substring(end);
+    textarea.focus();
+    const newPos = start + replacement.length;
+    textarea.setSelectionRange(newPos, newPos);
+}
+
+function uploadImagem(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+        alert('A imagem deve ter no máximo 5MB.');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('imagem', file);
+
+    fetch('/mensagens/upload-imagem/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            imagemUrl = data.url;
+            const textarea = document.getElementById('conteudo');
+            const placeholder = '\n[📷 Imagem anexada]\n';
+            if (!textarea.value.includes('[📷 Imagem anexada]')) {
+                textarea.value += placeholder;
+            }
+            document.getElementById('img-preview').src = data.url;
+            document.getElementById('preview-imagem').classList.remove('d-none');
+        } else {
+            alert('Erro ao fazer upload: ' + data.error);
+        }
+    })
+    .catch(e => alert('Erro ao fazer upload'));
+}
+
+function removerImagem() {
+    imagemUrl = '';
+    const textarea = document.getElementById('conteudo');
+    textarea.value = textarea.value.replace('\n[📷 Imagem anexada]\n', '').replace('[📷 Imagem anexada]', '');
+    document.getElementById('preview-imagem').classList.add('d-none');
+    document.getElementById('input-imagem').value = '';
+    document.getElementById('img-preview').src = '';
+}
+</script>
 {% endblock %}

@@ -10,32 +10,49 @@
 	<div class="card-body">
 		<div class="d-flex justify-content-between align-items-center mb-4">
 			<h1 class="card-title h3 mb-0">Aniversariantes</h1>
-			<div class="d-flex align-items-center" style="gap:.5rem">
+			<div class="d-flex align-items-center flex-wrap" style="gap:.5rem">
+				<a href="{% url 'mensagens:campanhas_list' %}" class="btn btn-outline-info btn-sm">
+					<i class="bi bi-megaphone"></i> Campanhas
+				</a>
+				<a href="{% url 'mensagens:historico_mensagens' %}" class="btn btn-outline-secondary btn-sm">
+					<i class="bi bi-clock-history"></i> Histórico
+				</a>
+				<a href="{% url 'mensagens:gerenciar_templates' %}" class="btn btn-outline-primary btn-sm">
+					<i class="bi bi-file-text"></i> Templates
+				</a>
+				<div class="vr mx-1"></div>
 				<form method="get" class="d-flex align-items-center" style="gap:.5rem">
-					<label for="mes" class="form-label mb-0">Filtrar por mês:</label>
+					<label for="mes" class="form-label mb-0">Mês:</label>
 					<select name="mes" id="mes" class="form-select form-select-sm" style="width:auto">
 						<option value="">Todos</option>
 						{% for m in meses_lista %}
 							<option value="{{ m }}" {% if mes_int == m %}selected{% endif %}>{% if m == 1 %}Janeiro{% elif m == 2 %}Fevereiro{% elif m == 3 %}Março{% elif m == 4 %}Abril{% elif m == 5 %}Maio{% elif m == 6 %}Junho{% elif m == 7 %}Julho{% elif m == 8 %}Agosto{% elif m == 9 %}Setembro{% elif m == 10 %}Outubro{% elif m == 11 %}Novembro{% elif m == 12 %}Dezembro{% endif %}</option>
 						{% endfor %}
 					</select>
-					<label for="tipo" class="form-label mb-0 ms-3">Tipo:</label>
+					<label for="tipo" class="form-label mb-0">Tipo:</label>
 					<select name="tipo" id="tipo" class="form-select form-select-sm" style="width:auto">
 						<option value="todos" {% if tipo == 'todos' %}selected{% endif %}>Todos</option>
 						<option value="colaboradores" {% if tipo == 'colaboradores' %}selected{% endif %}>Colaboradores</option>
 						<option value="convidados" {% if tipo == 'convidados' %}selected{% endif %}>Convidados</option>
 					</select>
+					<label for="grupo" class="form-label mb-0">Grupo:</label>
+					<select name="grupo" id="grupo" class="form-select form-select-sm" style="width:auto">
+						<option value="">Todos os grupos</option>
+						{% for g in tipos_colaborador %}
+							<option value="{{ g.id }}" {% if grupo_id == g.id|stringformat:"s" %}selected{% endif %}>{{ g.nome }}</option>
+						{% endfor %}
+					</select>
 					<button class="btn btn-primary btn-sm" type="submit">Aplicar</button>
 				</form>
-				<button class="btn btn-success btn-sm ms-3" onclick="abrirModalEnvio()" id="btn-enviar-mensagens" style="display: none;">
+				<button class="btn btn-success btn-sm" onclick="abrirModalEnvio()" id="btn-enviar-mensagens" style="display: none;">
 					<i class="bi bi-send"></i> Enviar Mensagens
 				</button>
 			</div>
 		</div>
 
-		{% if sem_filtro_mes %}
+		{% if not mes_int %}
 		<h5 class="mt-2">Aniversariantes do dia</h5>
-		<div class="text-muted mb-2">{{ hoje_str }}</div>
+		<h6 class="text-primary mb-2">{{ hoje_str }}</h6>
 		<div class="table-responsive mb-4">
 			<table class="table table-striped table-hover">
 				<thead class="table-light">
@@ -67,12 +84,13 @@
 						<td>
 							{% if p.tipo_registro == 'colaborador' %}
 								<span class="badge bg-primary">Colaborador</span>
+								{% if p.tipo__nome %}<span class="badge bg-{{ p.tipo__cor }}">{{ p.tipo__nome }}</span>{% endif %}
 							{% else %}
 								<span class="badge bg-success">Convidado</span>
 							{% endif %}
 						</td>
 						{% if tipo == 'todos' or tipo == 'convidados' %}
-							<td>{% if p.tipo_registro == 'convidado' %}{{ p.colaborador_nome|default:'-' }}{% else %}-{% endif %}</td>
+							<td>{% if p.tipo_registro == 'convidado' %}{{ p.colaborador_nome|default:'-' }}{% if p.colaborador__tipo__nome %} <span class="badge bg-{{ p.colaborador__tipo__cor }}">{{ p.colaborador__tipo__nome }}</span>{% endif %}{% else %}-{% endif %}</td>
 						{% endif %}
 						<td>{{ p.idade|default:'-' }}</td>
 						<td>{{ p.telefone|default:'-' }}</td>
@@ -87,65 +105,62 @@
 		</div>
 
 		<h5>Próximos aniversários</h5>
-		{% if proximos_por_data %}
-			{% for data, aniversariantes in proximos_por_data.items %}
-				<div class="mb-4">
-					<h6 class="text-primary mb-2">{{ data }}</h6>
-					<div class="table-responsive">
-						<table class="table table-striped table-hover">
-							<thead class="table-light">
-								<tr>
-									<th width="50">
-										<input type="checkbox" class="select-all-proximos" onchange="toggleAllCheckboxes('proximos')">
-									</th>
-									<th>Nome</th>
-									<th>Tipo</th>
-									{% if tipo == 'todos' or tipo == 'convidados' %}
-										<th>Convidado por</th>
-									{% endif %}
-									<th>Idade</th>
-									<th>Telefone</th>
-									<th>Cidade</th>
-									<th>Bairro</th>
-								</tr>
-							</thead>
-							<tbody>
-								{% for p in aniversariantes %}
-								<tr>
-									<td>
-									<input type="checkbox" class="aniversariante-checkbox" data-section="proximos" 
-										   data-nome="{{ p.nome }}" data-telefone="{{ p.telefone }}" 
-										   data-tipo="{{ p.tipo_registro }}" data-id="{{ forloop.counter0 }}"
-										   onchange="updateEnvioButton()">
-									</td>
-									<td>{{ p.nome }}</td>
-									<td>
-										{% if p.tipo_registro == 'colaborador' %}
-											<span class="badge bg-primary">Colaborador</span>
-										{% else %}
-											<span class="badge bg-success">Convidado</span>
-										{% endif %}
-									</td>
-									{% if tipo == 'todos' or tipo == 'convidados' %}
-										<td>{% if p.tipo_registro == 'convidado' %}{{ p.colaborador_nome|default:'-' }}{% else %}-{% endif %}</td>
-									{% endif %}
-									<td>{{ p.idade|default:'-' }}</td>
-									<td>{{ p.telefone|default:'-' }}</td>
-									<td>{{ p.cidade__nome_cidade|default:'-' }}</td>
-									<td>{{ p.bairro__nome_bairro|default:'-' }}</td>
-								</tr>
-								{% endfor %}
-							</tbody>
-						</table>
-					</div>
-				</div>
-			{% endfor %}
+		{% if proximos_amanha %}
+			<h6 class="text-primary mb-2">{{ proximos_amanha_data }}</h6>
+			<div class="table-responsive">
+				<table class="table table-striped table-hover">
+					<thead class="table-light">
+						<tr>
+							<th width="50">
+								<input type="checkbox" class="select-all-proximos" onchange="toggleAllCheckboxes('proximos')">
+							</th>
+							<th>Nome</th>
+							<th>Tipo</th>
+							{% if tipo == 'todos' or tipo == 'convidados' %}
+								<th>Convidado por</th>
+							{% endif %}
+							<th>Idade</th>
+							<th>Telefone</th>
+							<th>Cidade</th>
+							<th>Bairro</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for p in proximos_amanha %}
+						<tr>
+							<td>
+							<input type="checkbox" class="aniversariante-checkbox" data-section="proximos" 
+								   data-nome="{{ p.nome }}" data-telefone="{{ p.telefone }}" 
+								   data-tipo="{{ p.tipo_registro }}" data-id="{{ forloop.counter0 }}"
+								   onchange="updateEnvioButton()">
+							</td>
+							<td>{{ p.nome }}</td>
+							<td>
+								{% if p.tipo_registro == 'colaborador' %}
+									<span class="badge bg-primary">Colaborador</span>
+									{% if p.tipo__nome %}<span class="badge bg-{{ p.tipo__cor }}">{{ p.tipo__nome }}</span>{% endif %}
+								{% else %}
+									<span class="badge bg-success">Convidado</span>
+								{% endif %}
+							</td>
+							{% if tipo == 'todos' or tipo == 'convidados' %}
+								<td>{% if p.tipo_registro == 'convidado' %}{{ p.colaborador_nome|default:'-' }}{% if p.colaborador__tipo__nome %} <span class="badge bg-{{ p.colaborador__tipo__cor }}">{{ p.colaborador__tipo__nome }}</span>{% endif %}{% else %}-{% endif %}</td>
+							{% endif %}
+							<td>{{ p.idade|default:'-' }}</td>
+							<td>{{ p.telefone|default:'-' }}</td>
+							<td>{{ p.cidade__nome_cidade|default:'-' }}</td>
+							<td>{{ p.bairro__nome_bairro|default:'-' }}</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
 		{% else %}
-			<p class="text-muted">Nenhum aniversariante nos próximos 7 dias.</p>
+			<p class="text-muted">Nenhum aniversariante amanhã.</p>
 		{% endif %}
 		{% endif %}
 
-		{% if lista_mes_por_data %}
+		{% if mes_int and lista_mes_por_data %}
 		<h5>Aniversariantes de {% if mes_int == 1 %}Janeiro{% elif mes_int == 2 %}Fevereiro{% elif mes_int == 3 %}Março{% elif mes_int == 4 %}Abril{% elif mes_int == 5 %}Maio{% elif mes_int == 6 %}Junho{% elif mes_int == 7 %}Julho{% elif mes_int == 8 %}Agosto{% elif mes_int == 9 %}Setembro{% elif mes_int == 10 %}Outubro{% elif mes_int == 11 %}Novembro{% elif mes_int == 12 %}Dezembro{% endif %}</h5>
 		{% for data, aniversariantes in lista_mes_por_data.items %}
 			<div class="mb-4">
@@ -181,12 +196,13 @@
 								<td>
 									{% if p.tipo_registro == 'colaborador' %}
 										<span class="badge bg-primary">Colaborador</span>
+										{% if p.tipo__nome %}<span class="badge bg-{{ p.tipo__cor }}">{{ p.tipo__nome }}</span>{% endif %}
 									{% else %}
 										<span class="badge bg-success">Convidado</span>
 									{% endif %}
 								</td>
 								{% if tipo == 'todos' or tipo == 'convidados' %}
-									<td>{% if p.tipo_registro == 'convidado' %}{{ p.colaborador_nome|default:'-' }}{% else %}-{% endif %}</td>
+									<td>{% if p.tipo_registro == 'convidado' %}{{ p.colaborador_nome|default:'-' }}{% if p.colaborador__tipo__nome %} <span class="badge bg-{{ p.colaborador__tipo__cor }}">{{ p.colaborador__tipo__nome }}</span>{% endif %}{% else %}-{% endif %}</td>
 								{% endif %}
 								<td>{{ p.idade|default:'-' }}</td>
 								<td>{{ p.telefone|default:'-' }}</td>
@@ -201,72 +217,122 @@
 		{% endfor %}
 		{% endif %}
 
-		{# Quando filtro de mês == Todos: renderizar cards separados por mês #}
-		{% if mes is not None and not mes_int and lista_todos_meses %}
-			<div class="row g-3">
-			{% for mes_num, datas_dict in lista_todos_meses.items %}
-				<div class="col-12">
-					<div class="card shadow-sm">
-						<div class="card-header bg-light">
-							<h5 class="mb-0 text-dark">
-								{% if mes_num == 1 %}Janeiro{% elif mes_num == 2 %}Fevereiro{% elif mes_num == 3 %}Março{% elif mes_num == 4 %}Abril{% elif mes_num == 5 %}Maio{% elif mes_num == 6 %}Junho{% elif mes_num == 7 %}Julho{% elif mes_num == 8 %}Agosto{% elif mes_num == 9 %}Setembro{% elif mes_num == 10 %}Outubro{% elif mes_num == 11 %}Novembro{% elif mes_num == 12 %}Dezembro{% endif %}
-							</h5>
-						</div>
-						<div class="card-body">
-							<div class="table-responsive">
-								<table class="table table-striped table-hover">
-									<thead class="table-light">
-										<tr>
-											<th width="50"></th>
-											<th>Data</th>
-											<th>Nome</th>
-											<th>Tipo</th>
-											{% if tipo == 'todos' or tipo == 'convidados' %}
-												<th>Convidado por</th>
-											{% endif %}
-											<th>Idade</th>
-											<th>Telefone</th>
-											<th>Cidade</th>
-											<th>Bairro</th>
-										</tr>
-									</thead>
-									<tbody>
-										{% for data_str, pessoas in datas_dict.items %}
-											{% for p in pessoas %}
-											<tr>
-												<td>
-													<input type="checkbox" class="aniversariante-checkbox" data-section="mes"
-													   data-nome="{{ p.nome }}" data-telefone="{{ p.telefone }}"
-													   data-tipo="{{ p.tipo_registro }}" data-id="{{ forloop.counter0 }}"
-													   onchange="updateEnvioButton()">
-												</td>
-											<td class="text-nowrap"><strong>{{ data_str }}</strong></td>
-											<td>{{ p.nome }}</td>
-											<td>
-												{% if p.tipo_registro == 'colaborador' %}
-													<span class="badge bg-primary">Colaborador</span>
-												{% else %}
-													<span class="badge bg-success">Convidado</span>
-												{% endif %}
-											</td>
-											{% if tipo == 'todos' or tipo == 'convidados' %}
-												<td>{% if p.tipo_registro == 'convidado' %}{{ p.colaborador_nome|default:'-' }}{% else %}-{% endif %}</td>
-											{% endif %}
-											<td>{{ p.idade|default:'-' }}</td>
-											<td>{{ p.telefone|default:'-' }}</td>
-											<td>{{ p.cidade__nome_cidade|default:'-' }}</td>
-											<td>{{ p.bairro__nome_bairro|default:'-' }}</td>
-										</tr>
-										{% endfor %}
-									{% endfor %}
-									</tbody>
-								</table>
-							</div>
-						</div>
-					</div>
+		{% if not mes_int and lista_meses_circular %}
+			{% for mes_num, datas_dict in lista_meses_circular.items %}
+				<h5 class="mt-2">
+					{% if mes_num == 1 %}Janeiro{% elif mes_num == 2 %}Fevereiro{% elif mes_num == 3 %}Março{% elif mes_num == 4 %}Abril{% elif mes_num == 5 %}Maio{% elif mes_num == 6 %}Junho{% elif mes_num == 7 %}Julho{% elif mes_num == 8 %}Agosto{% elif mes_num == 9 %}Setembro{% elif mes_num == 10 %}Outubro{% elif mes_num == 11 %}Novembro{% elif mes_num == 12 %}Dezembro{% endif %}
+				</h5>
+				<div class="table-responsive mb-4">
+					<table class="table table-striped table-hover">
+						<thead class="table-light">
+							<tr>
+								<th width="50"></th>
+								<th>Data</th>
+								<th>Nome</th>
+								<th>Tipo</th>
+								{% if tipo == 'todos' or tipo == 'convidados' %}
+									<th>Convidado por</th>
+								{% endif %}
+								<th>Idade</th>
+								<th>Telefone</th>
+								<th>Cidade</th>
+								<th>Bairro</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for data_str, pessoas in datas_dict.items %}
+								{% for p in pessoas %}
+								<tr>
+									<td>
+										<input type="checkbox" class="aniversariante-checkbox" data-section="mes"
+										   data-nome="{{ p.nome }}" data-telefone="{{ p.telefone }}"
+										   data-tipo="{{ p.tipo_registro }}" data-id="{{ forloop.counter0 }}"
+										   onchange="updateEnvioButton()">
+									</td>
+								<td class="text-nowrap"><strong>{{ data_str }}</strong></td>
+								<td>{{ p.nome }}</td>
+								<td>
+									{% if p.tipo_registro == 'colaborador' %}
+										<span class="badge bg-primary">Colaborador</span>
+										{% if p.tipo__nome %}<span class="badge bg-{{ p.tipo__cor }}">{{ p.tipo__nome }}</span>{% endif %}
+									{% else %}
+										<span class="badge bg-success">Convidado</span>
+									{% endif %}
+								</td>
+								{% if tipo == 'todos' or tipo == 'convidados' %}
+									<td>{% if p.tipo_registro == 'convidado' %}{{ p.colaborador_nome|default:'-' }}{% if p.colaborador__tipo__nome %} <span class="badge bg-{{ p.colaborador__tipo__cor }}">{{ p.colaborador__tipo__nome }}</span>{% endif %}{% else %}-{% endif %}</td>
+								{% endif %}
+								<td>{{ p.idade|default:'-' }}</td>
+								<td>{{ p.telefone|default:'-' }}</td>
+								<td>{{ p.cidade__nome_cidade|default:'-' }}</td>
+								<td>{{ p.bairro__nome_bairro|default:'-' }}</td>
+							</tr>
+							{% endfor %}
+						{% endfor %}
+						</tbody>
+					</table>
 				</div>
 			{% endfor %}
-			</div>
+
+			{% if lista_anteriores %}
+			<hr class="my-4">
+			<h5>Aniversários anteriores</h5>
+			{% for mes_num, datas_dict in lista_anteriores.items %}
+				<h5 class="mt-2">
+					{% if mes_num == 1 %}Janeiro{% elif mes_num == 2 %}Fevereiro{% elif mes_num == 3 %}Março{% elif mes_num == 4 %}Abril{% elif mes_num == 5 %}Maio{% elif mes_num == 6 %}Junho{% elif mes_num == 7 %}Julho{% elif mes_num == 8 %}Agosto{% elif mes_num == 9 %}Setembro{% elif mes_num == 10 %}Outubro{% elif mes_num == 11 %}Novembro{% elif mes_num == 12 %}Dezembro{% endif %}
+				</h5>
+				<div class="table-responsive mb-4">
+					<table class="table table-striped table-hover">
+						<thead class="table-light">
+							<tr>
+								<th width="50"></th>
+								<th>Data</th>
+								<th>Nome</th>
+								<th>Tipo</th>
+								{% if tipo == 'todos' or tipo == 'convidados' %}
+									<th>Convidado por</th>
+								{% endif %}
+								<th>Idade</th>
+								<th>Telefone</th>
+								<th>Cidade</th>
+								<th>Bairro</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for data_str, pessoas in datas_dict.items %}
+								{% for p in pessoas %}
+								<tr>
+									<td>
+										<input type="checkbox" class="aniversariante-checkbox" data-section="mes"
+										   data-nome="{{ p.nome }}" data-telefone="{{ p.telefone }}"
+										   data-tipo="{{ p.tipo_registro }}" data-id="{{ forloop.counter0 }}"
+										   onchange="updateEnvioButton()">
+									</td>
+								<td class="text-nowrap"><strong>{{ data_str }}</strong></td>
+								<td>{{ p.nome }}</td>
+								<td>
+									{% if p.tipo_registro == 'colaborador' %}
+										<span class="badge bg-primary">Colaborador</span>
+										{% if p.tipo__nome %}<span class="badge bg-{{ p.tipo__cor }}">{{ p.tipo__nome }}</span>{% endif %}
+									{% else %}
+										<span class="badge bg-success">Convidado</span>
+									{% endif %}
+								</td>
+								{% if tipo == 'todos' or tipo == 'convidados' %}
+									<td>{% if p.tipo_registro == 'convidado' %}{{ p.colaborador_nome|default:'-' }}{% if p.colaborador__tipo__nome %} <span class="badge bg-{{ p.colaborador__tipo__cor }}">{{ p.colaborador__tipo__nome }}</span>{% endif %}{% else %}-{% endif %}</td>
+								{% endif %}
+								<td>{{ p.idade|default:'-' }}</td>
+								<td>{{ p.telefone|default:'-' }}</td>
+								<td>{{ p.cidade__nome_cidade|default:'-' }}</td>
+								<td>{{ p.bairro__nome_bairro|default:'-' }}</td>
+							</tr>
+							{% endfor %}
+						{% endfor %}
+						</tbody>
+					</table>
+				</div>
+			{% endfor %}
+			{% endif %}
 		{% endif %}
 	</div>
 </div>
@@ -281,12 +347,17 @@
 			</div>
 			<div class="modal-body">
 				<div class="mb-3">
+					<label for="titulo-campanha" class="form-label">Título da Campanha:</label>
+					<input type="text" id="titulo-campanha" class="form-control" placeholder="Ex: Campanha de Aniversário" value="Mensagem de Aniversário">
+				</div>
+
+				<div class="mb-3">
 					<label class="form-label">Destinatários Selecionados:</label>
 					<div id="destinatarios-selecionados" class="border rounded p-2" style="max-height: 150px; overflow-y: auto;">
 						<p class="text-muted mb-0">Nenhum destinatário selecionado</p>
 					</div>
 				</div>
-				
+
 				<div class="mb-3">
 					<label for="tipo-mensagem" class="form-label">Tipo de Mensagem:</label>
 					<select id="tipo-mensagem" class="form-select" onchange="carregarTemplates()">
@@ -295,27 +366,50 @@
 						<option value="whatsapp">WhatsApp</option>
 					</select>
 				</div>
-				
+
 				<div class="mb-3">
 					<label for="template-mensagem" class="form-label">Template:</label>
 					<select id="template-mensagem" class="form-select" onchange="aplicarTemplate()">
 						<option value="">Selecione um template</option>
 					</select>
 				</div>
-				
+
 				<div class="mb-3">
-					<label for="conteudo-mensagem" class="form-label">Conteúdo da Mensagem:</label>
-					<textarea id="conteudo-mensagem" class="form-control" rows="4" 
-							  placeholder="Digite sua mensagem aqui... Use {nome} para o nome da pessoa e {idade} para a idade"></textarea>
+					<label class="form-label">Conteúdo da Mensagem:</label>
+					<div class="btn-toolbar mb-2 gap-1" role="toolbar">
+						<button type="button" class="btn btn-sm btn-outline-secondary" onclick="inserirFormatacao('bold')" title="Negrito"><b>B</b></button>
+						<button type="button" class="btn btn-sm btn-outline-secondary" onclick="inserirFormatacao('italic')" title="Itálico"><i>I</i></button>
+						<button type="button" class="btn btn-sm btn-outline-secondary" onclick="inserirFormatacao('strike')" title="Riscado"><s>S</s></button>
+						<button type="button" class="btn btn-sm btn-outline-secondary" onclick="inserirFormatacao('mono')" title="Monoespaçado"><code>T</code></button>
+						<div class="vr mx-1"></div>
+						<button type="button" class="btn btn-sm btn-outline-success" onclick="salvarComoTemplate()" title="Salvar como template">
+							<i class="bi bi-bookmark-plus"></i> Salvar Template
+						</button>
+						<button type="button" class="btn btn-sm btn-outline-info" onclick="document.getElementById('input-imagem').click()" title="Anexar imagem">
+							<i class="bi bi-image"></i> Anexar Imagem
+						</button>
+						<input type="file" id="input-imagem" accept="image/*" style="display:none" onchange="uploadImagem(event)">
+					</div>
+					<textarea id="conteudo-mensagem" class="form-control" rows="4"
+							  placeholder="Digite sua mensagem aqui... Use {nome} para o nome da pessoa e {idade} para a idade. Use *texto* para negrito, _texto_ para itálico (WhatsApp)."></textarea>
 					<small class="form-text text-muted">
-						Use {nome} para o nome da pessoa e {idade} para a idade
+						Use <code>{nome}</code> para o nome e <code>{idade}</code> para a idade. No WhatsApp: <code>*negrito*</code> <code>_itálico_</code> <code>~riscado~</code> <code>```mono```</code>
 					</small>
+					<div id="preview-imagem" class="mt-2 d-none">
+						<img id="img-preview" class="img-thumbnail" style="max-height:200px" alt="Preview">
+						<button type="button" class="btn btn-sm btn-outline-danger mt-1" onclick="removerImagem()">
+							<i class="bi bi-trash"></i> Remover imagem
+						</button>
+					</div>
 				</div>
-				
+
 				<div class="alert alert-info">
 					<strong>Preview:</strong>
-					<div id="preview-mensagem" class="mt-2 p-2 bg-light rounded">
-						Selecione um destinatário para ver o preview
+					<div id="preview-mensagem" class="mt-2 p-3 bg-white rounded border" style="max-width:360px;font-family:sans-serif;word-wrap:break-word">
+						<div id="preview-imagem-mobile" class="mb-2 d-none">
+							<img id="img-preview-mobile" class="rounded w-100" style="max-height:250px;object-fit:cover" alt="Preview">
+						</div>
+						<div id="preview-texto">Selecione um destinatário para ver o preview</div>
 					</div>
 				</div>
 			</div>
@@ -331,6 +425,120 @@
 
 <script>
 let destinatariosSelecionados = [];
+let filtrosAtuais = {};
+let imagemUrl = '';
+
+function inserirFormatacao(tipo) {
+	const textarea = document.getElementById('conteudo-mensagem');
+	const start = textarea.selectionStart;
+	const end = textarea.selectionEnd;
+	const text = textarea.value;
+	const selected = text.substring(start, end);
+
+	const markers = {
+		bold: ['*', '*'],
+		italic: ['_', '_'],
+		strike: ['~', '~'],
+		mono: ['```', '```'],
+	};
+
+	const [open, close] = markers[tipo] || ['', ''];
+	const replacement = open + (selected || 'texto') + close;
+
+	textarea.value = text.substring(0, start) + replacement + text.substring(end);
+	textarea.focus();
+	const newPos = start + replacement.length;
+	textarea.setSelectionRange(newPos, newPos);
+	atualizarPreview();
+}
+
+function salvarComoTemplate() {
+	const tipoMensagem = document.getElementById('tipo-mensagem').value;
+	const conteudo = document.getElementById('conteudo-mensagem').value;
+
+	if (!tipoMensagem || !conteudo) {
+		alert('Selecione o tipo de mensagem e escreva o conteúdo primeiro.');
+		return;
+	}
+
+	const nome = prompt('Nome do novo template:');
+	if (!nome || !nome.trim()) return;
+
+	fetch('/mensagens/salvar-template-rapido/', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+		},
+		body: JSON.stringify({
+			nome: nome.trim(),
+			tipo_mensagem: tipoMensagem,
+			conteudo: conteudo,
+		})
+	})
+	.then(r => r.json())
+	.then(data => {
+		if (data.success) {
+			alert(`Template "${nome}" salvo com sucesso!`);
+			carregarTemplates();
+		} else {
+			alert('Erro ao salvar template: ' + data.error);
+		}
+	})
+	.catch(e => alert('Erro ao salvar template'));
+}
+
+function uploadImagem(event) {
+	const file = event.target.files[0];
+	if (!file) return;
+
+	if (file.size > 5 * 1024 * 1024) {
+		alert('A imagem deve ter no máximo 5MB.');
+		return;
+	}
+
+	const formData = new FormData();
+	formData.append('imagem', file);
+
+	fetch('/mensagens/upload-imagem/', {
+		method: 'POST',
+		headers: {
+			'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+		},
+		body: formData
+	})
+	.then(r => r.json())
+	.then(data => {
+		if (data.success) {
+			imagemUrl = data.url;
+			const textarea = document.getElementById('conteudo-mensagem');
+			const placeholder = '\n[📷 Imagem anexada]\n';
+			if (!textarea.value.includes('[📷 Imagem anexada]')) {
+				textarea.value += placeholder;
+			}
+			document.getElementById('img-preview').src = data.url;
+			document.getElementById('preview-imagem').classList.remove('d-none');
+			document.getElementById('img-preview-mobile').src = data.url;
+			document.getElementById('preview-imagem-mobile').classList.remove('d-none');
+			atualizarPreview();
+		} else {
+			alert('Erro ao fazer upload: ' + data.error);
+		}
+	})
+	.catch(e => alert('Erro ao fazer upload'));
+}
+
+function removerImagem() {
+	imagemUrl = '';
+	const textarea = document.getElementById('conteudo-mensagem');
+	textarea.value = textarea.value.replace('\n[📷 Imagem anexada]\n', '').replace('[📷 Imagem anexada]', '');
+	document.getElementById('preview-imagem').classList.add('d-none');
+	document.getElementById('preview-imagem-mobile').classList.add('d-none');
+	document.getElementById('input-imagem').value = '';
+	document.getElementById('img-preview').src = '';
+	document.getElementById('img-preview-mobile').src = '';
+	atualizarPreview();
+}
 
 function toggleAllCheckboxes(section) {
 	let selectAll;
@@ -354,7 +562,7 @@ function toggleAllCheckboxes(section) {
 function updateEnvioButton() {
 	const checkboxes = document.querySelectorAll('.aniversariante-checkbox:checked');
 	const btnEnviar = document.getElementById('btn-enviar-mensagens');
-	
+
 	if (checkboxes.length > 0) {
 		btnEnviar.style.display = 'inline-block';
 		btnEnviar.innerHTML = `<i class="bi bi-send"></i> Enviar Mensagens (${checkboxes.length})`;
@@ -366,49 +574,48 @@ function updateEnvioButton() {
 function abrirModalEnvio() {
 	destinatariosSelecionados = [];
 	const checkboxes = document.querySelectorAll('.aniversariante-checkbox:checked');
-	
-	console.log('🔍 Checkboxes selecionados:', checkboxes.length);
-	
-	checkboxes.forEach((checkbox, index) => {
-		const destinatario = {
+
+	checkboxes.forEach(checkbox => {
+		destinatariosSelecionados.push({
 			nome: checkbox.dataset.nome,
 			telefone: checkbox.dataset.telefone,
 			tipo: checkbox.dataset.tipo,
 			id: checkbox.dataset.id
-		};
-		console.log(`   ${index + 1}. ${destinatario.nome} - ${destinatario.telefone} (${destinatario.tipo})`);
-		destinatariosSelecionados.push(destinatario);
+		});
 	});
-	
-	console.log('📋 Total destinatários:', destinatariosSelecionados.length);
-	
+
 	atualizarListaDestinatarios();
-	document.getElementById('preview-mensagem').innerHTML = 'Selecione um destinatário para ver o preview';
-	
+	document.getElementById('preview-texto').innerHTML = 'Selecione um destinatário para ver o preview';
+
+	filtrosAtuais = {
+		tipo: document.getElementById('tipo').value,
+		mes: document.getElementById('mes').value,
+	};
+
 	const modal = new bootstrap.Modal(document.getElementById('modalEnvioMensagens'));
 	modal.show();
 }
 
 function atualizarListaDestinatarios() {
 	const container = document.getElementById('destinatarios-selecionados');
-	
+
 	if (destinatariosSelecionados.length === 0) {
 		container.innerHTML = '<p class="text-muted mb-0">Nenhum destinatário selecionado</p>';
 		return;
 	}
-	
+
 	let html = '<div class="d-flex flex-wrap gap-2">';
 	destinatariosSelecionados.forEach((dest, index) => {
 		html += `
 			<span class="badge bg-primary d-flex align-items-center gap-1">
 				${dest.nome}
-				<button type="button" class="btn-close btn-close-white" style="font-size: 0.7em;" 
+				<button type="button" class="btn-close btn-close-white" style="font-size: 0.7em;"
 						onclick="removerDestinatario(${index})"></button>
 			</span>
 		`;
 	});
 	html += '</div>';
-	
+
 	container.innerHTML = html;
 }
 
@@ -421,11 +628,11 @@ function removerDestinatario(index) {
 function carregarTemplates() {
 	const tipo = document.getElementById('tipo-mensagem').value;
 	const selectTemplate = document.getElementById('template-mensagem');
-	
+
 	selectTemplate.innerHTML = '<option value="">Selecione um template</option>';
-	
+
 	if (!tipo) return;
-	
+
 	fetch(`/mensagens/templates/?tipo=${tipo}`)
 		.then(response => response.json())
 		.then(data => {
@@ -445,7 +652,7 @@ function carregarTemplates() {
 function aplicarTemplate() {
 	const selectTemplate = document.getElementById('template-mensagem');
 	const textarea = document.getElementById('conteudo-mensagem');
-	
+
 	if (selectTemplate.value) {
 		const template = selectTemplate.options[selectTemplate.selectedIndex];
 		textarea.value = template.dataset.conteudo;
@@ -453,21 +660,38 @@ function aplicarTemplate() {
 	}
 }
 
+function formatarPreview(texto) {
+	let html = texto
+		.replace(/{nome}/g, '<span class="text-primary fw-bold">[NOME]</span>')
+		.replace(/{idade}/g, '<span class="text-primary fw-bold">[IDADE]</span>')
+		.replace(/\*(.*?)\*/g, '<strong>$1</strong>')
+		.replace(/_(.*?)_/g, '<em>$1</em>')
+		.replace(/~(.*?)~/g, '<s>$1</s>')
+		.replace(/```(.*?)```/g, '<code>$1</code>')
+		.replace(/\n/g, '<br>');
+	return html;
+}
+
 function atualizarPreview() {
 	const conteudo = document.getElementById('conteudo-mensagem').value;
-	const preview = document.getElementById('preview-mensagem');
-	
+	const previewTexto = document.getElementById('preview-texto');
+
+	if (imagemUrl) {
+		document.getElementById('preview-imagem-mobile').classList.remove('d-none');
+		document.getElementById('img-preview-mobile').src = imagemUrl;
+	} else {
+		document.getElementById('preview-imagem-mobile').classList.add('d-none');
+	}
+
 	if (destinatariosSelecionados.length > 0) {
 		const primeiro = destinatariosSelecionados[0];
-		let previewText = conteudo.replace(/{nome}/g, primeiro.nome);
-		previewText = previewText.replace(/{idade}/g, 'XX'); // Placeholder para idade
-		preview.innerHTML = previewText;
+		const texto = conteudo.replace(/{nome}/g, primeiro.nome).replace('[📷 Imagem anexada]', '');
+		previewTexto.innerHTML = formatarPreview(texto);
 	} else {
-		preview.innerHTML = 'Selecione um destinatário para ver o preview';
+		previewTexto.innerHTML = 'Selecione um destinatário para ver o preview';
 	}
 }
 
-// Adicionar listener para atualizar preview em tempo real
 document.addEventListener('DOMContentLoaded', function() {
 	const textarea = document.getElementById('conteudo-mensagem');
 	if (textarea) {
@@ -479,29 +703,27 @@ function enviarMensagens() {
 	const tipoMensagem = document.getElementById('tipo-mensagem').value;
 	const conteudo = document.getElementById('conteudo-mensagem').value;
 	const templateId = document.getElementById('template-mensagem').value;
-	
-	console.log('📤 Enviando mensagens...');
-	console.log('   Tipo:', tipoMensagem);
-	console.log('   Conteúdo:', conteudo);
-	console.log('   Destinatários:', destinatariosSelecionados.length);
-	
+	const tituloCampanha = document.getElementById('titulo-campanha').value;
+
 	if (!tipoMensagem || !conteudo || destinatariosSelecionados.length === 0) {
 		alert('Por favor, preencha todos os campos obrigatórios');
 		return;
 	}
-	
+
 	const btnEnviar = document.getElementById('btn-confirmar-envio');
 	btnEnviar.disabled = true;
 	btnEnviar.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Enviando...';
-	
+
 	const data = {
 		destinatarios: destinatariosSelecionados,
 		tipo_mensagem: tipoMensagem,
 		conteudo: conteudo,
-		template_id: templateId
+		template_id: templateId,
+		titulo_campanha: tituloCampanha,
+		imagem_url: imagemUrl,
 	};
-	
-	fetch('/mensagens/enviar/', {
+
+	fetch('/mensagens/enviar-massa/', {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
@@ -512,8 +734,7 @@ function enviarMensagens() {
 	.then(response => response.json())
 	.then(data => {
 		if (data.success) {
-			alert(`Mensagens enviadas com sucesso! ${data.total_enviadas} de ${destinatariosSelecionados.length} enviadas.`);
-			// Fechar modal e limpar seleções
+			alert(`Mensagens enviadas com sucesso!\n\nTotal: ${data.total_destinatarios}\nEnviadas: ${data.total_enviadas}\nFalhas: ${data.total_falhas}`);
 			bootstrap.Modal.getInstance(document.getElementById('modalEnvioMensagens')).hide();
 			document.querySelectorAll('.aniversariante-checkbox:checked').forEach(cb => cb.checked = false);
 			updateEnvioButton();

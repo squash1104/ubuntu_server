@@ -18,15 +18,15 @@
 					</a>
 				</th>
                 <th scope="col">
-                    <a href="?ordenar_por=cidade__nome_cidade&direcao={% if ordenar_por == 'cidade__nome_cidade' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if termo_busca %}&q={{ termo_busca }}{% endif %}&is_ajax=true">
+                    <a href="?ordenar_por=cidade&direcao={% if ordenar_por == 'cidade' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if termo_busca %}&q={{ termo_busca }}{% endif %}&is_ajax=true">
                         Cidade
-                        {% if ordenar_por == 'cidade__nome_cidade' %}<span class="sort-arrow">{% if direcao == 'asc' %}&#9650;{% else %}&#9660;{% endif %}</span>{% endif %}
+                        {% if ordenar_por == 'cidade' %}<span class="sort-arrow">{% if direcao == 'asc' %}&#9650;{% else %}&#9660;{% endif %}</span>{% endif %}
                     </a>
                 </th>
                 <th scope="col">
-                    <a href="?ordenar_por=bairro__nome_bairro&direcao={% if ordenar_por == 'bairro__nome_bairro' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if termo_busca %}&q={{ termo_busca }}{% endif %}&is_ajax=true">
+                    <a href="?ordenar_por=bairro&direcao={% if ordenar_por == 'bairro' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if termo_busca %}&q={{ termo_busca }}{% endif %}&is_ajax=true">
                         Bairro
-                        {% if ordenar_por == 'bairro__nome_bairro' %}<span class="sort-arrow">{% if direcao == 'asc' %}&#9650;{% else %}&#9660;{% endif %}</span>{% endif %}
+                        {% if ordenar_por == 'bairro' %}<span class="sort-arrow">{% if direcao == 'asc' %}&#9650;{% else %}&#9660;{% endif %}</span>{% endif %}
                     </a>
                 </th>
                     <th scope="col" class="coluna-acoes">Ações</th>
