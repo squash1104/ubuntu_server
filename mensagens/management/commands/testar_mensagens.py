@@ -76,9 +76,6 @@ class Command(BaseCommand):
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"❌ Erro durante o teste: {e!s}"))
 
-        self.stdout.write("\n📋 Para configurar o Twilio:")
-        self.stdout.write("   1. Acesse https://console.twilio.com/")
-        self.stdout.write("   2. Crie uma conta gratuita")
-        self.stdout.write("   3. Copie Account SID e Auth Token")
-        self.stdout.write("   4. Configure no arquivo twilio_config.py")
-        self.stdout.write("   5. Para WhatsApp, use o sandbox: +14155238886")
+        self.stdout.write("\n📋 O envio usa WhatsApp Cloud API (Meta)")
+        self.stdout.write("   Configure as credenciais no arquivo .env")
+        self.stdout.write("   Chave: WHATSAPP_ACCESS_TOKEN, WHATSAPP_PHONE_NUMBER_ID")

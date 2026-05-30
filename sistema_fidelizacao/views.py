@@ -200,7 +200,7 @@ def dashboard(request):
     meta_superada = colaboradores_com_contagem.filter(num_convidados__gt=meta).count()
 
     # Calcula nosso top 10 para grafico
-    top_15_colaboradores = Colaborador.objects.annotate(
+    top_15_colaboradores = Colaborador.objects.select_related("tipo").annotate(
         num_convidados=Count("convidados", distinct=True)
     ).order_by("-num_convidados")[:15]
 

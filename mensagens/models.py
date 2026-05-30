@@ -121,6 +121,14 @@ class TemplateMensagem(models.Model):
     conteudo = models.TextField(
         help_text="Use {nome} para o nome da pessoa e {idade} para a idade"
     )
+    imagem = models.URLField(blank=True, default="")
+    meta_template_name = models.CharField(
+        max_length=100, blank=True, default="",
+        help_text="Nome do template aprovado no Meta Business (ex: promocao_maio). Deixe vazio para enviar como texto livre."
+    )
+    meta_template_language = models.CharField(
+        max_length=10, blank=True, default="pt_BR"
+    )
     ativo = models.BooleanField(default=True)
     criado_em = models.DateTimeField(auto_now_add=True)
     criado_por = models.ForeignKey(User, on_delete=models.CASCADE)

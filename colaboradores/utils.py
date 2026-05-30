@@ -1,6 +1,45 @@
 from collections import OrderedDict
 
 from django.http import HttpResponse
+
+from .models import TipoColaborador
+
+
+def tipos_do_usuario(user):
+    """Retorna QuerySet de TipoColaborador que o user pode gerenciar"""
+    if user.is_superuser:
+        return TipoColaborador.objects.filter(ativo=True)
+    return TipoColaborador.objects.filter(responsaveis=user, ativo=True)
+
+
+def usuario_e_gestor(user):
+    """True se é gestor de grupo (não superuser, mas responsável por ao menos um tipo)"""
+    return (
+        user.is_authenticated
+        and not user.is_superuser
+        and TipoColaborador.objects.filter(responsaveis=user, ativo=True).exists()
+    )
+
+
+def verificar_acesso_modulo(user, modulo):
+    """Verifica se user tem acesso a um módulo restrito.
+    Retorna (permitido, mensagem_erro)."""
+    if user.is_superuser:
+        return True, ""
+    if not usuario_e_gestor(user):
+        return True, ""
+    try:
+        profile = user.profile
+    except Exception:
+        return False, "Perfil de usuário não encontrado."
+    flags = {
+        "aniversariantes": profile.acesso_aniversariantes,
+        "mensagens": profile.acesso_mensagens,
+        "historico": profile.acesso_historico,
+    }
+    if flags.get(modulo):
+        return True, ""
+    return False, "Acesso restrito. Você não tem permissão para acessar este módulo."
 from django.template.loader import get_template
 from django.utils import timezone
 from openpyxl import Workbook

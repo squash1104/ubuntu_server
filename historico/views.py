@@ -1,13 +1,16 @@
 from datetime import datetime, timedelta
 
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth.views import PasswordResetConfirmView
 from django.core.paginator import Paginator
 from django.db.models import Count, Q
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
+
+from colaboradores.utils import verificar_acesso_modulo
 
 from .models import Historico, TipoAcao, TipoObjeto
 from .utils import registrar_reset_senha
@@ -15,6 +18,10 @@ from .utils import registrar_reset_senha
 
 @login_required
 def historico_list(request):
+    permitido, erro = verificar_acesso_modulo(request.user, "historico")
+    if not permitido:
+        messages.error(request, erro)
+        return redirect("home")
     """Lista o histórico de ações do sistema"""
 
     # Filtros
@@ -156,6 +163,10 @@ def historico_list(request):
 @login_required
 def historico_detail(request, pk):
     """Detalhes de um registro de histórico"""
+    permitido, erro = verificar_acesso_modulo(request.user, "historico")
+    if not permitido:
+        messages.error(request, erro)
+        return redirect("home")
     try:
         historico = Historico.objects.select_related("usuario").get(pk=pk)
     except Historico.DoesNotExist:

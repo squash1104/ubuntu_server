@@ -212,6 +212,7 @@
         .rank-text { min-height: 56px; display: flex; flex-direction: column; justify-content: center; }
         .rank-name { display: flex; flex-direction: column; line-height: 1.15; }
         .rank-name small { margin-top: 2px; white-space: nowrap; }
+        .colab-link:hover { text-decoration: underline !important; }
 
     </style>
 {% endblock %}
@@ -261,24 +262,26 @@
                 <!-- Grupos breakdown -->
                 <div class="mt-3">
                     <div class="card">
-                        <div class="card-body py-2 px-3">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="card-body py-2 px-3 d-flex flex-column" style="height: 240px;">
+                            <div class="d-flex justify-content-between align-items-center mb-2 flex-shrink-0">
                                 <span style="color: var(--bs-primary); font-size: 1rem; font-weight: 600; letter-spacing: 0.5px;">Colaboradores e Convidados por Grupo</span>
                             </div>
-                            <div class="row text-muted small fw-bold py-1 mx-0" style="border-bottom: 1px solid #dee2e6;">
+                            <div class="row text-muted small fw-bold py-1 mx-0 flex-shrink-0" style="border-bottom: 1px solid #dee2e6;">
                                 <div class="col-8 ps-0">Grupo</div>
                                 <div class="col-2 text-center px-0">Colab.</div>
                                 <div class="col-2 text-center px-0" style="border-left: 1px solid #dee2e6;">Convid.</div>
                             </div>
-                            {% for grupo in grupos_qs %}
-                            <div class="row align-items-center py-1 mx-0">
-                                <div class="col-8 ps-0">
-                                    <span class="badge bg-{{ grupo.cor }} me-1">{{ grupo.nome }}</span>
+                            <div style="overflow-y: auto; flex-grow: 1; min-height: 0;">
+                                {% for grupo in grupos_qs %}
+                                <div class="row align-items-center py-1 mx-0">
+                                    <div class="col-8 ps-0">
+                                        <span class="badge bg-{{ grupo.cor }} me-1">{{ grupo.nome }}</span>
+                                    </div>
+                                    <div class="col-2 text-center px-0 fw-bold">{{ grupo.total_colab }}</div>
+                                    <div class="col-2 text-center px-0 fw-bold" style="border-left: 1px solid #dee2e6;">{{ grupo.total_conv }}</div>
                                 </div>
-                                <div class="col-2 text-center px-0 fw-bold">{{ grupo.total_colab }}</div>
-                                <div class="col-2 text-center px-0 fw-bold" style="border-left: 1px solid #dee2e6;">{{ grupo.total_conv }}</div>
+                                {% endfor %}
                             </div>
-                            {% endfor %}
                         </div>
                     </div>
                 </div>
@@ -301,7 +304,11 @@
                                     {% for colaborador in top_15_colaboradores %}
                                     <tr>
                                         <th scope="row">{{ forloop.counter }}</th>
-                                        <td>{{ colaborador.nome }}</td>
+                                        <td>
+                                            <a href="{% url 'convidados:colaborador_convidados' colaborador.pk %}?from=dashboard" class="text-reset text-decoration-none colab-link">
+                                                {{ colaborador.nome }}
+                                            </a>
+                                        </td>
                                         <td class="text-center fw-bold">{{ colaborador.num_convidados }}</td>
                                     </tr>
                                     {% endfor %}

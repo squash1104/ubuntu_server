@@ -9,6 +9,7 @@ class TipoColaboradorAdmin(admin.ModelAdmin):
     list_filter = ("ativo", "data_cadastro")
     search_fields = ("nome", "descricao")
     ordering = ("nome",)
+    filter_horizontal = ("responsaveis",)
 
 
 admin.site.register(Colaborador)

@@ -9,6 +9,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_http_methods
 
 from colaboradores.models import Colaborador
+from colaboradores.utils import tipos_do_usuario, usuario_e_gestor
 from geografia.models import Bairro
 from historico.utils import (
     registrar_criacao_convidado,
@@ -42,6 +43,9 @@ def lista_convidados(request):
         ordenar_por_query = f"-{ordenar_por_param}"
 
     convidados_qs = Convidado.objects.select_related("colaborador", "cidade", "bairro")
+    convidados_qs = convidados_qs.filter(
+        colaborador__tipo__in=tipos_do_usuario(request.user)
+    )
 
     if termo_busca:
         convidados_qs = convidados_qs.filter(
@@ -89,6 +93,13 @@ def lista_convidados(request):
 @login_required
 def colaborador_convidados(request, pk):
     colaborador = get_object_or_404(Colaborador, pk=pk)
+
+    # Verificar permissão
+    tipos_ids = list(tipos_do_usuario(request.user).values_list("id", flat=True))
+    if colaborador.tipo_id not in tipos_ids:
+        messages.error(request, "Você não tem permissão para acessar este colaborador.")
+        return redirect("convidados:lista_convidados")
+
     convidados_do_colaborador = Convidado.objects.filter(colaborador=colaborador)
     total_convidados = convidados_do_colaborador.count()
 
@@ -156,9 +167,16 @@ def cadastrar_convidado(request, colaborador_id=None):
     colaborador = None
     if colaborador_id:
         colaborador = get_object_or_404(Colaborador, pk=colaborador_id)
+        # Verificar permissão
+        tipos_ids = list(tipos_do_usuario(request.user).values_list("id", flat=True))
+        if colaborador.tipo_id not in tipos_ids:
+            messages.error(
+                request, "Você não tem permissão para cadastrar convidados neste grupo."
+            )
+            return redirect("convidados:lista_convidados")
 
     if request.method == "POST":
-        form = ConvidadoForm(request.POST)
+        form = ConvidadoForm(request.POST, user=request.user)
         if form.is_valid():
             try:
                 convidado = form.save(commit=False)
@@ -239,9 +257,9 @@ def cadastrar_convidado(request, colaborador_id=None):
                 )
     else:
         if colaborador:
-            form = ConvidadoForm(initial={"colaborador": colaborador})
+            form = ConvidadoForm(initial={"colaborador": colaborador}, user=request.user)
         else:
-            form = ConvidadoForm()
+            form = ConvidadoForm(user=request.user)
 
     context = {
         "form": form,
@@ -254,6 +272,12 @@ def cadastrar_convidado(request, colaborador_id=None):
 @login_required
 def editar_convidado(request, pk):
     convidado = get_object_or_404(Convidado, pk=pk)
+
+    # Verificar permissão
+    tipos_ids = list(tipos_do_usuario(request.user).values_list("id", flat=True))
+    if convidado.colaborador.tipo_id not in tipos_ids:
+        messages.error(request, "Você não tem permissão para editar este convidado.")
+        return redirect("convidados:lista_convidados")
 
     # SALVAR DADOS ANTES DA EDIÇÃO
     dados_antes = {
@@ -270,7 +294,7 @@ def editar_convidado(request, pk):
     }
 
     if request.method == "POST":
-        form = ConvidadoForm(request.POST, instance=convidado)
+        form = ConvidadoForm(request.POST, instance=convidado, user=request.user)
         if form.is_valid():
             form.save()
 
@@ -291,7 +315,7 @@ def editar_convidado(request, pk):
             return redirect("convidados:lista_convidados")
             # ----------------------------------
     else:
-        form = ConvidadoForm(instance=convidado)
+        form = ConvidadoForm(instance=convidado, user=request.user)
 
     # Adiciona a URL de retorno para o contexto, se ela existir
     next_url_get = request.GET.get("next", None)
@@ -305,6 +329,12 @@ def editar_convidado(request, pk):
 @login_required
 def excluir_convidado(request, pk):
     convidado = get_object_or_404(Convidado, pk=pk)
+
+    # Verificar permissão
+    tipos_ids = list(tipos_do_usuario(request.user).values_list("id", flat=True))
+    if convidado.colaborador.tipo_id not in tipos_ids:
+        messages.error(request, "Você não tem permissão para excluir este convidado.")
+        return redirect("convidados:lista_convidados")
 
     if request.method == "POST":
         # Pega a URL de redirecionamento que o formulário enviou
@@ -332,7 +362,12 @@ def excluir_convidado(request, pk):
 
 
 def relatorio_convidados_view(request):
-    f = ConvidadoFilter(request.GET, queryset=Convidado.objects.all())
+    f = ConvidadoFilter(
+        request.GET,
+        queryset=Convidado.objects.filter(
+            colaborador__tipo__in=tipos_do_usuario(request.user)
+        ),
+    )
 
     selected_columns = request.GET.getlist("columns")
 

@@ -1,16 +1,22 @@
 from collections import OrderedDict
 from datetime import date, datetime, timedelta
 
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import CharField, F, Q, Value
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 
 from colaboradores.models import Colaborador, TipoColaborador
+from colaboradores.utils import verificar_acesso_modulo
 from convidados.models import Convidado
 
 
 @login_required
 def aniversariantes_view(request):
+    permitido, erro = verificar_acesso_modulo(request.user, "aniversariantes")
+    if not permitido:
+        messages.error(request, erro)
+        return redirect("home")
     # Filtros
     mes = request.GET.get("mes")  # 1-12
     tipo = request.GET.get("tipo", "todos")  # 'colaboradores' | 'convidados' | 'todos'

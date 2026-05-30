@@ -19,6 +19,17 @@ class ProfileAdmin(admin.ModelAdmin):
         ("Usuário", {"fields": ("user",)}),
         ("Informações Pessoais", {"fields": ("photo", "full_name")}),
         (
+            "Permissões de Módulos",
+            {
+                "fields": (
+                    "acesso_aniversariantes",
+                    "acesso_mensagens",
+                    "acesso_historico",
+                ),
+                "description": "Liberar acesso a módulos restritos para gestores de grupo.",
+            },
+        ),
+        (
             "Metadados",
             {"fields": ("created_at", "updated_at"), "classes": ("collapse",)},
         ),

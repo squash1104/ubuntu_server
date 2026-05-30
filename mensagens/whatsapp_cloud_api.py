@@ -153,39 +153,99 @@ class WhatsAppCloudAPI:
             }
 
     def enviar_mensagem_completa(self, telefone, mensagem=None, caminho_midia=None):
-        """Envia texto + mídia para um destinatário.
-        Se houver mídia, faz upload para o Meta e envia em sequência.
-        Retorna lista de resultados (texto + mídia)."""
+        """Envia mensagem para um destinatário.
+        Se houver mídia, envia imagem com texto como caption (1 mensagem só).
+        Se não houver mídia, envia apenas texto.
+        Retorna lista de resultados."""
         resultados = []
-
-        if mensagem:
-            resultado = self.enviar_mensagem_texto(telefone, mensagem)
-            resultados.append(resultado)
-
-            if not resultado.get("success"):
-                return resultados
 
         if caminho_midia:
             try:
                 upload = self.upload_midia(caminho_midia)
                 if upload.get("success"):
                     media_id = upload["media_id"]
-                    resultado_midia = self.enviar_mensagem_midia(
-                        telefone, media_id, caption=mensagem if not mensagem else None
+                    resultado = self.enviar_mensagem_midia(
+                        telefone, media_id, caption=mensagem or None
                     )
-                    resultados.append(resultado_midia)
+                    resultados.append(resultado)
                 else:
                     resultados.append(
                         {"success": False, "error": "Falha no upload da mídia"}
                     )
             except Exception as e:
                 resultados.append({"success": False, "error": f"Erro no upload: {e!s}"})
+        elif mensagem:
+            resultado = self.enviar_mensagem_texto(telefone, mensagem)
+            resultados.append(resultado)
 
         return resultados
 
     def enviar_mensagem(self, telefone, mensagem):
         """Método mantido para compatibilidade com código existente"""
         return self.enviar_mensagem_texto(telefone, mensagem)
+
+    def enviar_template(
+        self,
+        telefone,
+        template_name,
+        language_code="pt_BR",
+        header_media_id=None,
+        header_type="image",
+    ):
+        """Envia mensagem usando template aprovado no Meta"""
+        if not all([self.phone_number_id, self.access_token]):
+            raise Exception("Configurações do WhatsApp não encontradas")
+
+        telefone_limpo = self._format_telefone(telefone)
+        url = f"{self.base_url}/{self.phone_number_id}/messages"
+
+        payload = {
+            "messaging_product": "whatsapp",
+            "to": telefone_limpo,
+            "type": "template",
+            "template": {
+                "name": template_name,
+                "language": {"code": language_code},
+            },
+        }
+
+        if header_media_id:
+            payload["template"]["components"] = [
+                {
+                    "type": "header",
+                    "parameters": [
+                        {
+                            "type": header_type,
+                            header_type: {"id": header_media_id},
+                        }
+                    ],
+                }
+            ]
+
+        try:
+            response = requests.post(url, headers=self._headers(), json=payload)
+            response.raise_for_status()
+            result = response.json()
+
+            return {
+                "success": True,
+                "message_id": result.get("messages", [{}])[0].get("id"),
+                "status": "sent",
+                "api_response": result,
+            }
+
+        except requests.exceptions.RequestException as e:
+            erro_info = {}
+            if hasattr(e, "response") and e.response is not None:
+                try:
+                    erro_info = e.response.json()
+                except Exception:
+                    erro_info = {"body": e.response.text}
+            return {
+                "success": False,
+                "error": str(e),
+                "api_response": erro_info,
+            }
 
     def verificar_configuracao(self):
         """Verifica se a configuração está correta"""

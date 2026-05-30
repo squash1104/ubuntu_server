@@ -382,7 +382,11 @@
             <a href="{% url 'convidados:cadastrar_convidado_por_colaborador' colaborador.id %}" class="btn btn-primary">
                 <i class="bi bi-person-plus me-1"></i>Novo Convidado
             </a>
-            <a href="{% url 'colaboradores:lista_colaboradores' %}" class="btn btn-secondary">Voltar</a>
+            {% if request.GET.from == 'dashboard' %}
+                <a href="{% url 'dashboard' %}" class="btn btn-secondary">Voltar</a>
+            {% else %}
+                <a href="{% url 'colaboradores:lista_colaboradores' %}" class="btn btn-secondary">Voltar</a>
+            {% endif %}
             <button type="button" class="btn btn-info" onclick="window.print()">
                 <i class="bi bi-printer me-1"></i>Imprimir
             </button>
@@ -396,30 +400,4 @@
 
 <div class="print-footer">Impresso em: {% now "d/m/Y H:i" %}</div>
 
-{% endblock %}
-
-
-{% block extra_js %}
-<script>
-function updateContent(url) {
-        tableContainer.style.opacity = '0.5';
-        fetch(url)
-            .then(response => response.json())
-            .then(data => {
-                tableContainer.innerHTML = data.table_html;
-                summaryContainer.innerHTML = data.summary_html;
-                tableContainer.style.opacity = '1';
-            })
-            .catch(error => console.error('Erro na busca AJAX:', error));
-    }
-
-    // Evento para a ORDENAÇÃO POR COLUNA (ao clicar nos links do cabeçalho)
-    resultsContainer.addEventListener('click', function(event) {
-        const targetLink = event.target.closest('th a');
-        if (targetLink) {
-            event.preventDefault();
-            updateTable(targetLink.href);
-        }
-    });
-</script>
 {% endblock %}

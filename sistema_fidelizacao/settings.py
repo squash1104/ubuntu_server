@@ -467,21 +467,15 @@ else:
     print("❌ Configurações de segurança não aplicadas")
 
 # ===========================================
-# CONFIGURAÇÕES DE MENSAGENS (TWILIO)
+# CONFIGURAÇÕES DE RATE LIMITING PARA MENSAGENS
 # ===========================================
-TWILIO_ACCOUNT_SID = config("TWILIO_ACCOUNT_SID")
-TWILIO_AUTH_TOKEN = config("TWILIO_AUTH_TOKEN")
-TWILIO_WHATSAPP_NUMBER = config("TWILIO_WHATSAPP_NUMBER")
-TWILIO_SMS_NUMBER = config("TWILIO_SMS_NUMBER")
-
-# Configurações de Rate Limiting para mensagens
 MAX_MESSAGES_PER_MINUTE = config("MAX_MESSAGES_PER_MINUTE", default=10, cast=int)
 MAX_MESSAGES_PER_HOUR = config("MAX_MESSAGES_PER_HOUR", default=100, cast=int)
 
 # ===========================================
 # CONFIGURAÇÕES WHATSAPP CLOUD API (META)
 # ===========================================
-WHATSAPP_PHONE_NUMBER_ID = config("WHATSAPP_PHONE_NUMBER_ID")
-WHATSAPP_ACCESS_TOKEN = config("WHATSAPP_ACCESS_TOKEN")
-WHATSAPP_BUSINESS_ACCOUNT_ID = config("WHATSAPP_BUSINESS_ACCOUNT_ID")
+WHATSAPP_PHONE_NUMBER_ID = config("WHATSAPP_PHONE_NUMBER_ID", default="")
+WHATSAPP_ACCESS_TOKEN = config("WHATSAPP_ACCESS_TOKEN", default="")
+WHATSAPP_BUSINESS_ACCOUNT_ID = config("WHATSAPP_BUSINESS_ACCOUNT_ID", default="")
 USAR_WHATSAPP_CLOUD_API = config("USAR_WHATSAPP_CLOUD_API", default=False, cast=bool)

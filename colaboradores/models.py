@@ -1,5 +1,6 @@
 from typing import ClassVar
 
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
 
@@ -27,12 +28,27 @@ COR_CHOICES = [
 ]
 
 
+COR_MAP_HEX = {
+    "success": "#198754",
+    "primary": "#0d6efd",
+    "danger": "#dc3545",
+    "warning": "#ffc107",
+    "info": "#0dcaf0",
+    "secondary": "#6c757d",
+}
+
+
 class TipoColaborador(models.Model):
     nome = models.CharField(max_length=100, unique=True)
     descricao = models.TextField(blank=True, null=True)
     ativo = models.BooleanField(default=True)
     cor = models.CharField(max_length=20, choices=COR_CHOICES, default="success")
     data_cadastro = models.DateTimeField(auto_now_add=True)
+    responsaveis = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        blank=True,
+        verbose_name="Usuários responsáveis",
+    )
 
     class Meta:
         db_table = "tipos_colaborador"
@@ -42,6 +58,10 @@ class TipoColaborador(models.Model):
 
     def __str__(self):
         return self.nome
+
+    @property
+    def cor_css(self):
+        return COR_MAP_HEX.get(self.cor, self.cor)
 
 
 class Colaborador(models.Model):

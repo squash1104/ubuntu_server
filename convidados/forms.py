@@ -3,6 +3,7 @@ import typing
 from django import forms
 
 from colaboradores.models import Colaborador
+from colaboradores.utils import tipos_do_usuario
 
 from .models import Bairro, Convidado
 
@@ -45,7 +46,16 @@ class ConvidadoForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
+
+        # Filtrar colaboradores conforme permissão do usuário
+        if user:
+            tipos = tipos_do_usuario(user)
+            if tipos.exists():
+                self.fields["colaborador"].queryset = Colaborador.objects.filter(
+                    tipo__in=tipos
+                ).order_by("nome")
 
         # Classes e placeholders consistentes com ColaboradorForm
         self.fields["nome"].widget.attrs.update({"class": "form-control"})
@@ -119,8 +129,6 @@ class ConvidadoForm(forms.ModelForm):
                 self.duplicate_phone_convidado = convidado.nome
 
             # Verificar se já existe um colaborador com este telefone
-            from colaboradores.models import Colaborador
-
             colaborador_existente = Colaborador.objects.filter(telefone=telefone)
             if colaborador_existente.exists():
                 colaborador = colaborador_existente.first()

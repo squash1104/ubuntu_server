@@ -422,15 +422,17 @@ function carregarTemplates() {
 
 	fetch(`/mensagens/templates/?tipo=${tipo}`)
 		.then(response => response.json())
-		.then(data => {
-			data.templates.forEach(template => {
-				const option = document.createElement('option');
-				option.value = template.id;
-				option.textContent = template.nome;
-				option.dataset.conteudo = template.conteudo;
-				selectTemplate.appendChild(option);
-			});
-		})
+        .then(data => {
+            data.templates.forEach(template => {
+                const option = document.createElement('option');
+                option.value = template.id;
+                option.textContent = template.nome;
+                option.dataset.conteudo = template.conteudo;
+                option.dataset.imagem = template.imagem || '';
+                option.dataset.metaTemplateName = template.meta_template_name || '';
+                selectTemplate.appendChild(option);
+            });
+        })
 		.catch(error => {
 			console.error('Erro ao carregar templates:', error);
 		});
@@ -439,11 +441,37 @@ function carregarTemplates() {
 function aplicarTemplate() {
 	const selectTemplate = document.getElementById('template-mensagem');
 	const textarea = document.getElementById('conteudo-mensagem');
+	const labelTemplateMeta = document.getElementById('label-template-meta');
 
 	if (selectTemplate.value) {
 		const template = selectTemplate.options[selectTemplate.selectedIndex];
 		textarea.value = template.dataset.conteudo;
+		imagemUrl = template.dataset.imagem || '';
+		const previewContainer = document.getElementById('preview-imagem-mobile');
+		if (imagemUrl) {
+			previewContainer.classList.remove('d-none');
+			document.getElementById('img-preview-mobile').src = imagemUrl;
+		} else {
+			previewContainer.classList.add('d-none');
+			document.getElementById('img-preview-mobile').src = '';
+		}
+		if (template.dataset.metatemplatename) {
+			if (!labelTemplateMeta) {
+				const badge = document.createElement('span');
+				badge.id = 'label-template-meta';
+				badge.className = 'badge bg-success ms-2';
+				badge.textContent = '✅ Template Meta: ' + template.dataset.metatemplatename;
+				textarea.parentNode.insertBefore(badge, textarea.nextSibling);
+			}
+			textarea.readOnly = true;
+		} else {
+			if (labelTemplateMeta) labelTemplateMeta.remove();
+			textarea.readOnly = false;
+		}
 		atualizarPreview();
+	} else {
+		if (labelTemplateMeta) labelTemplateMeta.remove();
+		textarea.readOnly = false;
 	}
 }
 

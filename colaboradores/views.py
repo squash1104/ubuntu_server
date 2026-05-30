@@ -23,6 +23,8 @@ from .utils import (
     exportar_colaboradores_excel,
     exportar_colaboradores_pdf,
     imprimir_relatorio_colaboradores,
+    tipos_do_usuario,
+    usuario_e_gestor,
 )
 
 
@@ -52,6 +54,7 @@ def lista_colaboradores(request):
 
     # Query base
     colaboradores_qs = Colaborador.objects.select_related("cidade", "bairro")
+    colaboradores_qs = colaboradores_qs.filter(tipo__in=tipos_do_usuario(request.user))
 
     # Filtro por região (Capital/Interior)
     capitais = ["Cuiabá", "Várzea Grande"]
@@ -105,8 +108,8 @@ def lista_colaboradores(request):
     soma_convidados_pagina = page_obj.object_list.aggregate(total=Sum("num_convidados"))
     total_convidados_pagina = soma_convidados_pagina["total"] or 0
 
-    # Buscar tipos de colaborador para o filtro
-    tipos_colaborador = TipoColaborador.objects.filter(ativo=True).order_by("nome")
+    # Buscar tipos de colaborador para o filtro (apenas os que o user gerencia)
+    tipos_colaborador = tipos_do_usuario(request.user).order_by("nome")
 
     context = {
         "page_obj": page_obj,  # Usar page_obj (padrão Django)
@@ -131,7 +134,7 @@ def lista_colaboradores(request):
 @login_required
 def adicionar_colaborador(request):
     if request.method == "POST":
-        form = ColaboradorForm(request.POST)
+        form = ColaboradorForm(request.POST, user=request.user)
         if form.is_valid():
             colaborador = form.save(commit=False)
             colaborador.cadastrado_por = request.user
@@ -153,13 +156,19 @@ def adicionar_colaborador(request):
             )
             return redirect("colaboradores:lista_colaboradores")
     else:
-        form = ColaboradorForm()
+        form = ColaboradorForm(user=request.user)
     return render(request, "colaboradores/adicionar_colaborador.html", {"form": form})
 
 
 @login_required
 def editar_colaborador(request, pk):
     colaborador = get_object_or_404(Colaborador, pk=pk)
+
+    # Verificar permissão
+    tipos_ids = list(tipos_do_usuario(request.user).values_list("id", flat=True))
+    if colaborador.tipo_id not in tipos_ids:
+        messages.error(request, "Você não tem permissão para editar este colaborador.")
+        return redirect("colaboradores:lista_colaboradores")
 
     # SALVAR DADOS ANTES DA EDIÇÃO
     dados_antes = {
@@ -182,7 +191,7 @@ def editar_colaborador(request, pk):
     }
 
     if request.method == "POST":
-        form = ColaboradorForm(request.POST, instance=colaborador)
+        form = ColaboradorForm(request.POST, instance=colaborador, user=request.user)
         if form.is_valid():
             form.save()
 
@@ -194,7 +203,7 @@ def editar_colaborador(request, pk):
             messages.success(request, "Colaborador editado com sucesso!")
             return redirect("colaboradores:lista_colaboradores")
     else:
-        form = ColaboradorForm(instance=colaborador)
+        form = ColaboradorForm(instance=colaborador, user=request.user)
 
     context = {
         "form": form,
@@ -206,6 +215,12 @@ def editar_colaborador(request, pk):
 @login_required  # Protege a view de exclusão
 def excluir_colaborador(request, colaborador_id):
     colaborador = get_object_or_404(Colaborador, pk=colaborador_id)
+
+    # Verificar permissão
+    tipos_ids = list(tipos_do_usuario(request.user).values_list("id", flat=True))
+    if colaborador.tipo_id not in tipos_ids:
+        messages.error(request, "Você não tem permissão para excluir este colaborador.")
+        return redirect("colaboradores:lista_colaboradores")
 
     # Contagem de convidados associados
     quantidade_convidados = Convidado.objects.filter(colaborador=colaborador).count()
@@ -249,7 +264,9 @@ def excluir_colaborador(request, colaborador_id):
 
 def relatorio_colaboradores_view(request):
     # Anota a contagem de convidados para cada colaborador
-    queryset = Colaborador.objects.annotate(total_convidados=Count("convidados"))
+    queryset = Colaborador.objects.filter(
+        tipo__in=tipos_do_usuario(request.user)
+    ).annotate(total_convidados=Count("convidados"))
 
     f = ColaboradorFilter(request.GET, queryset=queryset)
 
@@ -309,9 +326,7 @@ def relatorio_colaboradores_view(request):
         "page_obj": page_obj,
         "per_page": per_page,
         "per_page_options": [20, 50, 100, 200],
-        "tipos_colaborador": TipoColaborador.objects.filter(ativo=True).order_by(
-            "nome"
-        ),
+        "tipos_colaborador": tipos_do_usuario(request.user).order_by("nome"),
     }
     return render(request, "relatorios/relatorio_colaboradores_form.html", context)
 

@@ -7,6 +7,7 @@ from django.http import JsonResponse
 from django.shortcuts import redirect, render
 
 from colaboradores.models import Colaborador, TipoColaborador
+from colaboradores.utils import verificar_acesso_modulo
 from convidados.models import Convidado
 from geografia.models import Bairro, Cidade
 
@@ -25,6 +26,11 @@ from .services import MensagemService
 @login_required
 def enviar_mensagens_view(request):
     """View para exibir a interface de envio de mensagens"""
+    permitido, erro = verificar_acesso_modulo(request.user, "mensagens")
+    if not permitido:
+        messages.error(request, erro)
+        return redirect("home")
+
     if request.method == "POST":
         try:
             data = json.loads(request.body)
@@ -84,12 +90,16 @@ def enviar_mensagens_view(request):
 @login_required
 def get_templates_view(request):
     """API para buscar templates por tipo de mensagem"""
+    permitido, erro = verificar_acesso_modulo(request.user, "mensagens")
+    if not permitido:
+        return JsonResponse({"success": False, "error": erro}, status=403)
+
     tipo = request.GET.get("tipo")
     if not tipo:
         return JsonResponse({"error": "Tipo de mensagem não especificado"}, status=400)
 
     templates = TemplateMensagem.objects.filter(tipo_mensagem=tipo, ativo=True).values(
-        "id", "nome", "conteudo"
+        "id", "nome", "conteudo", "imagem", "meta_template_name"
     )
 
     return JsonResponse({"templates": list(templates)})
@@ -98,6 +108,11 @@ def get_templates_view(request):
 @login_required
 def historico_mensagens_view(request):
     """View para exibir histórico de mensagens enviadas"""
+    permitido, erro = verificar_acesso_modulo(request.user, "mensagens")
+    if not permitido:
+        messages.error(request, erro)
+        return redirect("home")
+
     mensagens = MensagemAniversario.objects.select_related("enviado_por").order_by(
         "-data_envio"
     )
@@ -124,23 +139,32 @@ def historico_mensagens_view(request):
 @login_required
 def gerenciar_templates_view(request):
     """View para gerenciar templates de mensagem"""
+    permitido, erro = verificar_acesso_modulo(request.user, "mensagens")
+    if not permitido:
+        messages.error(request, erro)
+        return redirect("home")
+
     if request.method == "POST":
         nome = request.POST.get("nome")
         tipo_mensagem = request.POST.get("tipo_mensagem")
         conteudo = request.POST.get("conteudo")
+        imagem_url = request.POST.get("imagem_url", "")
+        meta_template_name = request.POST.get("meta_template_name", "")
 
         if nome and tipo_mensagem and conteudo:
             TemplateMensagem.objects.create(
                 nome=nome,
                 tipo_mensagem=tipo_mensagem,
                 conteudo=conteudo,
+                imagem=imagem_url,
+                meta_template_name=meta_template_name,
                 criado_por=request.user,
             )
             messages.success(request, "Template criado com sucesso!")
         else:
             messages.error(request, "Todos os campos são obrigatórios!")
 
-        return redirect("gerenciar_templates")
+        return redirect("mensagens:gerenciar_templates")
 
     templates = TemplateMensagem.objects.filter(ativo=True).order_by("nome")
     context = {"templates": templates, "tipos_mensagem": TipoMensagem.choices}
@@ -150,6 +174,11 @@ def gerenciar_templates_view(request):
 @login_required
 def painel_mensagens_view(request):
     """View principal da seção Mensagens com filtros avançados"""
+    permitido, erro = verificar_acesso_modulo(request.user, "mensagens")
+    if not permitido:
+        messages.error(request, erro)
+        return redirect("home")
+
     tipo = request.GET.get("tipo", "todos")
     grupo_id = request.GET.get("grupo")
     cidade_id = request.GET.get("cidade")
@@ -255,6 +284,10 @@ def painel_mensagens_view(request):
 @login_required
 def enviar_mensagens_massa_view(request):
     """View para enviar mensagens em massa apenas para contatos selecionados"""
+    permitido, erro = verificar_acesso_modulo(request.user, "mensagens")
+    if not permitido:
+        return JsonResponse({"success": False, "error": erro}, status=403)
+
     if request.method != "POST":
         return JsonResponse(
             {"success": False, "error": "Método não permitido"}, status=405
@@ -277,6 +310,16 @@ def enviar_mensagens_massa_view(request):
                 },
                 status=400,
             )
+
+        meta_template_name = None
+        meta_template_language = "pt_BR"
+        if template_id:
+            try:
+                tmpl = TemplateMensagem.objects.get(id=template_id, ativo=True)
+                meta_template_name = tmpl.meta_template_name or None
+                meta_template_language = tmpl.meta_template_language or "pt_BR"
+            except TemplateMensagem.DoesNotExist:
+                pass
 
         campanha = CampanhaMensagem.objects.create(
             titulo=titulo_campanha,
@@ -306,6 +349,8 @@ def enviar_mensagens_massa_view(request):
                     enviado_por=request.user,
                     campanha=campanha,
                     media_url=imagem_url,
+                    meta_template_name=meta_template_name,
+                    meta_template_language=meta_template_language,
                 )
                 if resultado.get("success"):
                     enviadas += 1
@@ -341,6 +386,10 @@ def enviar_mensagens_massa_view(request):
 @login_required
 def salvar_template_rapido_view(request):
     """API para salvar template diretamente do modal de envio"""
+    permitido, erro = verificar_acesso_modulo(request.user, "mensagens")
+    if not permitido:
+        return JsonResponse({"success": False, "error": erro}, status=403)
+
     if request.method != "POST":
         return JsonResponse(
             {"success": False, "error": "Método não permitido"}, status=405
@@ -351,6 +400,8 @@ def salvar_template_rapido_view(request):
         nome = data.get("nome", "").strip()
         tipo_mensagem = data.get("tipo_mensagem")
         conteudo = data.get("conteudo", "").strip()
+        imagem_url = data.get("imagem_url", "")
+        meta_template_name = data.get("meta_template_name", "")
 
         if not nome or not tipo_mensagem or not conteudo:
             return JsonResponse(
@@ -362,6 +413,8 @@ def salvar_template_rapido_view(request):
             nome=nome,
             tipo_mensagem=tipo_mensagem,
             conteudo=conteudo,
+            imagem=imagem_url,
+            meta_template_name=meta_template_name,
             criado_por=request.user,
         )
 
@@ -372,6 +425,7 @@ def salvar_template_rapido_view(request):
                     "id": template.id,
                     "nome": template.nome,
                     "conteudo": template.conteudo,
+                    "imagem": template.imagem,
                 },
             }
         )
@@ -382,6 +436,10 @@ def salvar_template_rapido_view(request):
 @login_required
 def upload_imagem_view(request):
     """Upload de imagem para anexar em mensagens WhatsApp"""
+    permitido, erro = verificar_acesso_modulo(request.user, "mensagens")
+    if not permitido:
+        return JsonResponse({"success": False, "error": erro}, status=403)
+
     if request.method != "POST":
         return JsonResponse(
             {"success": False, "error": "Método não permitido"}, status=405
@@ -417,6 +475,11 @@ def upload_imagem_view(request):
 @login_required
 def servir_arquivo_mensagem_view(request, caminho):
     """Serve arquivos uploaded (imagens) para usuarios autenticados"""
+    permitido, erro = verificar_acesso_modulo(request.user, "mensagens")
+    if not permitido:
+        messages.error(request, erro)
+        return redirect("home")
+
     import os
 
     from django.conf import settings
@@ -437,6 +500,11 @@ def servir_arquivo_mensagem_view(request, caminho):
 @login_required
 def editar_template_view(request, template_id):
     """View para editar um template de mensagem"""
+    permitido, erro = verificar_acesso_modulo(request.user, "mensagens")
+    if not permitido:
+        messages.error(request, erro)
+        return redirect("home")
+
     try:
         template = TemplateMensagem.objects.get(id=template_id, ativo=True)
     except TemplateMensagem.DoesNotExist:
@@ -447,11 +515,15 @@ def editar_template_view(request, template_id):
         nome = request.POST.get("nome")
         tipo_mensagem = request.POST.get("tipo_mensagem")
         conteudo = request.POST.get("conteudo")
+        imagem_url = request.POST.get("imagem_url", "")
+        meta_template_name = request.POST.get("meta_template_name", "")
 
         if nome and tipo_mensagem and conteudo:
             template.nome = nome
             template.tipo_mensagem = tipo_mensagem
             template.conteudo = conteudo
+            template.imagem = imagem_url
+            template.meta_template_name = meta_template_name
             template.save()
             messages.success(request, "Template atualizado com sucesso!")
         else:
@@ -469,6 +541,10 @@ def editar_template_view(request, template_id):
 @login_required
 def excluir_template_view(request, template_id):
     """View para excluir (desativar) um template"""
+    permitido, erro = verificar_acesso_modulo(request.user, "mensagens")
+    if not permitido:
+        return JsonResponse({"success": False, "error": erro}, status=403)
+
     if request.method != "POST":
         return JsonResponse(
             {"success": False, "error": "Método não permitido"}, status=405
@@ -488,6 +564,11 @@ def excluir_template_view(request, template_id):
 @login_required
 def campanhas_list_view(request):
     """View para listar campanhas de mensagens"""
+    permitido, erro = verificar_acesso_modulo(request.user, "mensagens")
+    if not permitido:
+        messages.error(request, erro)
+        return redirect("home")
+
     campanhas = CampanhaMensagem.objects.select_related("criado_por").all()
 
     context = {
@@ -499,6 +580,11 @@ def campanhas_list_view(request):
 @login_required
 def campanha_detail_view(request, campanha_id):
     """View para detalhes de uma campanha"""
+    permitido, erro = verificar_acesso_modulo(request.user, "mensagens")
+    if not permitido:
+        messages.error(request, erro)
+        return redirect("home")
+
     try:
         campanha = CampanhaMensagem.objects.get(id=campanha_id)
     except CampanhaMensagem.DoesNotExist:

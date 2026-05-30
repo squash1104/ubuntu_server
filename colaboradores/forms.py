@@ -5,6 +5,7 @@ from django import forms
 from geografia.models import Bairro, Cidade
 
 from .models import Colaborador, TipoColaborador
+from .utils import tipos_do_usuario
 
 
 class RelatorioColaboradoresForm(forms.Form):
@@ -182,7 +183,17 @@ class ColaboradorForm(forms.ModelForm):
         return cleaned_data
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
+
+        # Filtrar tipos conforme permissão do usuário
+        if user:
+            tipos_qs = tipos_do_usuario(user)
+            if tipos_qs.exists():
+                self.fields["tipo"].queryset = tipos_qs
+                if tipos_qs.count() == 1:
+                    self.fields["tipo"].initial = tipos_qs.first()
+                    self.fields["tipo"].empty_label = None
 
         self.fields["nome"].widget.attrs.update({"class": "form-control"})
         self.fields["telefone"].widget.attrs.update({"class": "form-control"})

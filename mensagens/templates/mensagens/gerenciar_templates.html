@@ -41,6 +41,12 @@
                         </div>
                     </div>
                     <div class="mb-3">
+                        <label for="meta_template_name" class="form-label">Template do Meta (opcional):</label>
+                        <input type="text" class="form-control" id="meta_template_name" name="meta_template_name"
+                               placeholder="Ex: promocao_maio (deixe vazio para enviar como texto livre)">
+                        <small class="form-text text-muted">Nome exato do template aprovado no Meta Business. Se preenchido, o sistema envia como template do Meta em vez de texto livre.</small>
+                    </div>
+                    <div class="mb-3">
                         <label for="conteudo" class="form-label">Conteúdo do Template:</label>
                         <div class="btn-toolbar mb-2 gap-1" role="toolbar">
                             <button type="button" class="btn btn-sm btn-outline-secondary" onclick="inserirFormatacao('bold')" title="Negrito"><b>B</b></button>
@@ -53,8 +59,9 @@
                             </button>
                             <input type="file" id="input-imagem" accept="image/*" style="display:none" onchange="uploadImagem(event)">
                         </div>
-                        <textarea class="form-control" id="conteudo" name="conteudo" rows="4" 
+                        <textarea class="form-control" id="conteudo" name="conteudo" rows="4" oninput="atualizarPreview()"
                                   placeholder="Digite o conteúdo do template... Use {nome} para o nome da pessoa e {idade} para a idade. Use *texto* para negrito, _texto_ para itálico (WhatsApp)." required></textarea>
+                        <input type="hidden" name="imagem_url" id="id_imagem_url" value="">
                         <small class="form-text text-muted">
                             Use <code>{nome}</code> para o nome e <code>{idade}</code> para a idade. No WhatsApp: <code>*negrito*</code> <code>_itálico_</code> <code>~riscado~</code> <code>```mono```</code>
                         </small>
@@ -63,6 +70,15 @@
                             <button type="button" class="btn btn-sm btn-outline-danger mt-1" onclick="removerImagem()">
                                 <i class="bi bi-trash"></i> Remover imagem
                             </button>
+                        </div>
+                        <div class="mt-3 p-3 bg-light rounded border" id="preview-template" style="display:none">
+                            <small class="text-muted mb-1 d-block"><i class="bi bi-eye"></i> Preview do Template</small>
+                            <div class="bg-white p-3 rounded shadow-sm" style="max-width:400px">
+                                <div id="preview-template-conteudo" class="mb-2"></div>
+                                <div id="preview-template-imagem" class="d-none">
+                                    <img id="preview-template-img" class="img-fluid rounded" style="max-height:200px">
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <button type="submit" class="btn btn-success">
@@ -179,6 +195,7 @@ function uploadImagem(event) {
     .then(data => {
         if (data.success) {
             imagemUrl = data.url;
+            document.getElementById('id_imagem_url').value = data.url;
             const textarea = document.getElementById('conteudo');
             const placeholder = '\n[📷 Imagem anexada]\n';
             if (!textarea.value.includes('[📷 Imagem anexada]')) {
@@ -186,6 +203,7 @@ function uploadImagem(event) {
             }
             document.getElementById('img-preview').src = data.url;
             document.getElementById('preview-imagem').classList.remove('d-none');
+            atualizarPreview();
         } else {
             alert('Erro ao fazer upload: ' + data.error);
         }
@@ -195,11 +213,48 @@ function uploadImagem(event) {
 
 function removerImagem() {
     imagemUrl = '';
+    document.getElementById('id_imagem_url').value = '';
     const textarea = document.getElementById('conteudo');
     textarea.value = textarea.value.replace('\n[📷 Imagem anexada]\n', '').replace('[📷 Imagem anexada]', '');
     document.getElementById('preview-imagem').classList.add('d-none');
     document.getElementById('input-imagem').value = '';
     document.getElementById('img-preview').src = '';
+    atualizarPreview();
+}
+
+function formatarPreviewTexto(texto) {
+    return texto
+        .replace(/{nome}/g, '<span class="text-primary fw-bold">[NOME]</span>')
+        .replace(/{idade}/g, '<span class="text-primary fw-bold">[IDADE]</span>')
+        .replace(/\*(.*?)\*/g, '<strong>$1</strong>')
+        .replace(/_(.*?)_/g, '<em>$1</em>')
+        .replace(/~(.*?)~/g, '<s>$1</s>')
+        .replace(/```(.*?)```/g, '<code>$1</code>')
+        .replace(/\n/g, '<br>');
+}
+
+function atualizarPreview() {
+    const conteudo = document.getElementById('conteudo').value;
+    const previewDiv = document.getElementById('preview-template');
+    const previewConteudo = document.getElementById('preview-template-conteudo');
+    const previewImgDiv = document.getElementById('preview-template-imagem');
+    const previewImg = document.getElementById('preview-template-img');
+
+    if (!conteudo.trim() && !imagemUrl) {
+        previewDiv.style.display = 'none';
+        return;
+    }
+
+    previewDiv.style.display = 'block';
+    previewConteudo.innerHTML = formatarPreviewTexto(conteudo) || '<span class="text-muted">(sem texto)</span>';
+
+    if (imagemUrl) {
+        previewImgDiv.classList.remove('d-none');
+        previewImg.src = imagemUrl;
+    } else {
+        previewImgDiv.classList.add('d-none');
+        previewImg.src = '';
+    }
 }
 
 function excluirTemplate(id) {
