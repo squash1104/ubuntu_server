@@ -15,4 +15,4 @@ python manage.py check --deploy || exit 1
 
 # Iniciar Daphne
 echo "Iniciando Daphne..."
-exec daphne -b 127.0.0.1 -p 8000 sistema_fidelizacao.asgi:application
+exec daphne -b 0.0.0.0 -p 8000 sistema_fidelizacao.asgi:application

@@ -227,70 +227,118 @@
         </div>
 
         <div class="row g-4 mb-4">
-            <div class="col-lg-3">
-                <div class="row g-3">
-                    <div class="col-6">
+            <!-- LEFT: col-lg-8 with KPIs + Bottom cards -->
+            <div class="col-lg-8">
+                <!-- KPIs 4×2 -->
+                <div class="row g-3 mb-3">
+                    <!-- 1ª fileira -->
+                    <div class="col-6 col-md-3">
                         <div class="card stat-card h-100">
-                            <h3>Colaboradores</h3>
+                            <h3>Apoiadores Cuiabá</h3>
+                            <p>{{ total_colaboradores_cuiaba }}</p>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card stat-card h-100">
+                            <h3>Apoiadores Interior</h3>
+                            <p>{{ total_colaboradores_interior }}</p>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card stat-card h-100">
+                            <h3>Total Apoiadores</h3>
                             <p>{{ total_colaboradores }}</p>
                         </div>
                     </div>
-                    <div class="col-6">
-                        <div class="card stat-card h-100">
-                            <h3>Convidados</h3>
-                            <p>{{ total_convidados }}</p>
-                        </div>
-                    </div>
-                    <!-- --- NOVOS CARDS --- -->
-                    <!-- --- NOVOS CARDS --- -->
-                    <div class="col-6">
-                        <div class="card stat-card h-100">
-                            <h3>Média</h3>
-                            <p>{{ eficiencia_media|floatformat:1 }}</p>
-                            <div class="kpi-subtitle text-muted" style="font-size: 0.7rem; white-space: nowrap;">Conv. por Colaborador</div>
-                        </div>
-                    </div>
-                    <div class="col-6">
+                    <div class="col-6 col-md-3">
                         <div class="card stat-card h-100">
                             <h3>Grupos</h3>
                             <p>{{ total_grupos }}</p>
                         </div>
                     </div>
-                    <!-- --- FIM DOS NOVOS CARDS --- -->
+                    <!-- 2ª fileira -->
+                    <div class="col-6 col-md-3">
+                        <div class="card stat-card h-100">
+                            <h3>Convidados Cuiabá</h3>
+                            <p>{{ total_convidados_cuiaba }}</p>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card stat-card h-100">
+                            <h3>Convidados Interior</h3>
+                            <p>{{ total_convidados_interior }}</p>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card stat-card h-100">
+                            <h3>Total Convidados</h3>
+                            <p>{{ total_convidados }}</p>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card stat-card h-100">
+                            <h3>Média</h3>
+                            <p>{{ eficiencia_media|floatformat:1 }}</p>
+                            <div class="kpi-subtitle text-muted" style="font-size: 0.7rem; white-space: nowrap;">Conv. por Apoiador</div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Grupos breakdown -->
-                <div class="mt-3">
-                    <div class="card">
-                        <div class="card-body py-2 px-3 d-flex flex-column" style="height: 240px;">
-                            <div class="d-flex justify-content-between align-items-center mb-2 flex-shrink-0">
-                                <span style="color: var(--bs-primary); font-size: 1rem; font-weight: 600; letter-spacing: 0.5px;">Colaboradores e Convidados por Grupo</span>
-                            </div>
-                            <div class="row text-muted small fw-bold py-1 mx-0 flex-shrink-0" style="border-bottom: 1px solid #dee2e6;">
-                                <div class="col-8 ps-0">Grupo</div>
-                                <div class="col-2 text-center px-0">Colab.</div>
-                                <div class="col-2 text-center px-0" style="border-left: 1px solid #dee2e6;">Convid.</div>
-                            </div>
-                            <div style="overflow-y: auto; flex-grow: 1; min-height: 0;">
-                                {% for grupo in grupos_qs %}
-                                <div class="row align-items-center py-1 mx-0">
-                                    <div class="col-8 ps-0">
-                                        <span class="badge bg-{{ grupo.cor }} me-1">{{ grupo.nome }}</span>
+                <!-- Bottom: Desempenho por Meta + Grupos breakdown -->
+                <div class="row g-3">
+                    <div class="col-lg-6">
+                        <div class="card h-100">
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title text-center mb-1">Desempenho por Meta</h5>
+                                    <p class="text-muted text-center small mb-3">(Meta de 30 convidados por apoiador)</p>
+                                <div class="chart-container d-flex align-items-center justify-content-center">
+                                    <div style="position: relative; max-width: 280px; width: 100%;">
+                                        <canvas id="metasChart"></canvas>
                                     </div>
-                                    <div class="col-2 text-center px-0 fw-bold">{{ grupo.total_colab }}</div>
-                                    <div class="col-2 text-center px-0 fw-bold" style="border-left: 1px solid #dee2e6;">{{ grupo.total_conv }}</div>
                                 </div>
-                                {% endfor %}
+                                <div class="mt-3">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">Abaixo da Meta<span class="badge bg-danger rounded-pill fs-6">{{ dados_abaixo_meta }}</span></li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">Na Meta<span class="badge bg-success rounded-pill fs-6">{{ dados_na_meta }}</span></li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">Meta Superada<span class="badge bg-purple rounded-pill fs-6">{{ dados_meta_superada }}</span></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="card h-100">
+                            <div class="card-body py-2 px-3 d-flex flex-column" style="height: 350px;">
+                                <div class="d-flex justify-content-between align-items-center mb-2 flex-shrink-0">
+                                    <span style="color: var(--bs-primary); font-size: 1rem; font-weight: 600; letter-spacing: 0.5px;">Apoiadores e Convidados por Grupo</span>
+                                </div>
+                                <div class="row text-muted small fw-bold py-1 mx-0 flex-shrink-0" style="border-bottom: 1px solid #dee2e6;">
+                                    <div class="col-8 ps-0">Grupo</div>
+                                    <div class="col-2 text-center px-0">Apoi.</div>
+                                    <div class="col-2 text-center px-0" style="border-left: 1px solid #dee2e6;">Convid.</div>
+                                </div>
+                                <div style="overflow-y: auto; flex-grow: 1; min-height: 0;">
+                                    {% for grupo in grupos_qs %}
+                                    <div class="row align-items-center py-1 mx-0">
+                                        <div class="col-8 ps-0">
+                                            <span class="badge bg-{{ grupo.cor }} me-1">{{ grupo.nome }}</span>
+                                        </div>
+                                        <div class="col-2 text-center px-0 fw-bold">{{ grupo.total_colab }}</div>
+                                        <div class="col-2 text-center px-0 fw-bold" style="border-left: 1px solid #dee2e6;">{{ grupo.total_conv }}</div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="col-lg-5">
+            <!-- RIGHT: col-lg-4 - Top 20 Apoiadores -->
+            <div class="col-lg-4">
                 <div class="card h-100">
                     <div class="card-body d-flex flex-column">
-                        <h5 class="card-title mb-3">🏆 Top 15 Colaboradores</h5>
+                        <h5 class="card-title mb-3">🏆 Top 20 Apoiadores</h5>
                         <div class="table-responsive flex-grow-1">
                             <table class="table table-sm table-striped">
                                 <thead>
@@ -318,49 +366,17 @@
                     </div>
                 </div>
             </div>
-
-            <div class="col-lg-4">
-                <div class="card h-100">
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title text-center mb-3">Desempenho por Meta</h5>
-                        <div class="chart-container d-flex align-items-center justify-content-center">
-                            <div style="position: relative; max-width: 280px; width: 100%;">
-                                <canvas id="metasChart"></canvas>
-                            </div>
-                        </div>
-                        <div class="mt-3">
-                            <ul class="list-group list-group-flush">
-                                <li class="list-group-item d-flex justify-content-between align-items-center">Abaixo da Meta<span class="badge bg-danger rounded-pill fs-6">{{ dados_abaixo_meta }}</span></li>
-                                <li class="list-group-item d-flex justify-content-between align-items-center">Na Meta<span class="badge bg-success rounded-pill fs-6">{{ dados_na_meta }}</span></li>
-                                <li class="list-group-item d-flex justify-content-between align-items-center">Meta Superada<span class="badge bg-purple rounded-pill fs-6">{{ dados_meta_superada }}</span></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <hr class="my-4">
         <h3 class="mb-3">Análise Geográfica</h3>
 
         <div class="row g-4 mb-4">
-            <div class="col-lg-6">
+            <div class="col-12">
                 <div class="card h-100">
                     <div class="card-body">
-                        <h5 class="card-title mb-3">📈 Colaboradores na Capital e Interior</h5>
-                        <div class="chart-container">
-                            <canvas id="colaboradoresPorCidadeChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-6">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h5 class="card-title mb-3">👥 Convidados na Capital e Interior</h5>
-                        <div class="chart-container">
-                            <canvas id="convidadosPorCidadeChart"></canvas>
-                        </div>
+                        <h5 class="card-title mb-3">🔥 Mapa de Concentração</h5>
+                        <div id="heatmap" style="height: 450px; border-radius: 8px;"></div>
                     </div>
                 </div>
             </div>
@@ -370,30 +386,33 @@
             <div class="col-lg-6">
                 <div class="card h-100">
                     <div class="card-body d-flex flex-column">
-                        <h5 class="card-title mb-3">🗺️ Convidados por Região do Estado</h5>
+                        <h5 class="card-title mb-0">🗺️ Desempenho por Região do Estado</h5>
+                        <p class="text-muted small mb-3 mt-1">
+                            <strong>{{ top_regiao_colab }}</strong> concentra mais apoiadores ({{ top_regiao_colab_pct }}%) ·
+                            <strong>{{ top_regiao_conv }}</strong> concentra mais convidados ({{ top_regiao_conv_pct }}%)
+                        </p>
                         <div class="flex-grow-1" style="position: relative;">
                             <div class="chart-container">
                             <canvas id="mesorregioesChart"></canvas>
                         </div>
-                        </div>
-                        <div class="mt-3">
-                            <ul class="list-group list-group-flush">
-                                {% for regiao, total in dados_regioes.items %}
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    {{ regiao }}
-                                    <span class="badge bg-primary rounded-pill fs-6">{{ total }}</span>
-                                </li>
-                                {% endfor %}
-                            </ul>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="col-lg-6">
                 <div class="card h-100">
-                    <div class="card-body">
-                        <h5 class="card-title mb-3">🔥 Mapa de Concentração de Apoiadores</h5>
-                        <div id="heatmap" style="height: 450px; border-radius: 8px;"></div>
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title mb-0">📊 Trabalho dos Apoiadores: Capital vs Interior</h5>
+                        <p class="text-muted small mb-3 mt-1">
+                            Capital concentra
+                            <strong>{% widthratio total_colaboradores_cuiaba total_colaboradores 100 %}%</strong>
+                            dos apoiadores e
+                            <strong>{% widthratio total_convidados_cuiaba total_convidados 100 %}%</strong>
+                            dos convidados
+                        </p>
+                        <div class="chart-container flex-grow-1">
+                            <canvas id="capitalInteriorChart"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -405,9 +424,13 @@
         <div class="row g-4 mb-4">
             <div class="col-lg-6">
                 <div class="card h-100">
-                    <div class="card-body">
-                        <h5 class="card-title mb-3">🏙️ Top 15 Bairros (Capital) Convidados x Colaboradores</h5>
-                        <div class="chart-container">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title mb-0">🏙️ Top 15 Bairros (Cuiabá) | Convidados x Apoiadores</h5>
+                        <p class="text-muted small mb-3 mt-1">
+                            <strong>{{ top_bairro_colab_nome }}</strong> lidera em apoiadores ({{ top_bairro_colab_pct }}% da capital) ·
+                            <strong>{{ top_bairro_conv_nome }}</strong> lidera em convidados ({{ top_bairro_conv_pct }}% da capital)
+                        </p>
+                        <div class="chart-container flex-grow-1">
                             <canvas id="topBairrosCapitalChart"></canvas>
                         </div>
                     </div>
@@ -415,10 +438,15 @@
             </div>
             <div class="col-lg-6">
                 <div class="card h-100">
-                    <div class="card-body">
-                        <h5 class="card-title mb-3">🌆 Top 15 Cidades (Interior) Convidados x Colaboradores</h5>
-                        <div class="chart-container">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title mb-0">🌆 Top 15 Cidades | Convidados x Apoiadores</h5>
+                        <p class="text-muted small mb-3 mt-1">
+                            <strong>{{ top_cidade_colab_nome }}</strong> lidera em apoiadores ({{ top_cidade_colab_pct }}%) ·
+                            <strong>{{ top_cidade_conv_nome }}</strong> lidera em convidados ({{ top_cidade_conv_pct }}%)
+                        </p>
+                        <div class="chart-container flex-grow-1">
                             <canvas id="topCidadesInteriorChart"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -426,7 +454,7 @@
 
         <!-- Seção de Ranking -->
         <hr class="my-4">
-        <h3 class="mb-3">🏆 Ranking de Cadastros</h3>
+        <h3 class="mb-3">🏆 Ranking de Usuários</h3>
         
         <div class="row g-4 mb-4">
             <!-- Top 3 em Destaque -->
@@ -480,7 +508,7 @@
                                     <tr>
                                         <th class="text-center" style="width: 80px;">Posição</th>
                                         <th>Usuário</th>
-                                        <th class="text-center" style="width: 100px;">Colaboradores</th>
+                                        <th class="text-center" style="width: 100px;">Apoiadores</th>
                                         <th class="text-center" style="width: 100px;">Convidados</th>
                                         <th class="text-center" style="width: 80px;">Total</th>
                                         <th class="text-center" style="width: 120px;">Nível</th>
@@ -524,7 +552,7 @@
                                                 </div>
                                             </td>
                                             
-                                            <!-- Colaboradores -->
+                                            <!-- Apoiadores -->
                                             <td class="text-center align-middle">
                                                 <span class="badge bg-info">{{ usuario.colaboradores }}</span>
                                             </td>
@@ -661,14 +689,14 @@
                                 </div>
                             </div>
                             
-                            <!-- Badges Especiais por Colaboradores -->
+                            <!-- Badges Especiais por Apoiadores -->
                             <div class="col-md-3 col-sm-6">
                                 <div class="d-flex align-items-center">
                                     <span class="badge bg-primary me-2">👑</span>
                                     <div>
-                                        <strong>Rei dos Colaboradores</strong>
+                                        <strong>Rei dos Apoiadores</strong>
                                         <br>
-                                        <small class="text-muted">50+ colaboradores</small>
+                                        <small class="text-muted">50+ apoiadores</small>
                                     </div>
                                 </div>
                             </div>
@@ -678,7 +706,7 @@
                                     <div>
                                         <strong>Mentor Master</strong>
                                         <br>
-                                        <small class="text-muted">25+ colaboradores</small>
+                                        <small class="text-muted">25+ apoiadores</small>
                                     </div>
                                 </div>
                             </div>
@@ -736,56 +764,73 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             options: {
                 responsive: true,
-                plugins: { legend: { display: false } }
-            }
+                plugins: {
+                    legend: { display: false },
+                    datalabels: {
+                        color: '#fff',
+                        font: { weight: 'bold', size: 14 },
+                        formatter: (value, ctx) => {
+                            const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                            return total > 0 ? (value / total * 100).toFixed(1) + '%' : '0%';
+                        }
+                    }
+                }
+            },
+            plugins: [ChartDataLabels]
         });
     }
 
-    // GRÁFICO 2: TOP 10 CIDADES POR COLABORADORES (barras) - Sem alterações
-    const ctxColabCidades = document.getElementById('colaboradoresPorCidadeChart');
-    if (ctxColabCidades) {
+    // GRÁFICO 2: CAPITAL VS INTERIOR (barras agrupadas)
+    const ctxCapitalInterior = document.getElementById('capitalInteriorChart');
+    if (ctxCapitalInterior) {
         try {
-            const labelsColab = JSON.parse('{{ labels_cidades_colab|default:"[]"|safe }}');
-            const dataColab = JSON.parse('{{ data_cidades_colab|default:"[]"|safe }}');
-            
-            new Chart(ctxColabCidades.getContext('2d'), {
+            new Chart(ctxCapitalInterior.getContext('2d'), {
                 type: 'bar',
                 data: {
-                    labels: labelsColab,
-                    datasets: [{
-                        label: 'Nº de Colaboradores',
-                        data: dataColab,
-                        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--chart-colab') || 'rgba(59, 130, 246, 0.75)',
-                    }]
+                    labels: ['Capital', 'Interior'],
+                    datasets: [
+                        {
+                            label: 'Apoiadores',
+                            data: [{{ total_colaboradores_cuiaba }}, {{ total_colaboradores_interior }}],
+                            backgroundColor: 'rgba(59, 130, 246, 0.75)',
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            borderWidth: 1,
+                        },
+                        {
+                            label: 'Convidados',
+                            data: [{{ total_convidados_cuiaba }}, {{ total_convidados_interior }}],
+                            backgroundColor: 'rgba(16, 185, 129, 0.75)',
+                            borderColor: 'rgba(16, 185, 129, 1)',
+                            borderWidth: 1,
+                        }
+                    ]
                 },
-                options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } }, scales: { x: { ticks: { precision: 0 }, grid: { display: false } }, y: { grid: { display: false } } }, layout: { padding: 8 } }
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                        },
+                        datalabels: {
+                            color: '#444',
+                            anchor: 'end',
+                            align: 'end',
+                            font: { weight: 'bold', size: 13 },
+                            formatter: function(value) { return value; }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { precision: 0 }
+                        }
+                    }
+                },
+                plugins: [ChartDataLabels]
             });
         } catch (error) {
-            console.error('Erro ao criar gráfico de cidades por colaboradores:', error);
-        }
-    }
-
-    // GRÁFICO 3: TOP 10 CIDADES POR CONVIDADOS (barras) - Sem alterações
-    const ctxConvCidades = document.getElementById('convidadosPorCidadeChart');
-    if (ctxConvCidades) {
-        try {
-            const labelsConv = JSON.parse('{{ labels_cidades_conv|default:"[]"|safe }}');
-            const dataConv = JSON.parse('{{ data_cidades_conv|default:"[]"|safe }}');
-            
-            new Chart(ctxConvCidades.getContext('2d'), {
-                type: 'bar',
-                data: {
-                    labels: labelsConv,
-                    datasets: [{
-                        label: 'Nº de Convidados',
-                        data: dataConv,
-                        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--chart-conv') || 'rgba(16, 185, 129, 0.75)',
-                    }]
-                },
-                options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } }, scales: { x: { ticks: { precision: 0 }, grid: { display: false } }, y: { grid: { display: false } } }, layout: { padding: 8 } }
-            });
-        } catch (error) {
-            console.error('Erro ao criar gráfico de cidades por convidados:', error);
+            console.error('Erro ao criar gráfico capital vs interior:', error);
         }
     }
 
@@ -801,38 +846,59 @@ document.addEventListener('DOMContentLoaded', function() {
             const dataRegioes = filtered.map(x => x.v);
             
             new Chart(ctxRegioes.getContext('2d'), {
-                type: 'bar', // Tipo: barra vertical (padrão)
+                type: 'bar',
                 data: {
                     labels: labelsRegioes,
-                    datasets: [{
-                        label: 'Nº de Convidados',
-                        data: dataRegioes,
-                        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--chart-region') || 'rgba(139, 92, 246, 0.75)',
-                        borderColor: 'rgba(153, 102, 255, 1)',
-                        borderWidth: 1
-                    }]
+                    datasets: [
+                        {
+                            label: 'Apoiadores',
+                            data: JSON.parse('{{ data_regioes_colab|default:"[]"|safe }}'),
+                            backgroundColor: 'rgba(59, 130, 246, 0.75)',
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Convidados',
+                            data: dataRegioes,
+                            backgroundColor: 'rgba(139, 92, 246, 0.75)',
+                            borderColor: 'rgba(153, 102, 255, 1)',
+                            borderWidth: 1
+                        }
+                    ]
                 },
                 options: {
                     responsive: true,
+                    layout: {
+                        padding: { top: 20 }
+                    },
                     plugins: {
-                        legend: { display: false }
+                        legend: {
+                            display: true,
+                            position: 'top',
+                        },
+                        datalabels: {
+                            color: '#444',
+                            anchor: 'end',
+                            align: 'end',
+                            font: { weight: 'bold', size: 11 },
+                            formatter: function(value) { return value; }
+                        }
                     },
                     scales: {
-                        y: { // O eixo Y é o dos valores
+                        y: {
                             beginAtZero: true,
-                            ticks: {
-                                precision: 0 // Garante contagem de 1 em 1
-                            }
+                            ticks: { precision: 0 }
                         }
                     }
-                }
+                },
+                plugins: [ChartDataLabels]
             });
         } catch (error) {
             console.error('Erro ao criar gráfico de regiões:', error);
         }
     }
 
-    // --- NOVO: Top 15 Bairros da Capital por Convidados/Colaboradores ---
+    // --- NOVO: Top 15 Bairros da Capital por Convidados/Apoiadores ---
     const ctxBairrosCapital = document.getElementById('topBairrosCapitalChart');
     if (ctxBairrosCapital) {
         try {
@@ -845,24 +911,22 @@ document.addEventListener('DOMContentLoaded', function() {
                     labels: labelsBairros,
                     datasets: [
                         {
-                            label: 'Colaboradores',
+                            label: 'Apoiadores',
                             data: JSON.parse('{{ data_bairros_capital_colab|default:"[]"|safe }}'),
-                            backgroundColor: 'rgba(54, 162, 235, 0.75)', // Azul
+                            backgroundColor: 'rgba(54, 162, 235, 0.75)',
                             borderColor: 'rgba(54, 162, 235, 1)',
                             borderWidth: 1,
-                            barPercentage: 0.95,
-                            categoryPercentage: 0.85,
-                            stack: 'Stack 0'
+                            barPercentage: 0.4,
+                            categoryPercentage: 0.7,
                         },
                         {
                             label: 'Convidados',
                             data: dataBairros,
-                            backgroundColor: 'rgba(255, 193, 7, 0.75)', // Amarelo
+                            backgroundColor: 'rgba(255, 193, 7, 0.75)',
                             borderColor: 'rgba(255, 193, 7, 1)',
                             borderWidth: 1,
-                            barPercentage: 0.95,
-                            categoryPercentage: 0.85,
-                            stack: 'Stack 0'
+                            barPercentage: 0.4,
+                            categoryPercentage: 0.7,
                         }
                     ]
                 },
@@ -870,6 +934,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     indexAxis: 'y',
                     responsive: true,
                     maintainAspectRatio: false,
+                    layout: {
+                        padding: { right: 30, left: 10 }
+                    },
                     plugins: {
                         legend: {
                             display: true,
@@ -879,33 +946,33 @@ document.addEventListener('DOMContentLoaded', function() {
                                 padding: 15,
                                 font: { size: 12 }
                             }
+                        },
+                        datalabels: {
+                            color: '#444',
+                            anchor: 'end',
+                            align: 'end',
+                            font: { weight: 'bold', size: 10 },
+                            formatter: function(value) { return value; }
                         }
                     },
                     scales: {
                         x: {
-                            stacked: true,
                             ticks: { precision: 0 },
                             grid: { display: false }
                         },
                         y: {
-                            stacked: true,
                             grid: { display: false }
                         }
-                    },
-                    // >>> CORREÇÃO PARA DADOS FORA DO GRÁFICO (Rótulos) <<<
-                    layout: { 
-                        padding: {
-                            left: 10 // Dá um pequeno padding para o eixo Y
-                        } 
-                    } 
-                }
+                    }
+                },
+                plugins: [ChartDataLabels]
             });
         } catch (error) {
             console.error('Erro ao criar gráfico de bairros capital:', error);
         }
     }
 
-    // --- NOVO: Top 15 Cidades do Interior por Convidados/Colaboradores ---
+    // --- NOVO: Top 15 Cidades do Interior por Convidados/Apoiadores ---
     const ctxCidadesInterior = document.getElementById('topCidadesInteriorChart');
     if (ctxCidadesInterior) {
         try {
@@ -918,24 +985,22 @@ document.addEventListener('DOMContentLoaded', function() {
                     labels: labelsCidadesInt,
                     datasets: [
                         {
-                            label: 'Colaboradores',
+                            label: 'Apoiadores',
                             data: JSON.parse('{{ data_cidades_interior_colab|default:"[]"|safe }}'),
-                            backgroundColor: 'rgba(54, 162, 235, 0.75)', // Azul
+                            backgroundColor: 'rgba(54, 162, 235, 0.75)',
                             borderColor: 'rgba(54, 162, 235, 1)',
                             borderWidth: 1,
-                            barPercentage: 0.95,
-                            categoryPercentage: 0.85,
-                            stack: 'Stack 0'
+                            barPercentage: 0.4,
+                            categoryPercentage: 0.7,
                         },
                         {
                             label: 'Convidados',
                             data: dataCidadesInt,
-                            backgroundColor: 'rgba(255, 159, 64, 0.8)', // Laranja
+                            backgroundColor: 'rgba(255, 159, 64, 0.8)',
                             borderColor: 'rgba(255, 159, 64, 1)',
                             borderWidth: 1,
-                            barPercentage: 0.95,
-                            categoryPercentage: 0.85,
-                            stack: 'Stack 0'
+                            barPercentage: 0.4,
+                            categoryPercentage: 0.7,
                         }
                     ]
                 },
@@ -943,6 +1008,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     indexAxis: 'y',
                     responsive: true,
                     maintainAspectRatio: false,
+                    layout: {
+                        padding: { right: 30, left: 10 }
+                    },
                     plugins: {
                         legend: {
                             display: true,
@@ -952,55 +1020,96 @@ document.addEventListener('DOMContentLoaded', function() {
                                 padding: 15,
                                 font: { size: 12 }
                             }
+                        },
+                        datalabels: {
+                            color: '#444',
+                            anchor: 'end',
+                            align: 'end',
+                            font: { weight: 'bold', size: 10 },
+                            formatter: function(value) { return value; }
                         }
                     },
                     scales: {
                         x: {
-                            stacked: true,
                             ticks: { precision: 0 },
                             grid: { display: false }
                         },
                         y: {
-                            stacked: true,
                             grid: { display: false }
                         }
-                    },
-                    // >>> CORREÇÃO PARA DADOS FORA DO GRÁFICO (Rótulos) <<<
-                    layout: { 
-                        padding: {
-                            left: 10 // Dá um pequeno padding para o eixo Y
-                        } 
-                    } 
-                }
+                    }
+                },
+                plugins: [ChartDataLabels]
             });
         } catch (error) {
             console.error('Erro ao criar gráfico de cidades interior:', error);
         }
     }
 
-    // --- NOVO SCRIPT PARA O MAPA DE CALOR ---
+    // --- MAPA DE CONCENTRAÇÃO (HEATLAYER + MARCADORES INVISÍVEIS COM TOOLTIP) ---
     try {
         const heatData = JSON.parse('{{ heat_data|default:"[]"|safe }}');
-        const heatmapElement = document.getElementById('heatmap');
+        const mapElement = document.getElementById('heatmap');
 
-        if (heatmapElement && heatData.length > 0) {
-            // 1. Cria o mapa e centra-o em Mato Grosso
+        if (mapElement && heatData.length > 0) {
             const map = L.map('heatmap').setView([-12.5, -55.5], 6);
 
-            // 2. Adiciona a camada de "azulejos" do mapa
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             }).addTo(map);
 
-            // 3. Adiciona a camada de calor com os nossos dados
-            L.heatLayer(heatData, {
-                radius: 25,
-                blur: 15,
+            // Extrai pontos [lat, lon, intensity] para o heatmap
+            const heatPoints = heatData.map(function(item) {
+                return [item.lat, item.lon, item.intensity];
+            });
+
+            L.heatLayer(heatPoints, {
+                radius: 50,
+                blur: 25,
                 maxZoom: 10,
+                max: 1.0,
+                gradient: {
+                    0.0: 'blue',
+                    0.25: 'cyan',
+                    0.5: 'lime',
+                    0.7: 'yellow',
+                    0.85: 'orange',
+                    1.0: 'red'
+                },
             }).addTo(map);
+
+            // Marcadores invisíveis para tooltip/popup
+            heatData.forEach(function(item) {
+                const total = item.colaboradores + item.convidados;
+                const marker = L.circleMarker([item.lat, item.lon], {
+                    radius: 25,
+                    fillOpacity: 0,
+                    stroke: false,
+                    opacity: 0,
+                    interactive: true,
+                });
+
+                marker.bindTooltip(
+                    `<strong>${item.nome}</strong>` +
+                    (item.cidade ? `<br>${item.cidade}` : '') +
+                    `<br>Total: ${total} registros`,
+                    { direction: 'top', offset: [0, -5] }
+                );
+
+                marker.bindPopup(
+                    `<b>${item.nome}</b>` +
+                    (item.cidade ? `<br>${item.cidade}` : '') +
+                    `<hr>` +
+                    `🧑 Apoiadores: ${item.colaboradores}<br>` +
+                    `👥 Convidados: ${item.convidados}<br>` +
+                    `<strong>Total: ${total}</strong>`
+                );
+
+                marker.addTo(map);
+            });
         }
     } catch (error) {
-        console.error('Erro ao criar mapa de calor:', error);
+        console.error('Erro ao criar mapa de concentração:', error);
     }
 });
 

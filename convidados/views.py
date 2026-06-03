@@ -132,7 +132,7 @@ def colaborador_convidados(request, pk):
         )
     # --- Fim da Lógica de Ordenação ---
 
-    meta = 20
+    meta = 30
     meta_status = ""
     porcentagem_meta = 0
 

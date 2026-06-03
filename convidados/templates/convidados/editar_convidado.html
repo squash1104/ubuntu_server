@@ -12,6 +12,9 @@
 .input-group .btn-calendar { border-color: #ced4da; }
 .input-group .btn-calendar i { pointer-events: none; }
 #convidado-form label { display: block; margin-bottom: .25rem; }
+#novo-bairro-container { display: none; margin-top: 10px; }
+#novo-bairro-aviso { display: none; margin-top: 5px; }
+#btn-criar-bairro { margin-top: 5px; font-size: 0.875rem; }
 </style>
 <div class="row justify-content-center">
     <div class="col-md-8">
@@ -35,6 +38,20 @@
                                     <button class="btn btn-outline-secondary btn-calendar" type="button" id="btn-calendar-edit">
                                         <i class="bi bi-calendar3"></i>
                                     </button>
+                                </div>
+                            {% elif field.id_for_label == 'id_bairro' %}
+                                {{ field.label_tag }}
+                                {{ field }}
+                                <button type="button" class="btn btn-link btn-sm p-0" id="btn-criar-bairro">
+                                    <i class="bi bi-plus-circle"></i> Criar novo bairro
+                                </button>
+                                <div id="novo-bairro-container">
+                                    <div class="input-group">
+                                        <input type="text" id="id_novo_bairro_input" class="form-control" placeholder="Digite o nome do novo bairro">
+                                        <button type="button" class="btn btn-primary" id="btn-salvar-bairro">Salvar</button>
+                                        <button type="button" class="btn btn-secondary" id="btn-cancelar-bairro">Cancelar</button>
+                                    </div>
+                                    <div id="novo-bairro-aviso" class="alert"></div>
                                 </div>
                             {% else %}
                                 {{ field.label_tag }}
@@ -231,6 +248,106 @@ document.addEventListener('DOMContentLoaded', function() {
 
     telefoneInput.on('keyup', function(){ clearTimeout(typingTimer); typingTimer = setTimeout(checkTelefone, doneTypingInterval); });
     telefoneInput.on('blur', checkTelefone);
+
+    // =========================================================================
+    // LÓGICA DE CRIAR NOVO BAIRRO
+    // =========================================================================
+    const btnCriarBairro = $('#btn-criar-bairro');
+    const novoBairroContainer = $('#novo-bairro-container');
+    const novoBairroInput = $('#id_novo_bairro_input');
+    const btnSalvarBairro = $('#btn-salvar-bairro');
+    const btnCancelarBairro = $('#btn-cancelar-bairro');
+    const novoBairroAviso = $('#novo-bairro-aviso');
+
+    btnCriarBairro.on('click', function() {
+        const cidadeId = cidadeSelect.val();
+        if (!cidadeId) {
+            novoBairroAviso.removeClass('alert-success alert-danger').addClass('alert-danger');
+            novoBairroAviso.text('Selecione uma cidade primeiro.');
+            novoBairroAviso.show();
+            return;
+        }
+        novoBairroContainer.show();
+        novoBairroInput.focus();
+        novoBairroAviso.hide();
+    });
+
+    btnCancelarBairro.on('click', function() {
+        novoBairroContainer.hide();
+        novoBairroInput.val('');
+        novoBairroAviso.hide();
+    });
+
+    btnSalvarBairro.on('click', function() {
+        const nomeBairro = novoBairroInput.val().trim();
+        const cidadeId = cidadeSelect.val();
+
+        if (!nomeBairro) {
+            novoBairroAviso.removeClass('alert-success alert-danger').addClass('alert-danger');
+            novoBairroAviso.text('Digite o nome do bairro.');
+            novoBairroAviso.show();
+            return;
+        }
+
+        if (!cidadeId) {
+            novoBairroAviso.removeClass('alert-success alert-danger').addClass('alert-danger');
+            novoBairroAviso.text('Selecione uma cidade.');
+            novoBairroAviso.show();
+            return;
+        }
+
+        btnSalvarBairro.prop('disabled', true).text('Salvando...');
+
+        fetch('{% url 'geografia:criar_bairro' %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                nome_bairro: nomeBairro,
+                cidade_id: cidadeId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const novoOption = new Option(data.bairro.nome, data.bairro.id, true, true);
+                bairroSelect.append(novoOption);
+                bairroSelect.val(data.bairro.id).trigger('change');
+
+                novoBairroInput.val('');
+                novoBairroContainer.hide();
+                novoBairroAviso.hide();
+
+                novoBairroAviso.removeClass('alert-success alert-danger').addClass('alert-success');
+                novoBairroAviso.text('Bairro criado com sucesso!');
+                novoBairroAviso.show();
+                setTimeout(() => novoBairroAviso.hide(), 3000);
+            } else {
+                novoBairroAviso.removeClass('alert-success alert-danger').addClass('alert-danger');
+                novoBairroAviso.text(data.error || 'Erro ao criar bairro.');
+                novoBairroAviso.show();
+
+                if (data.bairro_id) {
+                    const existingOption = new Option(data.nome_existente, data.bairro_id, true, true);
+                    bairroSelect.append(existingOption);
+                    bairroSelect.val(data.bairro_id).trigger('change');
+                    novoBairroInput.val('');
+                    novoBairroContainer.hide();
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao criar bairro:', error);
+            novoBairroAviso.removeClass('alert-success alert-danger').addClass('alert-danger');
+            novoBairroAviso.text('Erro ao criar bairro. Tente novamente.');
+            novoBairroAviso.show();
+        })
+        .finally(() => {
+            btnSalvarBairro.prop('disabled', false).text('Salvar');
+        });
+    });
 });
 </script>
 {% endblock %}

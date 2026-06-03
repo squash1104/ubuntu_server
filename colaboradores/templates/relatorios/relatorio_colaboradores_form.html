@@ -151,9 +151,9 @@
                         </label>
                         <select name="meta_status" id="id_meta_status" class="form-select">
                             <option value="">Todos os Status</option>
-                            <option value="pendente" {% if request.GET.meta_status == 'pendente' %}selected{% endif %}>Meta Pendente (0-19)</option>
-                            <option value="atingida" {% if request.GET.meta_status == 'atingida' %}selected{% endif %}>Meta Atingida (20)</option>
-                            <option value="superada" {% if request.GET.meta_status == 'superada' %}selected{% endif %}>Meta Superada (21+)</option>
+                            <option value="pendente" {% if request.GET.meta_status == 'pendente' %}selected{% endif %}>Meta Pendente (0-29)</option>
+                            <option value="atingida" {% if request.GET.meta_status == 'atingida' %}selected{% endif %}>Meta Atingida (30)</option>
+                            <option value="superada" {% if request.GET.meta_status == 'superada' %}selected{% endif %}>Meta Superada (31+)</option>
                         </select>
                     </div>
                 </div>

@@ -7,9 +7,9 @@ from django.db.models.fields import return_None
 from .models import Bairro, Cidade, Colaborador, TipoColaborador
 
 META_STATUS_CHOICES = (
-    ("pendente", "Meta Pendente (0-19)"),
-    ("atingida", "Meta Atingida (20)"),
-    ("superada", "Meta Superada (21+)"),
+    ("pendente", "Meta Pendente (0-29)"),
+    ("atingida", "Meta Atingida (30)"),
+    ("superada", "Meta Superada (31+)"),
 )
 
 
@@ -74,11 +74,11 @@ class ColaboradorFilter(django_filters.FilterSet):
         if value == "---":
             return_None()
         if value == "pendente":
-            return queryset.filter(total_convidados__lt=20)
+            return queryset.filter(total_convidados__lt=30)
         if value == "atingida":
-            return queryset.filter(total_convidados=20)
+            return queryset.filter(total_convidados=30)
         if value == "superada":
-            return queryset.filter(total_convidados__gt=20)
+            return queryset.filter(total_convidados__gt=30)
         return queryset
 
     class Meta:

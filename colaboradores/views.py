@@ -86,9 +86,11 @@ def lista_colaboradores(request):
         )
 
     # Aplicar ordenação
-    colaboradores_final = colaboradores_qs.annotate(
-        num_convidados=Count("convidados", distinct=True)
-    ).order_by(ordenar_por_query)
+    colaboradores_final = (
+        colaboradores_qs.select_related("cidade")
+        .annotate(num_convidados=Count("convidados", distinct=True))
+        .order_by(ordenar_por_query)
+    )
 
     # Totais do conjunto filtrado (não apenas da página) e da página atual
     total_colaboradores_filtrados = colaboradores_final.count()
@@ -96,6 +98,14 @@ def lista_colaboradores(request):
         total=Sum("num_convidados")
     )
     total_convidados_filtrados = soma_convidados_filtrados["total"] or 0
+    total_capital_filtrados = colaboradores_final.filter(
+        cidade__nome_cidade="Cuiabá"
+    ).count()
+    total_interior_filtrados = (
+        colaboradores_final.exclude(cidade__nome_cidade="Cuiabá")
+        .exclude(cidade__isnull=True)
+        .count()
+    )
 
     # Paginação
     paginator = Paginator(colaboradores_final, per_page)
@@ -103,9 +113,21 @@ def lista_colaboradores(request):
     page_obj = paginator.get_page(page_number)
 
     # Totais da página atual (após paginação)
-    total_colaboradores_pagina = page_obj.object_list.count()
-    soma_convidados_pagina = page_obj.object_list.aggregate(total=Sum("num_convidados"))
-    total_convidados_pagina = soma_convidados_pagina["total"] or 0
+    # page_obj.object_list is a list (already sliced), so use Python counting
+    pagina_lista = list(page_obj.object_list)
+    total_colaboradores_pagina = len(pagina_lista)
+    total_convidados_pagina = sum(
+        getattr(c, "num_convidados", 0) or 0 for c in pagina_lista
+    )
+    total_capital_pagina = sum(
+        1 for c in pagina_lista if getattr(c.cidade, "nome_cidade", None) == "Cuiabá"
+    )
+    total_interior_pagina = sum(
+        1
+        for c in pagina_lista
+        if getattr(c.cidade, "nome_cidade", None) is not None
+        and c.cidade.nome_cidade != "Cuiabá"
+    )
 
     # Buscar tipos de colaborador para o filtro (apenas os que o user gerencia)
     tipos_colaborador = tipos_do_usuario(request.user).order_by("nome")
@@ -125,6 +147,10 @@ def lista_colaboradores(request):
         "total_convidados_filtrados": total_convidados_filtrados,
         "total_colaboradores_pagina": total_colaboradores_pagina,
         "total_convidados_pagina": total_convidados_pagina,
+        "total_capital_pagina": total_capital_pagina,
+        "total_interior_pagina": total_interior_pagina,
+        "total_capital_filtrados": total_capital_filtrados,
+        "total_interior_filtrados": total_interior_filtrados,
     }
 
     return render(request, "colaboradores/lista_colaboradores.html", context)

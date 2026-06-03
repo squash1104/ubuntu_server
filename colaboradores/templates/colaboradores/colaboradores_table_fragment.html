@@ -2,7 +2,7 @@
 
 
 
-<table class="table table-hover align-middle">
+<table class="table table-hover align-middle" id="tabela-colaboradores" data-destaque="meta">
 
 <thead class="table-light">
 
@@ -97,21 +97,8 @@ Convidados
 {% with num_convidados=colaborador.num_convidados %}
 
 <tr class="
-
-{% if num_convidados < 20 %}
-
-table-danger
-
-{% elif num_convidados == 20 %}
-
-table-success
-
-{% else %}
-
-table-primary
-
-{% endif %}
-
+{% if num_convidados < 30 %}meta-danger{% elif num_convidados == 30 %}meta-success{% else %}meta-primary{% endif %}
+{% if colaborador.cidade.nome_cidade == 'Cuiabá' %} capital-row{% elif colaborador.cidade %} interior-row{% endif %}
 ">
 
 <td style="width: 5%;">{{ page_obj.start_index|add:forloop.counter0 }}</td>
@@ -203,9 +190,9 @@ Nenhum colaborador encontrado.
 <div class="summary-bar d-flex justify-content-between">
 
 <span>
-
-<strong>Totais desta página:</strong> {{ total_colaboradores_filtrados }} colaborador(es).
-
+<strong>Totais desta página:</strong> {{ total_colaboradores_filtrados }} colaborador(es).<br>
+<strong>Capital:</strong> {{ total_capital_filtrados }}<br>
+<strong>Interior:</strong> {{ total_interior_filtrados }}
 </span>
 
 <span>

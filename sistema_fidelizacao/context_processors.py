@@ -1,5 +1,11 @@
+from django.conf import settings
+
 from colaboradores.models import Colaborador
 from convidados.models import Convidado
+
+
+def debug_flag(request):
+    return {"debug_flag": settings.DEBUG}
 
 
 def user_badges(request):
@@ -13,7 +19,7 @@ def user_badges(request):
     colaboradores_cadastrados = Colaborador.objects.filter(
         cadastrado_por=request.user
     ).count()
-    # Conta convidados cadastrados diretamente pelo usuário ou por colaboradores cadastrados pelo usuário
+    # Conta convidados cadastrados pelo usuário ou por colaboradores dele
     from django.db.models import Q
 
     convidados_cadastrados = (
@@ -84,13 +90,13 @@ def user_badges(request):
         # Badges especiais por colaboradores
         if colaboradores >= 50:
             badges.append(
-                {"emoji": "👑", "nome": "Rei dos Colaboradores", "cor": "bg-primary"}
+                {"emoji": "👑", "nome": "Rei dos Apoiadores", "cor": "bg-primary"}
             )
         elif colaboradores >= 25:
             badges.append({"emoji": "👥", "nome": "Mentor Master", "cor": "bg-info"})
         elif colaboradores >= 10:
             badges.append(
-                {"emoji": "👥", "nome": "Mentor de Colaboradores", "cor": "bg-info"}
+                {"emoji": "👥", "nome": "Mentor de Apoiadores", "cor": "bg-info"}
             )
 
         # Badges especiais por convidados

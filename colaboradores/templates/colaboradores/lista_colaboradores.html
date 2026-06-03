@@ -160,28 +160,6 @@
         }
     }
 
-    /* Hover para tema claro (melhorado também) */
-    .table-danger:hover {
-        background-color: rgba(220, 53, 69, 0.1) !important;
-        transform: translateY(-1px);
-        box-shadow: 0 2px 4px rgba(220, 53, 69, 0.15);
-        transition: all 0.3s ease;
-    }
-    
-    .table-success:hover {
-        background-color: rgba(25, 135, 84, 0.1) !important;
-        transform: translateY(-1px);
-        box-shadow: 0 2px 4px rgba(25, 135, 84, 0.15);
-        transition: all 0.3s ease;
-    }
-    
-    .table-primary:hover {
-        background-color: rgba(13, 110, 253, 0.1) !important;
-        transform: translateY(-1px);
-        box-shadow: 0 2px 4px rgba(13, 110, 253, 0.15);
-        transition: all 0.3s ease;
-    }
-
     /* Estilos gerais para tema escuro */
         body.dark-theme {
             background: linear-gradient(to right, #333, #555);
@@ -219,42 +197,158 @@
             color: #f8f9fa;
         }
 
-    /* Remover intercalação de cores - aplicar cores contínuas por meta */
-    .table-danger {
+    /* ── Destaque por META (padrão) ── */
+    tr.meta-danger,
+    tr.meta-danger > td,
+    tr.meta-danger > th {
+        --bs-table-bg: #f8d7da !important;
+        --bs-table-striped-bg: #ecc7ca !important;
+        --bs-table-hover-bg: #e5bfc2 !important;
         background-color: #f8d7da !important;
-        border-color: #f5c6cb !important;
-        color: #721c24 !important;
     }
-    
-    .table-success {
+    tr.meta-success,
+    tr.meta-success > td,
+    tr.meta-success > th {
+        --bs-table-bg: #d1e7dd !important;
+        --bs-table-striped-bg: #c5dbd1 !important;
+        --bs-table-hover-bg: #bdd3c9 !important;
         background-color: #d1e7dd !important;
-        border-color: #badbcc !important;
-        color: #0f5132 !important;
     }
-    
-    .table-primary {
+    tr.meta-primary,
+    tr.meta-primary > td,
+    tr.meta-primary > th {
+        --bs-table-bg: #cfe2ff !important;
+        --bs-table-striped-bg: #c3d6f3 !important;
+        --bs-table-hover-bg: #bbcee9 !important;
         background-color: #cfe2ff !important;
-        border-color: #b6d7ff !important;
-        color: #084298 !important;
+    }
+    body.dark-theme tr.meta-danger,
+    body.dark-theme tr.meta-danger > td,
+    body.dark-theme tr.meta-danger > th {
+        --bs-table-bg: #f8d7da !important;
+        --bs-table-color: #212529 !important;
+        --bs-table-striped-bg: #ecc7ca !important;
+        --bs-table-striped-color: #212529 !important;
+        --bs-table-hover-bg: #e5bfc2 !important;
+        --bs-table-hover-color: #212529 !important;
+        background-color: #f8d7da !important;
+        color: #212529 !important;
+    }
+    body.dark-theme tr.meta-success,
+    body.dark-theme tr.meta-success > td,
+    body.dark-theme tr.meta-success > th {
+        --bs-table-bg: #d1e7dd !important;
+        --bs-table-color: #212529 !important;
+        --bs-table-striped-bg: #c5dbd1 !important;
+        --bs-table-striped-color: #212529 !important;
+        --bs-table-hover-bg: #bdd3c9 !important;
+        --bs-table-hover-color: #212529 !important;
+        background-color: #d1e7dd !important;
+        color: #212529 !important;
+    }
+    body.dark-theme tr.meta-primary,
+    body.dark-theme tr.meta-primary > td,
+    body.dark-theme tr.meta-primary > th {
+        --bs-table-bg: #cfe2ff !important;
+        --bs-table-color: #212529 !important;
+        --bs-table-striped-bg: #c3d6f3 !important;
+        --bs-table-striped-color: #212529 !important;
+        --bs-table-hover-bg: #bbcee9 !important;
+        --bs-table-hover-color: #212529 !important;
+        background-color: #cfe2ff !important;
+        color: #212529 !important;
     }
 
-    /* Cores contínuas para tema escuro - iguais ao tema claro */
-    body.dark-theme .table-danger {
-        background-color: #f8d7da !important;
-        border-color: #f5c6cb !important;
-        color: #721c24 !important;
+    /* ── Destaque por MUNICÍPIO (só ativo com data-destaque="municipio") ── */
+    table[data-destaque="municipio"] tr.meta-danger,
+    table[data-destaque="municipio"] tr.meta-danger > td,
+    table[data-destaque="municipio"] tr.meta-danger > th,
+    table[data-destaque="municipio"] tr.meta-success,
+    table[data-destaque="municipio"] tr.meta-success > td,
+    table[data-destaque="municipio"] tr.meta-success > th,
+    table[data-destaque="municipio"] tr.meta-primary,
+    table[data-destaque="municipio"] tr.meta-primary > td,
+    table[data-destaque="municipio"] tr.meta-primary > th {
+        --bs-table-bg: transparent !important;
+        --bs-table-color: inherit !important;
+        --bs-table-striped-bg: transparent !important;
+        --bs-table-striped-color: inherit !important;
+        --bs-table-hover-bg: transparent !important;
+        --bs-table-hover-color: inherit !important;
+        background-color: transparent !important;
+        color: inherit !important;
     }
-    
-    body.dark-theme .table-success {
-        background-color: #d1e7dd !important;
-        border-color: #badbcc !important;
-        color: #0f5132 !important;
+    table[data-destaque="municipio"] tr.capital-row,
+    table[data-destaque="municipio"] tr.capital-row > td,
+    table[data-destaque="municipio"] tr.capital-row > th {
+        --bs-table-bg: #367962 !important;
+        --bs-table-color: #ffffff !important;
+        --bs-table-striped-bg: #2e644f !important;
+        --bs-table-striped-color: #ffffff !important;
+        --bs-table-hover-bg: #2c5f4e !important;
+        --bs-table-hover-color: #ffffff !important;
+        background-color: #367962 !important;
+        color: #ffffff !important;
     }
-    
-    body.dark-theme .table-primary {
-        background-color: #cfe2ff !important;
-        border-color: #b6d7ff !important;
-        color: #084298 !important;
+    table[data-destaque="municipio"] tr.interior-row,
+    table[data-destaque="municipio"] tr.interior-row > td,
+    table[data-destaque="municipio"] tr.interior-row > th {
+        --bs-table-bg: #D4A373 !important;
+        --bs-table-color: #ffffff !important;
+        --bs-table-striped-bg: #c49363 !important;
+        --bs-table-striped-color: #ffffff !important;
+        --bs-table-hover-bg: #ba8a59 !important;
+        --bs-table-hover-color: #ffffff !important;
+        background-color: #D4A373 !important;
+        color: #ffffff !important;
+    }
+
+    /* ── Hover: meta ── */
+    tr.meta-danger:hover,
+    tr.meta-danger:hover > td,
+    tr.meta-danger:hover > th {
+        --bs-table-hover-bg: #e5bfc2 !important;
+        background-color: #e5bfc2 !important;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(220, 53, 69, 0.15);
+        transition: all 0.3s ease;
+    }
+    tr.meta-success:hover,
+    tr.meta-success:hover > td,
+    tr.meta-success:hover > th {
+        --bs-table-hover-bg: #bdd3c9 !important;
+        background-color: #bdd3c9 !important;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(25, 135, 84, 0.15);
+        transition: all 0.3s ease;
+    }
+    tr.meta-primary:hover,
+    tr.meta-primary:hover > td,
+    tr.meta-primary:hover > th {
+        --bs-table-hover-bg: #bbcee9 !important;
+        background-color: #bbcee9 !important;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(13, 110, 253, 0.15);
+        transition: all 0.3s ease;
+    }
+
+    /* ── Hover: municipio (quando ativo) ── */
+    table[data-destaque="municipio"] tr.capital-row:hover,
+    table[data-destaque="municipio"] tr.capital-row:hover > td,
+    table[data-destaque="municipio"] tr.capital-row:hover > th {
+        --bs-table-hover-bg: #2c5f4e !important;
+        background-color: #2c5f4e !important;
+    }
+    table[data-destaque="municipio"] tr.interior-row:hover,
+    table[data-destaque="municipio"] tr.interior-row:hover > td,
+    table[data-destaque="municipio"] tr.interior-row:hover > th {
+        --bs-table-hover-bg: #ba8a59 !important;
+        background-color: #ba8a59 !important;
+    }
+
+    /* ── Botões do toggle de destaque ── */
+    .btn-destaque-meta:checked ~ .btn-outline-secondary {
+        background-color: #0d6efd !important;
     }
     </style>
 {% endblock %}
@@ -263,9 +357,9 @@
 <div class="card shadow-sm">
     <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="card-title h3 mb-0">Colaboradores</h1>
+            <h1 class="card-title h3 mb-0">Apoiadores</h1>
             <a href="{% url 'colaboradores:adicionar_colaborador' %}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Adicionar Colaborador
+                <i class="fas fa-plus"></i> Adicionar 
             </a>
         </div>
 
@@ -305,6 +399,15 @@
                                     {% endfor %}
                                 </select>
                             </div>
+                            <div class="d-flex align-items-center">
+                                <label class="form-label me-2 mb-0" style="font-size:0.85rem;">Destacar:</label>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <input type="radio" class="btn-check" name="destaque" id="destaque-meta" value="meta" checked>
+                                    <label class="btn btn-outline-secondary" for="destaque-meta">Meta</label>
+                                    <input type="radio" class="btn-check" name="destaque" id="destaque-municipio" value="municipio">
+                                    <label class="btn btn-outline-secondary" for="destaque-municipio">Município</label>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -317,7 +420,7 @@
 
                     <!-- Tabela de Colaboradores -->
                     <div class="table-scroll-container">
-                        <table class="table table-striped table-hover">
+                        <table class="table table-striped table-hover" id="tabela-colaboradores" data-destaque="meta">
                             <thead class="table-light">
                                 <tr>
                                     <th>Seq.</th>
@@ -333,7 +436,7 @@
                             <tbody>
                                 {% for colaborador in page_obj %}
                                     {% with num_convidados=colaborador.num_convidados %}
-                                        <tr class="{% if num_convidados < 20 %}table-danger{% elif num_convidados == 20 %}table-success{% else %}table-primary{% endif %}">
+                                        <tr class="{% if num_convidados < 30 %}meta-danger{% elif num_convidados == 30 %}meta-success{% else %}meta-primary{% endif %} {% if colaborador.cidade.nome_cidade == 'Cuiabá' %}capital-row{% elif colaborador.cidade %}interior-row{% endif %}">
                                             <td>{{ page_obj.start_index|add:forloop.counter0 }}</td>
                                             <td><strong>{{ colaborador.nome }}</strong></td>
                                             <td>{{ colaborador.telefone|format_telefone|default:"-" }}</td>
@@ -380,7 +483,9 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <span>
-                                    <strong>Totais desta página:</strong> {{ total_colaboradores_pagina }} colaborador(es).
+                                    <strong>Totais desta página:</strong> {{ total_colaboradores_pagina }} colaborador(es).<br>
+                                    <strong>Capital:</strong> {{ total_capital_pagina }}<br>
+                                    <strong>Interior:</strong> {{ total_interior_pagina }}
                                 </span>
                             </div>
                             <div class="col-md-6 text-end">
@@ -487,6 +592,26 @@ document.addEventListener('DOMContentLoaded', function() {
     });
         }
     }
+
+    // ── Toggle Destaque: Meta / Município ──
+    const tabela = document.getElementById('tabela-colaboradores');
+    const radios = document.querySelectorAll('input[name="destaque"]');
+
+    function aplicarDestaque(valor) {
+        if (tabela) tabela.dataset.destaque = valor;
+        localStorage.setItem('destaque_colaboradores', valor);
+    }
+
+    // Restaurar preferência salva (se houver)
+    const salvo = localStorage.getItem('destaque_colaboradores');
+    if (salvo && document.getElementById('destaque-' + salvo)) {
+        document.getElementById('destaque-' + salvo).checked = true;
+        aplicarDestaque(salvo);
+    }
+
+    radios.forEach(r => r.addEventListener('change', function() {
+        if (this.checked) aplicarDestaque(this.value);
+    }));
 });
 </script>
 {% endblock %}

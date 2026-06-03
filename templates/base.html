@@ -9,10 +9,10 @@
 
     <title>{% block title %}SisAps - Sistema de Fidelização de Apoiadores{% endblock %}</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" integrity="sha384-XGjxtQfXaH2tnPFa9x+ruJTuLE3Aa6LhHSWRr1XeTyhezb4abCG4ccI5AkVDxqC+" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" integrity="sha384-OXVF05DQEe311p6ohU11NwlnX08FzMCsyoXzGOaL+83dKAb3qS17yZJxESl8YrJQ" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="anonymous" />
     <link rel="stylesheet" href="{% static 'css/custom.css' %}">
     <link rel="shortcut icon" type="image/x-icon" href="{% static 'favicon/favicon.ico' %}">
     <!-- CSS do chat removido - chat desabilitado -->
@@ -1033,7 +1033,7 @@ text-align: left;
                 <ul class="navbar-nav flex-grow-1 pe-3">
                     <li class="nav-item"><a class="nav-link" href="{% url 'home' %}"><i class="bi bi-house-door-fill me-2"></i>Home</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}"><i class="bi-bar-chart-line-fill me-2"></i>Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'colaboradores:lista_colaboradores' %}"><i class="bi bi-briefcase-fill me-2"></i>Colaboradores</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'colaboradores:lista_colaboradores' %}"><i class="bi bi-briefcase-fill me-2"></i>Apoiadores</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'convidados:lista_convidados' %}"><i class="bi bi-people-fill me-2"></i>Convidados</a></li>
                     <li class="nav-item dropdown"> {# O item principal do menu #}
     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -1041,7 +1041,7 @@ text-align: left;
     </a>
     <ul class="dropdown-menu dropdown-menu-dark"> {# O contêiner para os itens do dropdown #}
         <li><a class="dropdown-item" href="{% url 'convidados:guest_report_form' %}"><span>Relatório de Convidados</span></a></li>
-        <li><a class="dropdown-item" href="{% url 'colaboradores:relatorio_colaboradores_form' %}"><span>Relatório de Colaboradores</span></a></li> {# <--- NOVO LINK AQUI! #}
+        <li><a class="dropdown-item" href="{% url 'colaboradores:relatorio_colaboradores_form' %}"><span>Relatório de Apoiadores</span></a></li> {# <--- NOVO LINK AQUI! #}
         {# Você pode adicionar outros links de relatório aqui, conforme forem criados #}
         {# <li><hr class="dropdown-divider"></li> #} {# Divisor opcional #}
         {# <li><a class="dropdown-item" href="#">Ver Todos os Relatórios</a></li> #} {# Exemplo de um link mais genérico #}
@@ -1108,7 +1108,7 @@ text-align: left;
                 </a>
                 <ul class="dropdown-menu dropdown-menu-dark">
                     <li><a class="dropdown-item" href="{% url 'convidados:guest_report_form' %}"><span>Relatório de Convidados</span></a></li>
-                    <li><a class="dropdown-item" href="{% url 'colaboradores:relatorio_colaboradores_form' %}"><span>Relatório de Colaboradores</span></a></li>
+                    <li><a class="dropdown-item" href="{% url 'colaboradores:relatorio_colaboradores_form' %}"><span>Relatório de Apoiadores</span></a></li>
                 </ul>
             </li>
             <li class="nav-item"><a class="nav-link d-flex align-items-center {% if request.path|startswith:'/mapa' %}active{% endif %}" href="{% url 'mapa_apoiadores' %}"><i class="bi bi-map-fill me-2"></i><span>Mapa</span></a></li>
@@ -1236,39 +1236,26 @@ text-align: left;
 
     </script>
 
-            <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+            <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha384-1H217gwSVyLSIfaLxHbE7dRb3v4mYCKbpQvzx0cegeju1MVsGrX5xXxAvs/HgeFs" crossorigin="anonymous"></script>
         <script src="{% static 'js/jquery.mask.min.js' %}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js" integrity="sha384-d3UHjPdzJkZuk5H3qKYMLRyWLAQBJbby2yr2Q58hXXtAGF8RSNO9jpLDlKKPv5v3" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" integrity="sha384-9nhczxUqK87bcKHh20fSQcTGD4qq5GhayNYSYWqwBkINBhOfQLg/P5HG5lF1urn4" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js" integrity="sha384-y49Zu59jZHJL/PLKgZPv3k2WI9c0Yp3pWB76V8OBVCb0QBKS8l4Ff3YslzHVX76Y" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js" integrity="sha384-mFKkGiGvT5vo1fEyGCD3hshDdKmW3wzXW/x+fWriYJArD0R3gawT6lMvLboM22c0" crossorigin="anonymous"></script>
 
     <script>
         window.LOGGED_USER = "{{ request.user.username|escapejs }}";
         window.LOGGED_USER_FULLNAME = "{{ request.user.get_full_name|escapejs }}";
-        
-            // Variáveis de chat removidas - chat desabilitado
-        
-        // Função loadContacts removida - chat desabilitado
-        
-        // Sistema de chat removido - chat desabilitado
-        
-        // Funções de chat removidas - chat desabilitado
-        
-        // Socket de notificação removido - chat desabilitado
+        window.DJANGO_DEBUG = {{ debug_flag|lower }};
 
-        // Funções de chat removidas - chat desabilitado
-        
-        // Funções de chat removidas - chat desabilitado
-        
-        // Função startChat removida - chat desabilitado
-        
-        // Funções sendMessage e handleKey removidas - chat desabilitado
-        
-        // Funções de chat removidas - chat desabilitado
-        
-        // Todas as funções de chat removidas - chat desabilitado
+        // Desabilita console.log em produção para não expor dados no F12
+        if (!window.DJANGO_DEBUG) {
+            window.console.log = function() {};
+            window.console.debug = function() {};
+            window.console.info = function() {};
+        }
     </script>
 
         <script>

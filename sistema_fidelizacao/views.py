@@ -186,24 +186,44 @@ def dashboard(request):
     # Calcula total de convidados e colaboradores cadastrados para nossos cards
     total_colaboradores = Colaborador.objects.count()
     total_convidados = Convidado.objects.count()
+    total_colaboradores_cuiaba = Colaborador.objects.filter(
+        cidade__nome_cidade="Cuiabá"
+    ).count()
+    total_colaboradores_interior = Colaborador.objects.exclude(
+        cidade__nome_cidade="Cuiabá"
+    ).count()
+    total_convidados_cuiaba = Convidado.objects.filter(
+        cidade__nome_cidade="Cuiabá"
+    ).count()
+    total_convidados_interior = Convidado.objects.exclude(
+        cidade__nome_cidade="Cuiabá"
+    ).count()
 
     colaboradores_com_contagem = Colaborador.objects.annotate(
         num_convidados=Count("convidados", distinct=True)
     )
 
     # Define as nossas metas
-    meta = 20
+    meta = 30
 
     # Calcula quantos colaboradores estão em cada categoria de meta para grafico rosca
     abaixo_da_meta = colaboradores_com_contagem.filter(num_convidados__lt=meta).count()
     na_meta = colaboradores_com_contagem.filter(num_convidados=meta).count()
     meta_superada = colaboradores_com_contagem.filter(num_convidados__gt=meta).count()
+    total_com_meta = abaixo_da_meta + na_meta + meta_superada
+    pct_abaixo = (
+        round(abaixo_da_meta / total_com_meta * 100, 1) if total_com_meta else 0
+    )
+    pct_na = round(na_meta / total_com_meta * 100, 1) if total_com_meta else 0
+    pct_superada = (
+        round(meta_superada / total_com_meta * 100, 1) if total_com_meta else 0
+    )
 
     # Calcula nosso top 10 para grafico
     top_15_colaboradores = (
         Colaborador.objects.select_related("tipo")
         .annotate(num_convidados=Count("convidados", distinct=True))
-        .order_by("-num_convidados")[:15]
+        .order_by("-num_convidados")[:20]
     )
 
     # --- NOVO CÓDIGO PARA O GRÁFICO DE APOIADORES POR CIDADE ---
@@ -298,10 +318,37 @@ def dashboard(request):
         for bairro in labels_bairros_capital
     ]
 
-    # Top 15 cidades do interior por número de convidados
+    # Top bairro em cada categoria (capital)
+    if labels_bairros_capital:
+        idx_top_colab_bairro = max(
+            range(len(data_bairros_capital_colab)),
+            key=lambda i: data_bairros_capital_colab[i],
+        )
+        idx_top_conv_bairro = max(
+            range(len(data_bairros_capital)),
+            key=lambda i: data_bairros_capital[i],
+        )
+        top_bairro_colab_nome = labels_bairros_capital[idx_top_colab_bairro]
+        top_bairro_colab_valor = data_bairros_capital_colab[idx_top_colab_bairro]
+        top_bairro_conv_nome = labels_bairros_capital[idx_top_conv_bairro]
+        top_bairro_conv_valor = data_bairros_capital[idx_top_conv_bairro]
+        top_bairro_colab_pct = (
+            round(top_bairro_colab_valor / total_colaboradores_cuiaba * 100)
+            if total_colaboradores_cuiaba > 0
+            else 0
+        )
+        top_bairro_conv_pct = (
+            round(top_bairro_conv_valor / total_convidados_cuiaba * 100)
+            if total_convidados_cuiaba > 0
+            else 0
+        )
+    else:
+        top_bairro_colab_nome = top_bairro_conv_nome = ""
+        top_bairro_colab_pct = top_bairro_conv_pct = 0
+
+    # Top 15 cidades por número de convidados
     top_cidades_interior_conv = (
-        Convidado.objects.exclude(cidade__nome_cidade__in=["Cuiabá", "Várzea Grande"])
-        .filter(cidade__nome_cidade__isnull=False)
+        Convidado.objects.filter(cidade__nome_cidade__isnull=False)
         .values("cidade__nome_cidade")
         .annotate(total=Count("id"))
         .order_by("-total")[:15]
@@ -311,11 +358,9 @@ def dashboard(request):
     ]
     data_cidades_interior = [item["total"] for item in top_cidades_interior_conv]
 
-    # Série de colaboradores para as mesmas cidades do interior
-    colab_cidades_interior = (
-        Colaborador.objects.exclude(cidade__nome_cidade__in=["Cuiabá", "Várzea Grande"])
-        .values("cidade__nome_cidade")
-        .annotate(total=Count("id", distinct=True))
+    # Série de colaboradores para as mesmas cidades
+    colab_cidades_interior = Colaborador.objects.values("cidade__nome_cidade").annotate(
+        total=Count("id", distinct=True)
     )
     colab_cidades_interior_map = {
         item["cidade__nome_cidade"]: item["total"] for item in colab_cidades_interior
@@ -324,6 +369,34 @@ def dashboard(request):
         int(colab_cidades_interior_map.get(cidade, 0))
         for cidade in labels_cidades_interior
     ]
+
+    # Top cidade em cada categoria (interior)
+    if labels_cidades_interior:
+        idx_top_colab_cidade = max(
+            range(len(data_cidades_interior_colab)),
+            key=lambda i: data_cidades_interior_colab[i],
+        )
+        idx_top_conv_cidade = max(
+            range(len(data_cidades_interior)),
+            key=lambda i: data_cidades_interior[i],
+        )
+        top_cidade_colab_nome = labels_cidades_interior[idx_top_colab_cidade]
+        top_cidade_colab_valor = data_cidades_interior_colab[idx_top_colab_cidade]
+        top_cidade_conv_nome = labels_cidades_interior[idx_top_conv_cidade]
+        top_cidade_conv_valor = data_cidades_interior[idx_top_conv_cidade]
+        top_cidade_colab_pct = (
+            round(top_cidade_colab_valor / total_colaboradores * 100)
+            if total_colaboradores > 0
+            else 0
+        )
+        top_cidade_conv_pct = (
+            round(top_cidade_conv_valor / total_convidados * 100)
+            if total_convidados > 0
+            else 0
+        )
+    else:
+        top_cidade_colab_nome = top_cidade_conv_nome = ""
+        top_cidade_colab_pct = top_cidade_conv_pct = 0
 
     # --- NOVO CÓDIGO PARA O GRÁFICO DE CONVIDADOS POR MESORREGIÃO ---
     # 1. Define as regiões e inicializa os contadores
@@ -352,15 +425,44 @@ def dashboard(request):
 
     # Não incluir bucket de não mapeada/sem cidade no gráfico
 
-    # 4. Prepara os dados para o Chart.js
+    # 4. Conta colaboradores por mesorregião (mesmo mapeamento)
+    dados_regioes_colab = {regiao: 0 for regiao in regioes}
+    for colaborador in Colaborador.objects.select_related("cidade").all():
+        if (
+            colaborador.cidade
+            and colaborador.cidade.nome_cidade in CIDADE_PARA_MESORREGIAO
+        ):
+            regiao = CIDADE_PARA_MESORREGIAO[colaborador.cidade.nome_cidade]
+            dados_regioes_colab[regiao] += 1
+
+    # 5. Prepara os dados para o Chart.js
     labels_regioes = list(dados_regioes_ordenados.keys())
     data_regioes = list(dados_regioes_ordenados.values())
+    data_regioes_colab = [dados_regioes_colab[r] for r in labels_regioes]
+
+    # 6. Regiões com maior concentração
+    dados_regioes_colab_ordenados = dict(
+        sorted(dados_regioes_colab.items(), key=lambda item: item[1], reverse=True)
+    )
+    top_regiao_colab = next(iter(dados_regioes_colab_ordenados))
+    top_regiao_colab_pct = (
+        round(
+            dados_regioes_colab_ordenados[top_regiao_colab] / total_colaboradores * 100
+        )
+        if total_colaboradores > 0
+        else 0
+    )
+    top_regiao_conv = next(iter(dados_regioes_ordenados))
+    top_regiao_conv_pct = (
+        round(dados_regioes_ordenados[top_regiao_conv] / total_convidados * 100)
+        if total_convidados > 0
+        else 0
+    )
     # --- FIM DO NOVO CÓDIGO ---
 
-    # --- NOVO CÓDIGO PARA OS DADOS DO MAPA DE CALOR ---
-    # Regra: somente Cuiabá por bairro; demais cidades por coordenada da cidade
-    heat_by_bairro = {}
-    heat_by_cidade = {}
+    # --- DADOS DO MAPA DE CALOR COM INFO PARA TOOLTIP ---
+    # Regra: Cuiabá por bairro; demais cidades por coordenada da cidade
+    heat_points = {}
 
     # Cuiabá por bairro - colaboradores
     colab_por_bairro = (
@@ -369,15 +471,24 @@ def dashboard(request):
             bairro__longitude_bairro__isnull=False,
             bairro__cidade__nome_cidade__iexact="Cuiabá",
         )
-        .values("bairro_id", "bairro__latitude_bairro", "bairro__longitude_bairro")
+        .values(
+            "bairro_id",
+            "bairro__nome_bairro",
+            "bairro__latitude_bairro",
+            "bairro__longitude_bairro",
+        )
         .annotate(total=Count("id"))
     )
     for item in colab_por_bairro:
-        bid = item["bairro_id"]
-        heat_by_bairro[bid] = {
+        bid = f"b{item['bairro_id']}"
+        heat_points[bid] = {
             "lat": float(item["bairro__latitude_bairro"]),
             "lon": float(item["bairro__longitude_bairro"]),
-            "peso": int(item["total"]),
+            "nome": item["bairro__nome_bairro"],
+            "cidade": "Cuiabá",
+            "tipo": "bairro",
+            "colaboradores": int(item["total"]),
+            "convidados": 0,
         }
 
     # Cuiabá por bairro - convidados
@@ -387,18 +498,27 @@ def dashboard(request):
             bairro__longitude_bairro__isnull=False,
             bairro__cidade__nome_cidade__iexact="Cuiabá",
         )
-        .values("bairro_id", "bairro__latitude_bairro", "bairro__longitude_bairro")
+        .values(
+            "bairro_id",
+            "bairro__nome_bairro",
+            "bairro__latitude_bairro",
+            "bairro__longitude_bairro",
+        )
         .annotate(total=Count("id"))
     )
     for item in conv_por_bairro:
-        bid = item["bairro_id"]
-        if bid in heat_by_bairro:
-            heat_by_bairro[bid]["peso"] += int(item["total"])
+        bid = f"b{item['bairro_id']}"
+        if bid in heat_points:
+            heat_points[bid]["convidados"] += int(item["total"])
         else:
-            heat_by_bairro[bid] = {
+            heat_points[bid] = {
                 "lat": float(item["bairro__latitude_bairro"]),
                 "lon": float(item["bairro__longitude_bairro"]),
-                "peso": int(item["total"]),
+                "nome": item["bairro__nome_bairro"],
+                "cidade": "Cuiabá",
+                "tipo": "bairro",
+                "colaboradores": 0,
+                "convidados": int(item["total"]),
             }
 
     # Outras cidades por cidade - colaboradores
@@ -408,15 +528,24 @@ def dashboard(request):
             cidade__longitude_cidade__isnull=False,
         )
         .exclude(cidade__nome_cidade__iexact="Cuiabá")
-        .values("cidade_id", "cidade__latitude_cidade", "cidade__longitude_cidade")
+        .values(
+            "cidade_id",
+            "cidade__nome_cidade",
+            "cidade__latitude_cidade",
+            "cidade__longitude_cidade",
+        )
         .annotate(total=Count("id"))
     )
     for item in colab_por_cidade:
-        cid = item["cidade_id"]
-        heat_by_cidade[cid] = {
+        cid = f"c{item['cidade_id']}"
+        heat_points[cid] = {
             "lat": float(item["cidade__latitude_cidade"]),
             "lon": float(item["cidade__longitude_cidade"]),
-            "peso": int(item["total"]),
+            "nome": item["cidade__nome_cidade"],
+            "cidade": "",
+            "tipo": "cidade",
+            "colaboradores": int(item["total"]),
+            "convidados": 0,
         }
 
     # Outras cidades por cidade - convidados
@@ -426,42 +555,54 @@ def dashboard(request):
             cidade__longitude_cidade__isnull=False,
         )
         .exclude(cidade__nome_cidade__iexact="Cuiabá")
-        .values("cidade_id", "cidade__latitude_cidade", "cidade__longitude_cidade")
+        .values(
+            "cidade_id",
+            "cidade__nome_cidade",
+            "cidade__latitude_cidade",
+            "cidade__longitude_cidade",
+        )
         .annotate(total=Count("id"))
     )
     for item in conv_por_cidade:
-        cid = item["cidade_id"]
-        if cid in heat_by_cidade:
-            heat_by_cidade[cid]["peso"] += int(item["total"])
+        cid = f"c{item['cidade_id']}"
+        if cid in heat_points:
+            heat_points[cid]["convidados"] += int(item["total"])
         else:
-            heat_by_cidade[cid] = {
+            heat_points[cid] = {
                 "lat": float(item["cidade__latitude_cidade"]),
                 "lon": float(item["cidade__longitude_cidade"]),
-                "peso": int(item["total"]),
+                "nome": item["cidade__nome_cidade"],
+                "cidade": "",
+                "tipo": "cidade",
+                "colaboradores": 0,
+                "convidados": int(item["total"]),
             }
 
-    # Normalização conjunta (bairro de Cuiabá + outras cidades)
-    pesos = [v["peso"] for v in heat_by_bairro.values()] + [
-        v["peso"] for v in heat_by_cidade.values()
-    ]
+    # Normalização e montagem da lista final
+    pesos = [v["colaboradores"] + v["convidados"] for v in heat_points.values()]
     max_peso = max(pesos) if pesos else 1
     heat_data = [
-        [v["lat"], v["lon"], max(v["peso"] / max_peso, 0.1)]
-        for v in heat_by_bairro.values()
-    ] + [
-        [v["lat"], v["lon"], max(v["peso"] / max_peso, 0.1)]
-        for v in heat_by_cidade.values()
+        {
+            "lat": v["lat"],
+            "lon": v["lon"],
+            "intensity": max(
+                ((v["colaboradores"] + v["convidados"]) / max_peso) ** 0.3, 0.25
+            ),
+            "nome": v["nome"],
+            "cidade": v["cidade"],
+            "tipo": v["tipo"],
+            "colaboradores": v["colaboradores"],
+            "convidados": v["convidados"],
+        }
+        for v in heat_points.values()
     ]
-    # --- FIM DO NOVO CÓDIGO ---
+    # --- FIM DOS DADOS DO MAPA DE CALOR ---
 
     # --- NOVO CÓDIGO PARA OS NOVOS KPIs ---
     # Calcula a eficiência média (média de convidados por colaborador ativo)
     eficiencia_media = 0
-    colaboradores_ativos = colaboradores_com_contagem.filter(
-        num_convidados__gt=0
-    ).count()
-    if colaboradores_ativos > 0:
-        eficiencia_media = total_convidados / colaboradores_ativos
+    if total_colaboradores > 0:
+        eficiencia_media = total_convidados / total_colaboradores
     # --- FIM DO NOVO CÓDIGO ---
 
     # Contagem de colaboradores e convidados por grupo
@@ -567,13 +708,13 @@ def dashboard(request):
         # Badges especiais por colaboradores
         if colaboradores >= 50:
             badges.append(
-                {"emoji": "👑", "nome": "Rei dos Colaboradores", "cor": "bg-primary"}
+                {"emoji": "👑", "nome": "Rei dos Apoiadores", "cor": "bg-primary"}
             )
         elif colaboradores >= 25:
             badges.append({"emoji": "👥", "nome": "Mentor Master", "cor": "bg-info"})
         elif colaboradores >= 10:
             badges.append(
-                {"emoji": "👥", "nome": "Mentor de Colaboradores", "cor": "bg-info"}
+                {"emoji": "👥", "nome": "Mentor de Apoiadores", "cor": "bg-info"}
             )
 
         # Badges especiais por convidados
@@ -611,11 +752,17 @@ def dashboard(request):
         "colaborador_obj": colaborador_obj,
         # Passamos o objeto para acesso a outros dados
         "total_colaboradores": total_colaboradores,
-        # <-- Adiciona esta contagem ao contexto
         "total_convidados": total_convidados,
+        "total_colaboradores_cuiaba": total_colaboradores_cuiaba,
+        "total_colaboradores_interior": total_colaboradores_interior,
+        "total_convidados_cuiaba": total_convidados_cuiaba,
+        "total_convidados_interior": total_convidados_interior,
         "dados_abaixo_meta": abaixo_da_meta,
         "dados_na_meta": na_meta,
         "dados_meta_superada": meta_superada,
+        "pct_abaixo": pct_abaixo,
+        "pct_na": pct_na,
+        "pct_superada": pct_superada,
         "top_15_colaboradores": top_15_colaboradores,
         "labels_cidades_colab": json.dumps(labels_cidades_colab),
         "data_cidades_colab": json.dumps(data_cidades_colab),
@@ -623,6 +770,11 @@ def dashboard(request):
         "data_cidades_conv": json.dumps(data_cidades_conv),
         "labels_regioes": json.dumps(labels_regioes),
         "data_regioes": json.dumps(data_regioes),
+        "data_regioes_colab": json.dumps(data_regioes_colab),
+        "top_regiao_colab": top_regiao_colab,
+        "top_regiao_colab_pct": top_regiao_colab_pct,
+        "top_regiao_conv": top_regiao_conv,
+        "top_regiao_conv_pct": top_regiao_conv_pct,
         "dados_regioes": dados_regioes_ordenados,
         "heat_data": json.dumps(heat_data),
         # Transparência: convidados sem colaborador (pode explicar diferenças de soma)
@@ -631,9 +783,17 @@ def dashboard(request):
         "labels_bairros_capital": json.dumps(labels_bairros_capital),
         "data_bairros_capital": json.dumps(data_bairros_capital),
         "data_bairros_capital_colab": json.dumps(data_bairros_capital_colab),
+        "top_bairro_colab_nome": top_bairro_colab_nome,
+        "top_bairro_colab_pct": top_bairro_colab_pct,
+        "top_bairro_conv_nome": top_bairro_conv_nome,
+        "top_bairro_conv_pct": top_bairro_conv_pct,
         "labels_cidades_interior": json.dumps(labels_cidades_interior),
         "data_cidades_interior": json.dumps(data_cidades_interior),
         "data_cidades_interior_colab": json.dumps(data_cidades_interior_colab),
+        "top_cidade_colab_nome": top_cidade_colab_nome,
+        "top_cidade_colab_pct": top_cidade_colab_pct,
+        "top_cidade_conv_nome": top_cidade_conv_nome,
+        "top_cidade_conv_pct": top_cidade_conv_pct,
         # --- NOVOS KPIs ---
         "eficiencia_media": eficiencia_media,
         "grupos_qs": grupos_qs,
@@ -647,96 +807,142 @@ def dashboard(request):
     return render(request, "dashboard.html", context)
 
 
-@login_required  # Protege a view do mapa
+@login_required
 def mapa_apoiadores(request):
-    # Mistura: Cuiabá por bairro, demais por cidade
-    heat_by_bairro = {}
-    heat_by_cidade = {}
+    heat_points = {}
 
+    # Colaboradores em Cuiabá por bairro
     colab_por_bairro = (
         Colaborador.objects.filter(
             bairro__latitude_bairro__isnull=False,
             bairro__longitude_bairro__isnull=False,
             bairro__cidade__nome_cidade__iexact="Cuiabá",
         )
-        .values("bairro_id", "bairro__latitude_bairro", "bairro__longitude_bairro")
+        .values(
+            "bairro_id",
+            "bairro__nome_bairro",
+            "bairro__latitude_bairro",
+            "bairro__longitude_bairro",
+        )
         .annotate(total=Count("id"))
     )
     for item in colab_por_bairro:
-        bid = item["bairro_id"]
-        heat_by_bairro[bid] = {
+        bid = f"b{item['bairro_id']}"
+        heat_points[bid] = {
             "lat": float(item["bairro__latitude_bairro"]),
             "lon": float(item["bairro__longitude_bairro"]),
-            "peso": int(item["total"]),
+            "nome": item["bairro__nome_bairro"],
+            "cidade": "Cuiabá",
+            "tipo": "bairro",
+            "colaboradores": int(item["total"]),
+            "convidados": 0,
         }
 
+    # Convidados em Cuiabá por bairro
     conv_por_bairro = (
         Convidado.objects.filter(
             bairro__latitude_bairro__isnull=False,
             bairro__longitude_bairro__isnull=False,
             bairro__cidade__nome_cidade__iexact="Cuiabá",
         )
-        .values("bairro_id", "bairro__latitude_bairro", "bairro__longitude_bairro")
+        .values(
+            "bairro_id",
+            "bairro__nome_bairro",
+            "bairro__latitude_bairro",
+            "bairro__longitude_bairro",
+        )
         .annotate(total=Count("id"))
     )
     for item in conv_por_bairro:
-        bid = item["bairro_id"]
-        if bid in heat_by_bairro:
-            heat_by_bairro[bid]["peso"] += int(item["total"])
+        bid = f"b{item['bairro_id']}"
+        if bid in heat_points:
+            heat_points[bid]["convidados"] += int(item["total"])
+            heat_points[bid]["nome"] = item["bairro__nome_bairro"]
         else:
-            heat_by_bairro[bid] = {
+            heat_points[bid] = {
                 "lat": float(item["bairro__latitude_bairro"]),
                 "lon": float(item["bairro__longitude_bairro"]),
-                "peso": int(item["total"]),
+                "nome": item["bairro__nome_bairro"],
+                "cidade": "Cuiabá",
+                "tipo": "bairro",
+                "colaboradores": 0,
+                "convidados": int(item["total"]),
             }
 
+    # Colaboradores fora de Cuiabá por cidade
     colab_por_cidade = (
         Colaborador.objects.filter(
             cidade__latitude_cidade__isnull=False,
             cidade__longitude_cidade__isnull=False,
         )
         .exclude(cidade__nome_cidade__iexact="Cuiabá")
-        .values("cidade_id", "cidade__latitude_cidade", "cidade__longitude_cidade")
+        .values(
+            "cidade_id",
+            "cidade__nome_cidade",
+            "cidade__latitude_cidade",
+            "cidade__longitude_cidade",
+        )
         .annotate(total=Count("id"))
     )
     for item in colab_por_cidade:
-        cid = item["cidade_id"]
-        heat_by_cidade[cid] = {
+        cid = f"c{item['cidade_id']}"
+        heat_points[cid] = {
             "lat": float(item["cidade__latitude_cidade"]),
             "lon": float(item["cidade__longitude_cidade"]),
-            "peso": int(item["total"]),
+            "nome": item["cidade__nome_cidade"],
+            "cidade": "",
+            "tipo": "cidade",
+            "colaboradores": int(item["total"]),
+            "convidados": 0,
         }
 
+    # Convidados fora de Cuiabá por cidade
     conv_por_cidade = (
         Convidado.objects.filter(
             cidade__latitude_cidade__isnull=False,
             cidade__longitude_cidade__isnull=False,
         )
         .exclude(cidade__nome_cidade__iexact="Cuiabá")
-        .values("cidade_id", "cidade__latitude_cidade", "cidade__longitude_cidade")
+        .values(
+            "cidade_id",
+            "cidade__nome_cidade",
+            "cidade__latitude_cidade",
+            "cidade__longitude_cidade",
+        )
         .annotate(total=Count("id"))
     )
     for item in conv_por_cidade:
-        cid = item["cidade_id"]
-        if cid in heat_by_cidade:
-            heat_by_cidade[cid]["peso"] += int(item["total"])
+        cid = f"c{item['cidade_id']}"
+        if cid in heat_points:
+            heat_points[cid]["convidados"] += int(item["total"])
         else:
-            heat_by_cidade[cid] = {
+            heat_points[cid] = {
                 "lat": float(item["cidade__latitude_cidade"]),
                 "lon": float(item["cidade__longitude_cidade"]),
-                "peso": int(item["total"]),
+                "nome": item["cidade__nome_cidade"],
+                "cidade": "",
+                "tipo": "cidade",
+                "colaboradores": 0,
+                "convidados": int(item["total"]),
             }
 
-    pesos = [v["peso"] for v in heat_by_bairro.values()] + [
-        v["peso"] for v in heat_by_cidade.values()
-    ]
+    # Normalização
+    pesos = [v["colaboradores"] + v["convidados"] for v in heat_points.values()]
     max_peso = max(pesos) if pesos else 1
     heat_data = [
-        [v["lat"], v["lon"], max(v["peso"] / max_peso, 0.1)]
-        for v in heat_by_bairro.values()
-    ] + [
-        [v["lat"], v["lon"], max(v["peso"] / max_peso, 0.1)]
-        for v in heat_by_cidade.values()
+        {
+            "lat": v["lat"],
+            "lon": v["lon"],
+            "intensity": max(
+                ((v["colaboradores"] + v["convidados"]) / max_peso) ** 0.3, 0.25
+            ),
+            "nome": v["nome"],
+            "cidade": v["cidade"],
+            "tipo": v["tipo"],
+            "colaboradores": v["colaboradores"],
+            "convidados": v["convidados"],
+        }
+        for v in heat_points.values()
     ]
 
     context = {"heat_data": json.dumps(heat_data)}
