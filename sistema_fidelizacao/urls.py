@@ -24,7 +24,8 @@ from django.contrib.auth import (
     views as auth_views,  # Importe as views de autenticação do Django
 )
 from django.http import HttpResponse
-from django.urls import include, path
+from django.urls import include, path, re_path
+from django_ratelimit.decorators import ratelimit
 
 from historico.views import PasswordResetCompleteWithLogView
 from utils_aniversarios.views import aniversariantes_view
@@ -41,9 +42,11 @@ urlpatterns = [
     path("", views.home, name="index"),
     path("home/", views.home, name="home"),
     path("dashboard/", views.dashboard, name="dashboard"),
-    path(
-        "login/",
-        auth_views.LoginView.as_view(template_name="registration/login.html"),
+    re_path(
+        r"^login/$",
+        ratelimit(key="ip", rate="5/m", method="POST")(
+            auth_views.LoginView.as_view(template_name="registration/login.html")
+        ),
         name="login",
     ),
     path(

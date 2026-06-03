@@ -22,9 +22,15 @@ class Profile(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Criado em")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Atualizado em")
 
-    acesso_aniversariantes = models.BooleanField(default=False, verbose_name="Acesso a Aniversariantes")
-    acesso_mensagens = models.BooleanField(default=False, verbose_name="Acesso a Mensagens")
-    acesso_historico = models.BooleanField(default=False, verbose_name="Acesso a Histórico")
+    acesso_aniversariantes = models.BooleanField(
+        default=False, verbose_name="Acesso a Aniversariantes"
+    )
+    acesso_mensagens = models.BooleanField(
+        default=False, verbose_name="Acesso a Mensagens"
+    )
+    acesso_historico = models.BooleanField(
+        default=False, verbose_name="Acesso a Histórico"
+    )
 
     class Meta:
         db_table = "user_profiles"

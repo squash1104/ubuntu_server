@@ -103,7 +103,7 @@ INSTALLED_APPS = [
     "django_filters",
     "channels",
     # "chat",  # desabilitado temporariamente
-    # "django_ratelimit",  # Desabilitado temporariamente
+    "django_ratelimit",
     "django_otp",
     "django_otp.plugins.otp_totp",
     "django_otp.plugins.otp_static",
@@ -135,7 +135,7 @@ MIDDLEWARE = [
     # "django_otp.middleware.OTPMiddleware",
     # "security.frontend_protection.FrontendProtectionMiddleware",
     # "security.headers_protection.HeadersProtectionMiddleware",
-    # "django_ratelimit.middleware.RatelimitMiddleware",  # Desabilitado temporariamente
+    "django_ratelimit.middleware.RatelimitMiddleware",
 ]
 
 ROOT_URLCONF = "sistema_fidelizacao.urls"
@@ -277,7 +277,7 @@ LOGIN_URL = "/login/"
 
 LOGIN_REDIRECT_URL = "home"
 
-LOGOUT_REDIRECT_URL = "/accounts/login/"
+LOGOUT_REDIRECT_URL = "/login/"
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
@@ -328,7 +328,7 @@ EMAIL_USE_TLS = config("EMAIL_USE_TLS", default=True, cast=bool)
 # EMAIL_USE_SSL = False
 # Se usar SSL (porta 465), defina como True e EMAIL_USE_TLS como False
 EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="lucianolrv@gmail.com")
-EMAIL_HOST_PASSWORD = (config("EMAIL_HOST_PASSWORD"),)
+EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = "suporte@fidelizamax.app.br"  # E-mail que aparecerá como remetente
 SERVER_EMAIL = "suporte@fidelizamax.app.br"  # E-mail para erros de servidor
 
@@ -350,127 +350,47 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 # ===========================================
-# CONFIGURAÇÕES DE DEBUG - FORÇAR HTTP
-# ===========================================
-SECURE_SSL_REDIRECT = False
-
 # Sessões: idle timeout e expiração
+# ===========================================
 SESSION_COOKIE_AGE = 60 * 60 * 8  # 8 horas (tempo máximo de sessão)
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 # Idle timeout (auto-logout por inatividade)
 IDLE_TIMEOUT_SECONDS = 30 * 60  # 30 minutos
 
 # ===========================================
-# APLICAR CONFIGURAÇÕES DE SEGURANÇA - DESABILITADO PARA DEBUG
+# CONFIGURAÇÕES DE SEGURANÇA PARA PRODUÇÃO
 # ===========================================
-if False:  # SECURITY_ENABLED:
-    # Aplicar configurações de segurança - DESABILITADO PARA DEBUG
-    # apply_security_settings(locals())
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
 
-    # Configurações específicas de produção - DESABILITADO PARA DEBUG
-    if False:  # not DEBUG:
-        # Configurações HTTPS
-        SECURE_SSL_REDIRECT = True
-        SECURE_HSTS_SECONDS = 31536000
-        SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-        SECURE_HSTS_PRELOAD = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_BROWSER_XSS_FILTER = True
+    X_FRAME_OPTIONS = "DENY"
 
-        # Headers de segurança
-        SECURE_CONTENT_TYPE_NOSNIFF = True
-        SECURE_BROWSER_XSS_FILTER = True
-        X_FRAME_OPTIONS = "DENY"
+    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_HTTPONLY = True
+    CSRF_COOKIE_SECURE = True
+    CSRF_COOKIE_HTTPONLY = True
+    CSRF_COOKIE_SAMESITE = "Lax"
 
-        # Cookies seguros
-        SESSION_COOKIE_SECURE = True
-        SESSION_COOKIE_HTTPONLY = True
-        SESSION_COOKIE_AGE = 3600
-        SESSION_EXPIRE_AT_BROWSER_CLOSE = True
-        CSRF_COOKIE_SECURE = True
-        CSRF_COOKIE_HTTPONLY = False  # Permitir acesso via JavaScript para AJAX
-        CSRF_COOKIE_SAMESITE = "Lax"  # Mais permissivo para AJAX
-
-        # Configurações de senha mais rigorosas
-        AUTH_PASSWORD_VALIDATORS = [
-            {
-                "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",  # noqa: E501
-            },
-            {
-                "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",  # noqa: E501
-                "OPTIONS": {
-                    "min_length": 12,
-                },
-            },
-            {
-                "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",  # noqa: E501
-            },
-            {
-                "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",  # noqa: E501
-            },
-        ]
-
-        # Configurações de logging de segurança (desabilitado temporariamente)
-        # LOGGING = {
-        #     'version': 1,
-        #     'disable_existing_loggers': False,
-        #     'formatters': {
-        #         'verbose': {
-        #             'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',  # noqa: E501
-        #             'style': '{',
-        #         },
-        #         'simple': {
-        #             'format': '{levelname} {message}',
-        #             'style': '{',
-        #         },
-        #     },
-        #     'handlers': {
-        #         'file': {
-        #             'level': 'INFO',
-        #             'class': 'logging.FileHandler',
-        #             'filename': os.path.join(BASE_DIR, 'logs', 'security.log'),
-        #             'formatter': 'verbose',
-        #         },
-        #         'security_file': {
-        #             'level': 'WARNING',
-        #             'class': 'logging.FileHandler',
-        #             'filename': os.path.join(BASE_DIR, 'logs', 'security_events.log'),
-        #             'formatter': 'verbose',
-        #         },
-        #         'console': {
-        #             'level': 'INFO',
-        #             'class': 'logging.StreamHandler',
-        #             'formatter': 'simple',
-        #         },
-        #     },
-        #     'loggers': {
-        #         'django': {
-        #             'handlers': ['file', 'console'],
-        #             'level': 'INFO',
-        #             'propagate': True,
-        #         },
-        #         'django.security': {
-        #             'handlers': ['security_file'],
-        #             'level': 'WARNING',
-        #             'propagate': True,
-        #         },
-        #         'chat': {
-        #             'handlers': ['file'],
-        #             'level': 'INFO',
-        #             'propagate': True,
-        #         },
-        #     },
-        # }
-
-        print("✅ Configurações de segurança aplicadas para produção")
-    else:
-        print("⚠️  Modo DEBUG ativo - configurações de segurança reduzidas")
+    print("✅ Configurações de segurança aplicadas para produção")
 else:
-    print("❌ Configurações de segurança não aplicadas")
+    print("⚠️  Ambiente de desenvolvimento - configurações de segurança reduzidas")
 
 # ===========================================
 # CONFIGURAÇÕES DE RATE LIMITING PARA MENSAGENS
 # ===========================================
 MAX_MESSAGES_PER_MINUTE = config("MAX_MESSAGES_PER_MINUTE", default=10, cast=int)
 MAX_MESSAGES_PER_HOUR = config("MAX_MESSAGES_PER_HOUR", default=100, cast=int)
+
+# ===========================================
+# CONFIGURAÇÕES DE RATE LIMITING PARA LOGIN
+# ===========================================
+RATELIMIT_ENABLE = True
+RATELIMIT_USE_CACHE = "rate_limit"
 
 # ===========================================
 # CONFIGURAÇÕES WHATSAPP CLOUD API (META)

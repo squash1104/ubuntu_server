@@ -1,4 +1,5 @@
 import re
+from urllib.parse import urlparse
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -9,7 +10,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_http_methods
 
 from colaboradores.models import Colaborador
-from colaboradores.utils import tipos_do_usuario, usuario_e_gestor
+from colaboradores.utils import tipos_do_usuario
 from geografia.models import Bairro
 from historico.utils import (
     registrar_criacao_convidado,
@@ -25,6 +26,13 @@ from .utils import (
     exportar_convidados_pdf,
     imprimir_relatorio,
 )
+
+
+def _is_safe_url(url, request):
+    parsed = urlparse(url)
+    if not parsed.netloc:
+        return True
+    return parsed.netloc == request.get_host()
 
 
 @login_required
@@ -257,7 +265,9 @@ def cadastrar_convidado(request, colaborador_id=None):
                 )
     else:
         if colaborador:
-            form = ConvidadoForm(initial={"colaborador": colaborador}, user=request.user)
+            form = ConvidadoForm(
+                initial={"colaborador": colaborador}, user=request.user
+            )
         else:
             form = ConvidadoForm(user=request.user)
 
@@ -308,8 +318,7 @@ def editar_convidado(request, pk):
             # --- MODIFICAÇÃO PRINCIPAL AQUI ---
             # Pega a URL de retorno do formulário, se ela existir.
             next_url = request.POST.get("next", None)
-            if next_url:
-                # Redireciona para a URL completa fornecida pelo formulário
+            if next_url and _is_safe_url(next_url, request):
                 return redirect(next_url)
             # Se não houver, volta para a lista geral como fallback
             return redirect("convidados:lista_convidados")
@@ -351,9 +360,7 @@ def excluir_convidado(request, pk):
 
         messages.success(request, f'Convidado "{nome_convidado}" excluído com sucesso!')
 
-        # Se a URL de redirecionamento foi enviada, usa-a.
-        # Caso contrário, usa uma URL padrão (fallback de segurança).
-        if redirect_url:
+        if redirect_url and _is_safe_url(redirect_url, request):
             return redirect(redirect_url)
         return redirect("convidados:lista_convidados")
 
@@ -361,6 +368,7 @@ def excluir_convidado(request, pk):
     return redirect("convidados:lista_convidados")
 
 
+@login_required
 def relatorio_convidados_view(request):
     f = ConvidadoFilter(
         request.GET,
@@ -425,6 +433,7 @@ def relatorio_convidados_view(request):
     return render(request, "report/guest_report_form.html", context)
 
 
+@login_required
 def get_bairros_ajax(request):
     cidade_id = request.GET.get("cidade_id")
     bairros = []
@@ -437,6 +446,7 @@ def get_bairros_ajax(request):
     return JsonResponse(bairros, safe=False)
 
 
+@login_required
 @require_http_methods(["GET"])
 def check_telefone_exists(request):
     telefone = request.GET.get("telefone", None)
@@ -499,6 +509,7 @@ def check_telefone_exists(request):
     return JsonResponse({"exists": False, "nome_existente": None})
 
 
+@login_required
 @require_http_methods(["GET"])
 def check_nome_exists(request):
     nome = request.GET.get("nome", None)

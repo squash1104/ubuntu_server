@@ -32,10 +32,15 @@ class MensagemService:
 
         ext = os.path.splitext(caminho)[1].lower()
         tipo_map = {
-            ".jpg": "image", ".jpeg": "image", ".png": "image",
-            ".mp4": "video", ".3gp": "video",
+            ".jpg": "image",
+            ".jpeg": "image",
+            ".png": "image",
+            ".mp4": "video",
+            ".3gp": "video",
             ".pdf": "document",
-            ".mp3": "audio", ".ogg": "audio", ".amr": "audio",
+            ".mp3": "audio",
+            ".ogg": "audio",
+            ".amr": "audio",
         }
         header_type = tipo_map.get(ext, "image")
         return resultado["media_id"], header_type
@@ -87,11 +92,18 @@ class MensagemService:
 
         if resultado.get("success"):
             return resultado
-        raise Exception(resultado.get("error", "Falha ao enviar template via WhatsApp Cloud API"))
+        raise Exception(
+            resultado.get("error", "Falha ao enviar template via WhatsApp Cloud API")
+        )
 
     def _send_message(
-        self, telefone, conteudo, tipo_mensagem, media_url,
-        meta_template_name=None, meta_template_language="pt_BR",
+        self,
+        telefone,
+        conteudo,
+        tipo_mensagem,
+        media_url,
+        meta_template_name=None,
+        meta_template_language="pt_BR",
         debug_info=None,
     ):
         """Decide entre enviar template Meta ou texto livre"""
@@ -100,11 +112,16 @@ class MensagemService:
 
         if meta_template_name and tipo_mensagem == "whatsapp":
             return self._enviar_template_via_whatsapp_cloud(
-                telefone, meta_template_name, meta_template_language, media_url=media_url
+                telefone,
+                meta_template_name,
+                meta_template_language,
+                media_url=media_url,
             )
 
         if tipo_mensagem == "whatsapp":
-            return self._enviar_via_whatsapp_cloud(telefone, conteudo, media_url=media_url)
+            return self._enviar_via_whatsapp_cloud(
+                telefone, conteudo, media_url=media_url
+            )
 
         if tipo_mensagem == "sms":
             raise ValueError("SMS não implementado no momento")
@@ -154,7 +171,9 @@ class MensagemService:
         conteudo_processado = self.processar_template(conteudo, destinatario_nome)
 
         if media_url:
-            conteudo_processado = conteudo_processado.replace("[📷 Imagem anexada]", "").strip()
+            conteudo_processado = conteudo_processado.replace(
+                "[📷 Imagem anexada]", ""
+            ).strip()
 
         mensagem = MensagemAniversario.objects.create(
             destinatario_nome=destinatario_nome,
@@ -179,7 +198,10 @@ class MensagemService:
                 return self._make_debug_result(mensagem, media_url)
 
             resultado = self._send_message(
-                destinatario_telefone, conteudo_processado, tipo_mensagem, media_url,
+                destinatario_telefone,
+                conteudo_processado,
+                tipo_mensagem,
+                media_url,
                 meta_template_name=meta_template_name,
                 meta_template_language=meta_template_language,
             )
@@ -219,7 +241,9 @@ class MensagemService:
         conteudo_processado = self.processar_template(conteudo, destinatario_nome)
 
         if media_url:
-            conteudo_processado = conteudo_processado.replace("[📷 Imagem anexada]", "").strip()
+            conteudo_processado = conteudo_processado.replace(
+                "[📷 Imagem anexada]", ""
+            ).strip()
 
         mensagem = Mensagem.objects.create(
             campanha=campanha,
@@ -245,7 +269,10 @@ class MensagemService:
                 return self._make_debug_result(mensagem, media_url)
 
             resultado = self._send_message(
-                destinatario_telefone, conteudo_processado, tipo_mensagem, media_url,
+                destinatario_telefone,
+                conteudo_processado,
+                tipo_mensagem,
+                media_url,
                 meta_template_name=meta_template_name,
                 meta_template_language=meta_template_language,
             )

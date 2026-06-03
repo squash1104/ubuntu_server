@@ -9,13 +9,19 @@ class TemplateMensagemAdmin(admin.ModelAdmin):
     list_filter = ("tipo_mensagem", "ativo")
     search_fields = ("nome", "meta_template_name", "conteudo")
     fieldsets = (
-        (None, {
-            "fields": ("nome", "tipo_mensagem", "conteudo", "ativo"),
-        }),
-        ("Template do Meta (opcional)", {
-            "fields": ("meta_template_name", "meta_template_language", "imagem"),
-            "description": "Preencha apenas se tiver um template aprovado no Meta Business. O sistema enviará como template do Meta em vez de texto livre.",
-        }),
+        (
+            None,
+            {
+                "fields": ("nome", "tipo_mensagem", "conteudo", "ativo"),
+            },
+        ),
+        (
+            "Template do Meta (opcional)",
+            {
+                "fields": ("meta_template_name", "meta_template_language", "imagem"),
+                "description": "Preencha apenas se tiver um template aprovado no Meta Business. O sistema enviará como template do Meta em vez de texto livre.",
+            },
+        ),
     )
 
     def save_model(self, request, obj, form, change):

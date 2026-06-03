@@ -24,7 +24,6 @@ from .utils import (
     exportar_colaboradores_pdf,
     imprimir_relatorio_colaboradores,
     tipos_do_usuario,
-    usuario_e_gestor,
 )
 
 
@@ -262,6 +261,7 @@ def excluir_colaborador(request, colaborador_id):
     )  # Redireciona de volta com a mensagem de erro
 
 
+@login_required
 def relatorio_colaboradores_view(request):
     # Anota a contagem de convidados para cada colaborador
     queryset = Colaborador.objects.filter(
@@ -331,6 +331,7 @@ def relatorio_colaboradores_view(request):
     return render(request, "relatorios/relatorio_colaboradores_form.html", context)
 
 
+@login_required
 def get_bairros_ajax(request):
     cidade_id = request.GET.get("cidade_id")
     bairros = []
@@ -343,6 +344,7 @@ def get_bairros_ajax(request):
     return JsonResponse(bairros, safe=False)
 
 
+@login_required
 @require_http_methods(["GET"])
 def check_telefone_exists(request):
     telefone = request.GET.get("telefone", None)
@@ -409,6 +411,7 @@ def check_telefone_exists(request):
     )
 
 
+@login_required
 @require_http_methods(["GET"])
 def check_nome_exists(request):
     nome = request.GET.get("nome", None)

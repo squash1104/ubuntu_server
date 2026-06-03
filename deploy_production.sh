@@ -2,6 +2,8 @@
 # Script de deploy para produção
 
 echo "🚀 Iniciando deploy para produção..."
+cd /srv/sisvot
+source .venv/bin/activate
 
 # 1. Backup do banco de dados atual
 echo "📦 Fazendo backup do banco de dados..."

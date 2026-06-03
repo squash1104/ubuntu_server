@@ -40,6 +40,8 @@ def verificar_acesso_modulo(user, modulo):
     if flags.get(modulo):
         return True, ""
     return False, "Acesso restrito. Você não tem permissão para acessar este módulo."
+
+
 from django.template.loader import get_template
 from django.utils import timezone
 from openpyxl import Workbook
