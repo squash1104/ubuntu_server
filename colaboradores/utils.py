@@ -91,6 +91,8 @@ def exportar_colaboradores_excel(colaborador_queryset, selected_columns):
                 row_data.append(str(colaborador.bairro) if colaborador.bairro else "")
             elif col == "total_convidados":
                 row_data.append(colaborador.total_convidados)
+            elif col == "tipo":
+                row_data.append(colaborador.tipo.nome if colaborador.tipo else "")
             elif col == "data_cadastro":
                 row_data.append(
                     colaborador.data_cadastro.strftime("%Y-%m-%d %H:%M:%S")
@@ -110,7 +112,7 @@ def exportar_colaboradores_pdf(colaborador_queryset, selected_columns, filter_ob
     Gera um arquivo HTML otimizado para impressao/salvar como PDF.
     O usuario pode abrir no navegador e salvar como PDF.
     """
-    template_path = "relatorios/relatorios_colaboradores_pdf_moderno.html"
+    template_path = "relatorios/relatorios_colaboradores_pdf_otimizado.html"
 
     # Mapeamento de valores de ordenacao para labels legiveis
     ordering_labels = {
@@ -152,21 +154,25 @@ def exportar_colaboradores_pdf(colaborador_queryset, selected_columns, filter_ob
             filtros_aplicados.append(f"Ordenar por: {ordering_labels[ordering_value]}")
 
         # Depois, verificar os outros filtros
-        for field_name, filter_field in filter_obj.filters.items():
-            if field_name == "ordering":
-                continue  # Ja tratado acima
-            value = getattr(filter_obj.form, field_name, None)
-            if value and value.value():
-                display_value = value.value()
-                if hasattr(filter_field, "label"):
-                    label = filter_field.label
+        if filter_obj.form.is_valid():
+            for field_name, filter_field in filter_obj.filters.items():
+                if field_name == "ordering":
+                    continue
+                cleaned = filter_obj.form.cleaned_data.get(field_name)
+                if cleaned is None or cleaned == "" or cleaned == [] or cleaned == ():
+                    continue
+                label = filter_field.label or field_name
+                if hasattr(cleaned, "strftime"):
+                    display = cleaned.strftime("%d/%m/%Y")
+                elif hasattr(cleaned, "pk"):
+                    display = str(cleaned)
                 else:
-                    label = (
-                        filter_obj.filters[field_name].field.label
-                        if hasattr(filter_obj.filters[field_name], "field")
-                        else field_name
-                    )
-                filtros_aplicados.append(f"{label}: {display_value}")
+                    choices = getattr(getattr(filter_field, "field", None), "choices", None)
+                    if choices:
+                        display = dict(choices).get(cleaned, str(cleaned))
+                    else:
+                        display = str(cleaned)
+                filtros_aplicados.append(f"{label}: {display}")
 
     context = {
         "colaboradores": colaborador_queryset,
@@ -220,21 +226,25 @@ def imprimir_relatorio_colaboradores(
             filtros_aplicados.append(f"Ordenar por: {ordering_labels[ordering_value]}")
 
         # Depois, verificar os outros filtros
-        for field_name, filter_field in filter_obj.filters.items():
-            if field_name == "ordering":
-                continue
-            value = getattr(filter_obj.form, field_name, None)
-            if value and value.value():
-                display_value = value.value()
-                if hasattr(filter_field, "label"):
-                    label = filter_field.label
+        if filter_obj.form.is_valid():
+            for field_name, filter_field in filter_obj.filters.items():
+                if field_name == "ordering":
+                    continue
+                cleaned = filter_obj.form.cleaned_data.get(field_name)
+                if cleaned is None or cleaned == "" or cleaned == [] or cleaned == ():
+                    continue
+                label = filter_field.label or field_name
+                if hasattr(cleaned, "strftime"):
+                    display = cleaned.strftime("%d/%m/%Y")
+                elif hasattr(cleaned, "pk"):
+                    display = str(cleaned)
                 else:
-                    label = (
-                        filter_obj.filters[field_name].field.label
-                        if hasattr(filter_obj.filters[field_name], "field")
-                        else field_name
-                    )
-                filtros_aplicados.append(f"{label}: {display_value}")
+                    choices = getattr(getattr(filter_field, "field", None), "choices", None)
+                    if choices:
+                        display = dict(choices).get(cleaned, str(cleaned))
+                    else:
+                        display = str(cleaned)
+                filtros_aplicados.append(f"{label}: {display}")
 
     context = {
         "colaboradores": colaborador_queryset,

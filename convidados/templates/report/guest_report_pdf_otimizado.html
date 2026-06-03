@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório de Convidados</title>
+    <style>
+        @page {
+            margin: 1.5cm 1cm 2cm 1cm;
+            size: A4 portrait;
+            @bottom-center {
+                content: "Página " counter(page) " de " counter(pages);
+                font-size: 8px;
+                color: #666;
+                font-family: Arial, sans-serif;
+            }
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #222;
+            font-size: 9.5px;
+            line-height: 1.3;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #333;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        .header p {
+            margin: 2px 0 0;
+            font-size: 9px;
+            color: #555;
+        }
+        .report-info {
+            font-size: 9px;
+            margin-bottom: 4px;
+            color: #444;
+        }
+        .report-info strong { font-weight: bold; }
+        .filtros-box {
+            margin-bottom: 8px;
+            padding: 4px 8px;
+            background: #f5f5f5;
+            border-left: 3px solid #999;
+            font-size: 8.5px;
+            color: #555;
+        }
+        .filtros-box strong { color: #333; }
+        .filtros-box ul {
+            margin: 2px 0 0 14px;
+            padding: 0;
+        }
+        .filtros-box li { margin: 0; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        thead th {
+            background: #444 !important;
+            color: #fff !important;
+            padding: 4px 5px;
+            text-align: left;
+            font-weight: bold;
+            font-size: 8.5px;
+            border: 1px solid #444;
+        }
+        tbody td {
+            padding: 3px 5px;
+            border: 1px solid #ccc;
+            font-size: 9px;
+            vertical-align: top;
+        }
+        tbody tr:nth-child(even) { background-color: #fafafa; }
+        tbody tr { page-break-inside: avoid; }
+        .num-col { text-align: center; width: 25px; color: #888; font-size: 8px; }
+        .capital-row td { background-color: #367962 !important; color: #fff !important; }
+        .interior-row td { background-color: #D4A373 !important; color: #fff !important; }
+        .badge-tipo {
+            display: inline-block;
+            padding: 1px 6px;
+            border-radius: 9px;
+            font-size: 7.5px;
+            font-weight: bold;
+            color: #fff;
+            margin-left: 2px;
+        }
+        .badge-tipo.success  { background-color: #198754; }
+        .badge-tipo.primary  { background-color: #0d6efd; }
+        .badge-tipo.danger   { background-color: #dc3545; }
+        .badge-tipo.warning  { background-color: #ffc107; color: #000; }
+        .badge-tipo.info     { background-color: #0dcaf0; color: #000; }
+        .badge-tipo.secondary{ background-color: #6c757d; }
+        .badge-tipo.dark     { background-color: #212529; }
+        .badge-tipo.purple   { background-color: #6f42c1; }
+        .badge-tipo.pink     { background-color: #d63384; }
+        .badge-tipo.orange   { background-color: #fd7e14; }
+        .badge-tipo.teal     { background-color: #20c997; }
+        .badge-tipo.cyan     { background-color: #0dcaf0; color: #000; }
+        .badge-tipo.indigo   { background-color: #6610f2; }
+        .badge-tipo.brown    { background-color: #795548; }
+        .badge-tipo.lime     { background-color: #8bc34a; }
+        .badge-tipo.coral    { background-color: #e86f6f; }
+        .badge-tipo.navy     { background-color: #001f3f; }
+        .badge-tipo.olive    { background-color: #808000; }
+        .no-data {
+            text-align: center;
+            padding: 30px;
+            font-size: 12px;
+            color: #888;
+        }
+        .footer-note {
+            margin-top: 10px;
+            padding-top: 4px;
+            border-top: 1px solid #ddd;
+            text-align: right;
+            font-size: 7.5px;
+            color: #999;
+        }
+        @media print {
+            body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+            thead th { background: #444 !important; color: #fff !important; }
+            .capital-row td { background-color: #367962 !important; color: #fff !important; }
+            .interior-row td { background-color: #D4A373 !important; color: #fff !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>RELATÓRIO DE CONVIDADOS</h1>
+        <p>SisVot &mdash; Sistema de Fidelização</p>
+    </div>
+
+    <div class="report-info">
+        <strong>Total:</strong> {{ convidados|length }} convidado{{ convidados|length|pluralize:"s" }}
+        {% if data_geracao %} &nbsp;|&nbsp; {{ data_geracao|date:"d/m/Y H:i" }}{% endif %}
+    </div>
+
+    {% if filtros_aplicados %}
+    <div class="filtros-box">
+        <strong>Filtros aplicados:</strong>
+        <ul>
+            {% for filtro in filtros_aplicados %}
+            <li>{{ filtro }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    {% if convidados %}
+    <table>
+        <thead>
+            <tr>
+                <th class="num-col">#</th>
+                {% for column in selected_columns %}
+                    <th>
+                        {% if column == 'nome' %}Nome{% endif %}
+                        {% if column == 'telefone' %}Telefone{% endif %}
+                        {% if column == 'cidade' %}Cidade{% endif %}
+                        {% if column == 'bairro' %}Bairro{% endif %}
+                        {% if column == 'convidado_por' %}Convidado por{% endif %}
+                        {% if column == 'data_cadastro' %}Data Cadastro{% endif %}
+                    </th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for convidado in convidados %}
+            <tr class="{% if convidado.cidade.nome_cidade == 'Cuiabá' %}capital-row{% elif convidado.cidade %}interior-row{% endif %}">
+                <td class="num-col">{{ forloop.counter }}</td>
+                {% for column in selected_columns %}
+                    <td>
+                        {% if column == 'nome' %}{{ convidado.nome }}{% endif %}
+                        {% if column == 'telefone' %}{{ convidado.telefone|default:"-" }}{% endif %}
+                        {% if column == 'cidade' %}{{ convidado.cidade|default:"-" }}{% endif %}
+                        {% if column == 'bairro' %}{{ convidado.bairro|default:"-" }}{% endif %}
+                        {% if column == 'convidado_por' %}
+                            {% if convidado.colaborador %}
+                                {{ convidado.colaborador.nome }}
+                                {% if convidado.colaborador.tipo %}
+                                    <span class="badge-tipo {{ convidado.colaborador.tipo.cor }}">{{ convidado.colaborador.tipo.nome }}</span>
+                                {% endif %}
+                            {% else %}-{% endif %}
+                        {% endif %}
+                        {% if column == 'data_cadastro' %}{{ convidado.data_cadastro|date:"d/m/Y H:i" }}{% endif %}
+                    </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="no-data">Nenhum convidado encontrado.</div>
+    {% endif %}
+
+    <div class="footer-note">
+        SisVot &mdash; Gerado em {{ data_geracao|date:"d/m/Y H:i" }}
+    </div>
+</body>
+</html>

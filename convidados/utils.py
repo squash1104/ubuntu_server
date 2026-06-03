@@ -70,7 +70,7 @@ def exportar_convidados_pdf(convidado_queryset, selected_columns, filter_obj=Non
     Gera um arquivo HTML otimizado para impressao/salvar como PDF.
     O usuario pode abrir no navegador e salvar como PDF.
     """
-    template_path = "report/guest_report_pdf_moderno.html"
+    template_path = "report/guest_report_pdf_otimizado.html"
 
     # Mapeamento de valores de ordenacao para labels legiveis
     ordering_labels = {
@@ -103,21 +103,25 @@ def exportar_convidados_pdf(convidado_queryset, selected_columns, filter_obj=Non
             filtros_aplicados.append(f"Ordenar por: {ordering_labels[ordering_value]}")
 
         # Depois, verificar os outros filtros
-        for field_name, filter_field in filter_obj.filters.items():
-            if field_name == "ordering":
-                continue
-            value = getattr(filter_obj.form, field_name, None)
-            if value and value.value():
-                display_value = value.value()
-                if hasattr(filter_field, "label"):
-                    label = filter_field.label
+        if filter_obj.form.is_valid():
+            for field_name, filter_field in filter_obj.filters.items():
+                if field_name == "ordering":
+                    continue
+                cleaned = filter_obj.form.cleaned_data.get(field_name)
+                if cleaned is None or cleaned == "" or cleaned == [] or cleaned == ():
+                    continue
+                label = filter_field.label or field_name
+                if hasattr(cleaned, "strftime"):
+                    display = cleaned.strftime("%d/%m/%Y")
+                elif hasattr(cleaned, "pk"):
+                    display = str(cleaned)
                 else:
-                    label = (
-                        filter_obj.filters[field_name].field.label
-                        if hasattr(filter_obj.filters[field_name], "field")
-                        else field_name
-                    )
-                filtros_aplicados.append(f"{label}: {display_value}")
+                    choices = getattr(getattr(filter_field, "field", None), "choices", None)
+                    if choices:
+                        display = dict(choices).get(cleaned, str(cleaned))
+                    else:
+                        display = str(cleaned)
+                filtros_aplicados.append(f"{label}: {display}")
 
     context = {
         "convidados": convidado_queryset,
@@ -168,21 +172,25 @@ def imprimir_relatorio(convidado_queryset, selected_columns, filter_obj=None):
             filtros_aplicados.append(f"Ordenar por: {ordering_labels[ordering_value]}")
 
         # Depois, verificar os outros filtros
-        for field_name, filter_field in filter_obj.filters.items():
-            if field_name == "ordering":
-                continue
-            value = getattr(filter_obj.form, field_name, None)
-            if value and value.value():
-                display_value = value.value()
-                if hasattr(filter_field, "label"):
-                    label = filter_field.label
+        if filter_obj.form.is_valid():
+            for field_name, filter_field in filter_obj.filters.items():
+                if field_name == "ordering":
+                    continue
+                cleaned = filter_obj.form.cleaned_data.get(field_name)
+                if cleaned is None or cleaned == "" or cleaned == [] or cleaned == ():
+                    continue
+                label = filter_field.label or field_name
+                if hasattr(cleaned, "strftime"):
+                    display = cleaned.strftime("%d/%m/%Y")
+                elif hasattr(cleaned, "pk"):
+                    display = str(cleaned)
                 else:
-                    label = (
-                        filter_obj.filters[field_name].field.label
-                        if hasattr(filter_obj.filters[field_name], "field")
-                        else field_name
-                    )
-                filtros_aplicados.append(f"{label}: {display_value}")
+                    choices = getattr(getattr(filter_field, "field", None), "choices", None)
+                    if choices:
+                        display = dict(choices).get(cleaned, str(cleaned))
+                    else:
+                        display = str(cleaned)
+                filtros_aplicados.append(f"{label}: {display}")
 
     context = {
         "convidados": convidado_queryset,

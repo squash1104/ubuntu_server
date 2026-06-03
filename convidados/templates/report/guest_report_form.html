@@ -101,7 +101,7 @@
                         <select name="cidade" id="id_cidade" class="form-select" data-ajax-url="{% url 'convidados:get_bairros_ajax' %}">
                             <option value="">---------</option>
                             {% for choice in filter.form.cidade.field.choices %}
-                                <option value="{{ choice.0 }}" {% if choice.0 == filter.form.cidade.value %}selected{% endif %}>{{ choice.1 }}</option>
+                                <option value="{{ choice.0 }}" {% if choice.0|stringformat:"s" == filter.form.cidade.value %}selected{% endif %}>{{ choice.1 }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -126,7 +126,7 @@
                         <select name="colaborador__tipo" id="id_colaborador__tipo" class="form-select">
                             <option value="">---------</option>
                             {% for choice in filter.form.colaborador__tipo.field.choices %}
-                                <option value="{{ choice.0 }}" {% if choice.0 == filter.form.colaborador__tipo.value %}selected{% endif %}>{{ choice.1 }}</option>
+                                <option value="{{ choice.0 }}" {% if choice.0|stringformat:"s" == filter.form.colaborador__tipo.value %}selected{% endif %}>{{ choice.1 }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -154,15 +154,15 @@
                             <i class="bi bi-sort-down me-1"></i>Ordenar por
                         </label>
                         <select name="ordering" id="id_ordering" class="form-select">
-                            <option value="">---------</option>
-                            <option value="nome">Nome (A-Z)</option>
-                            <option value="-nome">Nome (Z-A)</option>
-                            <option value="cidade__nome_cidade">Cidade (A-Z)</option>
-                            <option value="-cidade__nome_cidade">Cidade (Z-A)</option>
-                            <option value="bairro__nome_bairro">Bairro (A-Z)</option>
-                            <option value="-bairro__nome_bairro">Bairro (Z-A)</option>
-                            <option value="data_cadastro">Data (Mais antiga)</option>
-                            <option value="-data_cadastro">Data (Mais recente)</option>
+                            <option value="" {% if not request.GET.ordering %}selected{% endif %}>---------</option>
+                            <option value="nome" {% if request.GET.ordering == 'nome' %}selected{% endif %}>Nome (A-Z)</option>
+                            <option value="-nome" {% if request.GET.ordering == '-nome' %}selected{% endif %}>Nome (Z-A)</option>
+                            <option value="cidade__nome_cidade" {% if request.GET.ordering == 'cidade__nome_cidade' %}selected{% endif %}>Cidade (A-Z)</option>
+                            <option value="-cidade__nome_cidade" {% if request.GET.ordering == '-cidade__nome_cidade' %}selected{% endif %}>Cidade (Z-A)</option>
+                            <option value="bairro__nome_bairro" {% if request.GET.ordering == 'bairro__nome_bairro' %}selected{% endif %}>Bairro (A-Z)</option>
+                            <option value="-bairro__nome_bairro" {% if request.GET.ordering == '-bairro__nome_bairro' %}selected{% endif %}>Bairro (Z-A)</option>
+                            <option value="data_cadastro" {% if request.GET.ordering == 'data_cadastro' %}selected{% endif %}>Data (Mais antiga)</option>
+                            <option value="-data_cadastro" {% if request.GET.ordering == '-data_cadastro' %}selected{% endif %}>Data (Mais recente)</option>
                         </select>
                     </div>
                 </div>
@@ -233,13 +233,13 @@
                         <button type="button" onclick="window.location.href='{% url 'convidados:guest_report_form' %}'" class="btn btn-secondary">
                             <i class="bi bi-arrow-clockwise"></i>Limpar
                         </button>
-                        <button type="submit" name="export_excel" class="btn btn-success">
+                        <button type="submit" name="export_excel" class="btn btn-success export-btn">
                             <i class="bi bi-file-earmark-excel"></i>Excel
                         </button>
-                        <button type="submit" name="export_pdf" class="btn btn-danger">
+                        <button type="submit" name="export_pdf" class="btn btn-danger export-btn">
                             <i class="bi bi-file-earmark-pdf"></i>PDF
                         </button>
-                        <button type="submit" name="export_print" class="btn btn-info">
+                        <button type="submit" name="export_print" class="btn btn-info export-btn">
                             <i class="bi bi-printer"></i>Imprimir
                         </button>
                     </div>
