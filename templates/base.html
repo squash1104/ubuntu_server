@@ -119,6 +119,13 @@ color: #e4606d !important; /* Vermelho mais claro no hover */
 
 }
 
+.offcanvas-body .navbar-nav .nav-link:hover,
+.offcanvas-body .navbar-nav .nav-link:focus {
+    background: #1e293b;
+    color: #fff;
+    border-radius: 6px;
+}
+
 
 
 @media (max-width: 991.98px) {
@@ -171,13 +178,7 @@ text-align: left;
     padding: 0;
 }
 
-.sisvot-sidebar .menu {
-    list-style: none;
-    padding: 12px;
-    margin: 0;
-}
-
-.sisvot-sidebar .menu a {
+.sisvot-sidebar .nav-link {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -188,8 +189,8 @@ text-align: left;
     transition: all 0.2s;
 }
 
-.sisvot-sidebar .menu a:hover,
-.sisvot-sidebar .menu a.active {
+.sisvot-sidebar .nav-link:hover,
+.sisvot-sidebar .nav-link:focus {
     background: #1e293b;
     color: #fff;
 }
@@ -466,6 +467,26 @@ text-align: left;
 
 [data-bs-theme="dark"] .card .card-header {
     border-bottom-color: rgba(255,255,255,0.1);
+}
+
+/* Card header da página Sobre - adaptado ao tema */
+[data-bs-theme="light"] .card-header-sobre {
+    background: #0f172a;
+    color: #fff;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+[data-bs-theme="light"] .card-header-sobre h1,
+[data-bs-theme="light"] .card-header-sobre h2,
+[data-bs-theme="light"] .card-header-sobre h3,
+[data-bs-theme="light"] .card-header-sobre h4,
+[data-bs-theme="light"] .card-header-sobre h5,
+[data-bs-theme="light"] .card-header-sobre h6 {
+    color: inherit;
+}
+[data-bs-theme="dark"] .card-header-sobre {
+    background: #212529;
+    color: #fff;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
 }
 
 /* Títulos de seção dentro dos cards - estilo recepção */

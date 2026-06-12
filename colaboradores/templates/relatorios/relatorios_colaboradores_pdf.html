@@ -123,6 +123,14 @@
             color: #666;
         }
         
+        /* ── Destaque por Meta ── */
+        .meta-danger { background-color: #ffcdd2 !important; }
+        .meta-success { background-color: #c8e6c9 !important; }
+        .meta-primary { background-color: #bbdefb !important; }
+        /* ── Destaque por Município ── */
+        .capital-row { background-color: #367962 !important; color: #fff !important; }
+        .interior-row { background-color: #D4A373 !important; color: #fff !important; }
+
         .no-data {
             text-align: center;
             padding: 20px;
@@ -172,14 +180,14 @@
                                 {% if column == 'total_convidados' %}Convidados{% endif %}
                                 {% if column == 'data_cadastro' %}Data Cadastro{% endif %}
                                 {% if column == 'tipo' %}Tipo{% endif %}
+                                {% if column == 'status_meta' %}Status{% endif %}
                             </th>
                         {% endfor %}
-                        <th style="width: 80px;">Status</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for colaborador in colaboradores %}
-                        <tr>
+                        <tr class="{% if destaque == 'meta' %}{% if colaborador.total_convidados < 30 %}meta-danger{% elif colaborador.total_convidados == 30 %}meta-success{% else %}meta-primary{% endif %}{% elif destaque == 'municipio' %}{% if colaborador.cidade.nome_cidade == 'Cuiabá' %}capital-row{% elif colaborador.cidade %}interior-row{% endif %}{% endif %}">
                             <td>{{ forloop.counter }}</td>
                             {% for column in selected_columns %}
                                 <td>
@@ -192,17 +200,17 @@
                                     {% if column == 'tipo' %}
                                         {{ colaborador.tipo.nome }}
                                     {% endif %}
+                                    {% if column == 'status_meta' %}
+                                        {% if colaborador.total_convidados < 30 %}
+                                            <span class="status-badge badge-pendente">Pendente</span>
+                                        {% elif colaborador.total_convidados == 30 %}
+                                            <span class="status-badge badge-atingida">Atingida</span>
+                                        {% elif colaborador.total_convidados > 30 %}
+                                            <span class="status-badge badge-superada">Superada</span>
+                                        {% endif %}
+                                    {% endif %}
                                 </td>
                             {% endfor %}
-                            <td>
-                                {% if colaborador.total_convidados < 20 %}
-                                    <span class="status-badge badge-pendente">Pendente</span>
-                                {% elif colaborador.total_convidados == 20 %}
-                                    <span class="status-badge badge-atingida">Atingida</span>
-                                {% elif colaborador.total_convidados > 20 %}
-                                    <span class="status-badge badge-superada">Superada</span>
-                                {% endif %}
-                            </td>
                         </tr>
                     {% endfor %}
                 </tbody>

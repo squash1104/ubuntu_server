@@ -70,6 +70,7 @@ def exportar_colaboradores_excel(colaborador_queryset, selected_columns):
             ("cidade", "Cidade"),
             ("bairro", "Bairro"),
             ("total_convidados", "Convidados"),
+            ("status_meta", "Status Meta"),
             ("data_cadastro", "Data Cadastro"),
         ]
     )
@@ -91,6 +92,14 @@ def exportar_colaboradores_excel(colaborador_queryset, selected_columns):
                 row_data.append(str(colaborador.bairro) if colaborador.bairro else "")
             elif col == "total_convidados":
                 row_data.append(colaborador.total_convidados)
+            elif col == "status_meta":
+                total = colaborador.total_convidados
+                if total < 30:
+                    row_data.append("Pendente")
+                elif total == 30:
+                    row_data.append("Atingida")
+                else:
+                    row_data.append("Superada")
             elif col == "tipo":
                 row_data.append(colaborador.tipo.nome if colaborador.tipo else "")
             elif col == "data_cadastro":
@@ -107,7 +116,9 @@ def exportar_colaboradores_excel(colaborador_queryset, selected_columns):
     return response
 
 
-def exportar_colaboradores_pdf(colaborador_queryset, selected_columns, filter_obj=None):
+def exportar_colaboradores_pdf(
+    colaborador_queryset, selected_columns, filter_obj=None, destaque="none"
+):
     """
     Gera um arquivo HTML otimizado para impressao/salvar como PDF.
     O usuario pode abrir no navegador e salvar como PDF.
@@ -167,7 +178,9 @@ def exportar_colaboradores_pdf(colaborador_queryset, selected_columns, filter_ob
                 elif hasattr(cleaned, "pk"):
                     display = str(cleaned)
                 else:
-                    choices = getattr(getattr(filter_field, "field", None), "choices", None)
+                    choices = getattr(
+                        getattr(filter_field, "field", None), "choices", None
+                    )
                     if choices:
                         display = dict(choices).get(cleaned, str(cleaned))
                     else:
@@ -179,6 +192,7 @@ def exportar_colaboradores_pdf(colaborador_queryset, selected_columns, filter_ob
         "selected_columns": selected_columns,
         "data_geracao": timezone.now(),
         "filtros_aplicados": filtros_aplicados,
+        "destaque": destaque,
     }
     template = get_template(template_path)
     html = template.render(context)
@@ -189,7 +203,7 @@ def exportar_colaboradores_pdf(colaborador_queryset, selected_columns, filter_ob
 
 
 def imprimir_relatorio_colaboradores(
-    colaborador_queryset, selected_columns, filter_obj=None
+    colaborador_queryset, selected_columns, filter_obj=None, destaque="none"
 ):
     template_path = "relatorios/relatorios_colaboradores_pdf.html"
 
@@ -239,7 +253,9 @@ def imprimir_relatorio_colaboradores(
                 elif hasattr(cleaned, "pk"):
                     display = str(cleaned)
                 else:
-                    choices = getattr(getattr(filter_field, "field", None), "choices", None)
+                    choices = getattr(
+                        getattr(filter_field, "field", None), "choices", None
+                    )
                     if choices:
                         display = dict(choices).get(cleaned, str(cleaned))
                     else:
@@ -251,6 +267,7 @@ def imprimir_relatorio_colaboradores(
         "selected_columns": selected_columns,
         "data_geracao": timezone.now(),
         "filtros_aplicados": filtros_aplicados,
+        "destaque": destaque,
     }
     template = get_template(template_path)
     html = template.render(context)

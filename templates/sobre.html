@@ -4,78 +4,426 @@
 
 {% block content %}
 <div class="card shadow-sm">
-    <div class="card-header bg-dark text-white">
+    <div class="card-header card-header-sobre d-flex align-items-center justify-content-between">
         <h1 class="h3 mb-0">SisAps</h1>
+        <small class="text-light-emphasis">v{{ versao_app }}</small>
     </div>
     <div class="card-body">
-        
-        <div class="mb-4">
-            <h4 class="border-bottom pb-2 mb-3">Versão do Aplicativo</h4>
-            <p><strong>Versão atual:</strong> {{ versao_app }}</p>
-            <p>Esta aplicação foi desenvolvida para a gestão e fidelização de apoiadores da campanha do Deputado Estadual Max Russi em Mato Grosso.</p>
+
+        <ul class="nav nav-tabs nav-fill mb-4" id="sobreTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="sobre-tab" data-bs-toggle="tab" data-bs-target="#sobre" type="button" role="tab">
+                    <i class="bi bi-info-circle me-1"></i>Sobre
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="lgpd-tab" data-bs-toggle="tab" data-bs-target="#lgpd" type="button" role="tab">
+                    <i class="bi bi-shield-lock me-1"></i>LGPD
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="termos-tab" data-bs-toggle="tab" data-bs-target="#termos" type="button" role="tab">
+                    <i class="bi bi-file-text me-1"></i>Termos de Uso
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tecnologias-tab" data-bs-toggle="tab" data-bs-target="#tecnologias" type="button" role="tab">
+                    <i class="bi bi-cpu me-1"></i>Tecnologias
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="sobreTabContent">
+
+            {# ==================== TAB SOBRE ==================== #}
+            <div class="tab-pane fade show active" id="sobre" role="tabpanel" aria-labelledby="sobre-tab">
+
+                <div class="mb-4">
+                    <h4 class="border-bottom pb-2 mb-3">
+                        <i class="bi bi-info-circle-fill me-2"></i>Sobre o SisAps
+                    </h4>
+                    <p>
+                        O <strong>SisAps</strong> (Sistema de Apoiadores) é uma plataforma web desenvolvida para a
+                        <strong>gestão e fidelização de apoiadores</strong> para  
+                        <strong>Campanha Eleitoral de 2026</strong> em Mato Grosso.
+                    </p>
+                    <p>
+                        A ferramenta permite o cadastro e organização de apoiadores e convidados, o envio de mensagens
+                        via WhatsApp e SMS, a geração de relatórios, o acompanhamento geográfico dos apoiadores em mapa
+                        interativo, e o registro de histórico de atividades — tudo em um ambiente centralizado e seguro.
+                    </p>
+                </div>
+
+                <div class="mb-4">
+                    <h4 class="border-bottom pb-2 mb-3">
+                        <i class="bi bi-telephone-fill me-2"></i>Contato e Suporte Técnico
+                    </h4>
+                    <p>Para dúvidas, sugestões ou problemas técnicos, entre em contato pelos canais abaixo:</p>
+                    <ul>
+                        <li><strong>E-mail:</strong> <a href="mailto:suporte@fidelizamax.app.br">suporte@fidelizamax.app.br</a></li>
+                        <li><strong>Telefone / WhatsApp:</strong> <a href="https://wa.me/5565920012031">(65) 92001-2031</a></li>
+                    </ul>
+                </div>
+
+                <div class="mb-4">
+                    <h4 class="border-bottom pb-2 mb-3">
+                        <i class="bi bi-arrow-repeat me-2"></i>Versões
+                    </h4>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Versão</th>
+                                    <th>Data</th>
+                                    <th>Descrição</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>1.0.0</td>
+                                    <td>Junho/2025</td>
+                                    <td>Lançamento inicial com módulos de apoiadores, convidados, mensagens, relatórios, mapa e histórico.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h4 class="border-bottom pb-2 mb-3">
+                        <i class="bi bi-building me-2"></i>Responsável
+                    </h4>
+                    <p>
+                        <strong>LMS Technologies</strong> — Soluções em Tecnologia.<br>
+                        Desenvolvimento, implantação e suporte.
+                    </p>
+                </div>
+            </div>
+
+            {# ==================== TAB LGPD ==================== #}
+            <div class="tab-pane fade" id="lgpd" role="tabpanel" aria-labelledby="lgpd-tab">
+
+                <div class="alert alert-info d-flex align-items-center" role="alert">
+                    <i class="bi bi-shield-check me-2 fs-4"></i>
+                    <div>A sua privacidade é a nossa prioridade. Estamos comprometidos com a proteção dos seus dados pessoais nos termos da <strong>Lei nº 13.709/2018 (LGPD)</strong>.</div>
+                </div>
+
+                <p class="text-muted">
+                    <i class="bi bi-clock-history me-1"></i>
+                    Última atualização: <strong>Junho de 2025</strong>.
+                </p>
+
+                <div class="accordion" id="accordionLgpd">
+
+                    {# --- 1. Para que os dados são utilizados --- #}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="lgpdHeading1">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#lgpdCollapse1" aria-expanded="false">
+                                <strong>Para que os seus dados são utilizados?</strong>
+                            </button>
+                        </h2>
+                        <div id="lgpdCollapse1" class="accordion-collapse collapse" data-bs-parent="#accordionLgpd">
+                            <div class="accordion-body">
+                                Os dados pessoais recolhidos (nome, telefone, e-mail, endereço, data de nascimento e localidade) são utilizados exclusivamente para fins de <strong>organização, comunicação e mobilização</strong> relacionados às atividades da Campanha Eleitoral 2026. Isso inclui:
+                                <ul class="mt-2">
+                                    <li>Envio de convites para eventos e reuniões;</li>
+                                    <li>Comunicados e informativos da campanha;</li>
+                                    <li>Pesquisas de opinião e satisfação;</li>
+                                    <li>Coordenação de equipes e apoiadores.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# --- 2. Base legal --- #}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="lgpdHeading2">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#lgpdCollapse2" aria-expanded="false">
+                                <strong>Qual é a base legal para o tratamento dos dados?</strong>
+                            </button>
+                        </h2>
+                        <div id="lgpdCollapse2" class="accordion-collapse collapse" data-bs-parent="#accordionLgpd">
+                            <div class="accordion-body">
+                                O tratamento dos seus dados pessoais é realizado com base nas seguintes hipóteses legais previstas na LGPD:
+                                <ul class="mt-2">
+                                    <li>
+                                        <strong>Interesse legítimo</strong> (art. 7º, IX): para a organização e execução das atividades políticas e de campanha, que constituem interesse legítimo do controlador e da coletividade;
+                                    </li>
+                                    <li>
+                                        <strong>Consentimento</strong> (art. 7º, I): para o envio de comunicações e mensagens, quando solicitado de forma expressa;
+                                    </li>
+                                    <li>
+                                        <strong>Cumprimento de obrigação legal ou regulatória</strong> (art. 7º, II): para atender à legislação eleitoral (Resoluções TSE) e demais obrigações legais aplicáveis.
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# --- 3. Segurança dos dados --- #}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="lgpdHeading4">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#lgpdCollapse4" aria-expanded="false">
+                                <strong>Os seus dados estão seguros?</strong>
+                            </button>
+                        </h2>
+                        <div id="lgpdCollapse4" class="accordion-collapse collapse" data-bs-parent="#accordionLgpd">
+                            <div class="accordion-body">
+                                <p>Sim. Adotamos <strong>medidas de segurança técnicas e administrativas</strong> para proteger os seus dados contra acessos não autorizados e situações acidentais ou ilícitas:</p>
+                                <ul>
+                                    <li>Criptografia SSL/TLS nas comunicações (HTTPS);</li>
+                                    <li>Controle de acesso baseado em papéis (RBAC) — apenas pessoal autorizado da campanha acessa os dados;</li>
+                                    <li>Registro de logs de auditoria de todas as operações;</li>
+                                    <li>Sessões autenticadas com tempo limite de inatividade (30 minutos);</li>
+                                    <li>Proteção contra ataques CSRF, XSS e SQL Injection;</li>
+                                    <li>Backups periódicos do banco de dados;</li>
+                                    <li>Política de senhas fortes e renovação periódica.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# --- 4. Retenção e eliminação --- #}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="lgpdHeading5">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#lgpdCollapse5" aria-expanded="false">
+                                <strong>Por quanto tempo os dados são mantidos?</strong>
+                            </button>
+                        </h2>
+                        <div id="lgpdCollapse5" class="accordion-collapse collapse" data-bs-parent="#accordionLgpd">
+                            <div class="accordion-body">
+                                Os dados pessoais são mantidos durante o período necessário para as finalidades descritas nesta política, observando os seguintes prazos:
+                                <ul class="mt-2">
+                                    <li><strong>Durante a campanha eleitoral e atividade política</strong> — enquanto o vínculo com o apoiador estiver ativo;</li>
+                                    <li><strong>Prazo legal eleitoral</strong> — após o encerramento da campanha, os dados poderão ser mantidos para cumprimento de obrigações legais e prestação de contas junto à Justiça Eleitoral;</li>
+                                    <li><strong>Após o prazo legal</strong> — os dados serão eliminados de forma segura, salvo se houver consentimento expresso do titular para manutenção.</li>
+                                </ul>
+                                O titular pode solicitar a eliminação antecipada dos seus dados a qualquer momento (exceto quando a manutenção for exigida por lei).
+                            </div>
+                        </div>
+                    </div>
+
+                    {# --- 5. Cookies --- #}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="lgpdHeading6">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#lgpdCollapse6" aria-expanded="false">
+                                <strong>Política de Cookies</strong>
+                            </button>
+                        </h2>
+                        <div id="lgpdCollapse6" class="accordion-collapse collapse" data-bs-parent="#accordionLgpd">
+                            <div class="accordion-body">
+                                O SisAps utiliza apenas <strong>cookies estritamente necessários</strong> para o funcionamento do sistema:
+                                <ul class="mt-2">
+                                    <li><strong>Cookie de sessão (sessionid):</strong> mantém você autenticado durante a navegação;</li>
+                                    <li><strong>Cookie CSRF (csrftoken):</strong> protege contra ataques de falsificação de requisição entre sites.</li>
+                                </ul>
+                                <p class="mb-0">Não utilizamos cookies de rastreamento, publicidade ou análise de comportamento. Os cookies utilizados são apagados automaticamente ao encerrar a sessão ou ao fechar o navegador (cookies de sessão).</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# --- 6. Direitos do titular --- #}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="lgpdHeading7">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#lgpdCollapse7" aria-expanded="false">
+                                <strong>Quais são os seus direitos?</strong>
+                            </button>
+                        </h2>
+                        <div id="lgpdCollapse7" class="accordion-collapse collapse" data-bs-parent="#accordionLgpd">
+                            <div class="accordion-body">
+                                <p>De acordo com a LGPD, você, como titular dos dados, tem os seguintes direitos:</p>
+                                <div class="row row-cols-1 row-cols-md-2 g-2">
+                                    <div class="col">
+                                        <div class="border rounded p-2 h-100">
+                                            <strong>Confirmação e acesso</strong><br>
+                                            <small>Saber se tratamos seus dados e acessá-los.</small>
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="border rounded p-2 h-100">
+                                            <strong>Correção</strong><br>
+                                            <small>Corrigir dados incompletos ou desatualizados.</small>
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="border rounded p-2 h-100">
+                                            <strong>Eliminação</strong><br>
+                                            <small>Solicitar a exclusão dos seus dados do sistema.</small>
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="border rounded p-2 h-100">
+                                            <strong>Portabilidade</strong><br>
+                                            <small>Solicitar a cópia dos seus dados em formato estruturado.</small>
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="border rounded p-2 h-100">
+                                            <strong>Revogação do consentimento</strong><br>
+                                            <small>Retirar o consentimento a qualquer momento.</small>
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="border rounded p-2 h-100">
+                                            <strong>Oposição</strong><br>
+                                            <small>Opor-se ao tratamento realizado com base no interesse legítimo.</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="mt-3 mb-0">
+                                    Para exercer qualquer um desses direitos, entre em contato pelo e-mail
+                                    <a href="mailto:suporte@fidelizamax.app.br">suporte@fidelizamax.app.br</a>
+                                    ou pelo WhatsApp <a href="https://wa.me/5565920012031">(65) 92001-2031</a>.
+                                    Responderemos à sua solicitação em até <strong>15 dias úteis</strong>, conforme previsto na LGPD.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# --- 7. Atualizações --- #}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="lgpdHeading9">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#lgpdCollapse9" aria-expanded="false">
+                                <strong>Atualizações desta política</strong>
+                            </button>
+                        </h2>
+                        <div id="lgpdCollapse9" class="accordion-collapse collapse" data-bs-parent="#accordionLgpd">
+                            <div class="accordion-body">
+                                <p>
+                                    Esta política de privacidade pode ser atualizada periodicamente para refletir alterações na legislação ou nas práticas de tratamento de dados.
+                                    A versão mais recente estará sempre disponível nesta página, com a data da última atualização indicada no topo.
+                                </p>
+                                <p class="mb-0">
+                                    Caso ocorram alterações significativas, os titulares dos dados serão notificados através dos canais de contato disponíveis no sistema.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            {# ==================== TAB TERMOS DE USO ==================== #}
+            <div class="tab-pane fade" id="termos" role="tabpanel" aria-labelledby="termos-tab">
+
+                <div class="alert alert-warning d-flex align-items-center" role="alert">
+                    <i class="bi bi-exclamation-triangle me-2 fs-4"></i>
+                    <div>Ao utilizar o SisAps, você declara ter lido, compreendido e concordado com os termos abaixo.</div>
+                </div>
+
+                <div class="mb-4">
+                    <h5><i class="bi bi-check-circle me-2"></i>1. Aceitação dos Termos</h5>
+                    <p>O uso do SisAps está condicionado à aceitação integral destes Termos de Uso. Caso não concorde com qualquer disposição, você não deve utilizar o sistema.</p>
+                </div>
+
+                <div class="mb-4">
+                    <h5><i class="bi bi-person-badge me-2"></i>2. Responsabilidades do Usuário</h5>
+                    <ul>
+                        <li>Manter a confidencialidade das credenciais de acesso (login e senha);</li>
+                        <li>Não compartilhar o acesso com pessoas não autorizadas;</li>
+                        <li>Utilizar o sistema apenas para fins lícitos e relacionados às atividades da campanha;</li>
+                        <li>Não inserir dados falsos ou de terceiros sem consentimento;</li>
+                        <li>Comunicar imediatamente qualquer uso não autorizado da conta.</li>
+                    </ul>
+                </div>
+
+                <div class="mb-4">
+                    <h5><i class="bi bi-shield me-2"></i>3. Privacidade e Proteção de Dados</h5>
+                    <p>O tratamento de dados pessoais no SisAps segue integralmente o disposto na LGPD (Lei nº 13.709/2018). Consulte a aba <strong>LGPD</strong> nesta página para detalhes sobre como os seus dados são tratados.</p>
+                </div>
+
+                <div class="mb-4">
+                    <h5><i class="bi bi-x-circle me-2"></i>4. Suspensão e Cancelamento</h5>
+                    <p>A administração do sistema reserva-se o direito de suspender ou cancelar contas que violem estes Termos de Uso, sem prejuízo das demais medidas legais cabíveis.</p>
+                </div>
+
+                <div class="mb-4">
+                    <h5><i class="bi bi-gavel me-2"></i>5. Foro</h5>
+                    <p>Fica eleito o foro da Comarca de Cuiabá, MT, para dirimir quaisquer controvérsias decorrentes destes Termos de Uso.</p>
+                </div>
+            </div>
+
+            {# ==================== TAB TECNOLOGIAS ==================== #}
+            <div class="tab-pane fade" id="tecnologias" role="tabpanel" aria-labelledby="tecnologias-tab">
+
+                <p>O SisAps foi construído com tecnologias modernas e de código aberto. Agradecemos a todos os mantenedores e comunidades que tornam este ecossistema possível.</p>
+
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 mt-2">
+                    <div class="col">
+                        <div class="card h-100 text-center border-primary">
+                            <div class="card-body">
+                                <i class="bi bi-filetype-py fs-1 text-primary"></i>
+                                <h6 class="card-title mt-2">Python / Django</h6>
+                                <small class="text-muted">Framework web principal (v5.2.4)</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card h-100 text-center border-success">
+                            <div class="card-body">
+                                <i class="bi bi-database fs-1 text-success"></i>
+                                <h6 class="card-title mt-2">PostgreSQL</h6>
+                                <small class="text-muted">Banco de dados relacional</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card h-100 text-center border-info">
+                            <div class="card-body">
+                                <i class="bi bi-bootstrap fs-1 text-info"></i>
+                                <h6 class="card-title mt-2">Bootstrap 5</h6>
+                                <small class="text-muted">Framework CSS responsivo</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card h-100 text-center border-warning">
+                            <div class="card-body">
+                                <i class="bi bi-chat-dots fs-1 text-warning"></i>
+                                <h6 class="card-title mt-2">Django Channels</h6>
+                                <small class="text-muted">WebSockets para atualizações em tempo real</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card h-100 text-center border-danger">
+                            <div class="card-body">
+                                <i class="bi bi-geo-alt fs-1 text-danger"></i>
+                                <h6 class="card-title mt-2">Leaflet + OpenStreetMap</h6>
+                                <small class="text-muted">Mapas interativos de código aberto</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card h-100 text-center border-secondary">
+                            <div class="card-body">
+                                <i class="bi bi-bar-chart fs-1 text-secondary"></i>
+                                <h6 class="card-title mt-2">Chart.js</h6>
+                                <small class="text-muted">Gráficos e dashboards interativos</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <div class="text-center text-muted">
+                    <small>
+                        <i class="bi bi-heart me-1"></i>
+                        SisAps é um software desenvolvido pela <strong>LMS Technologies</strong> com tecnologias open source.
+                    </small>
+                </div>
+            </div>
+
         </div>
 
-        <div class="mb-4">
-            <h4 class="border-bottom pb-2 mb-3">Contato e Suporte Técnico</h4>
-            <p>Para dúvidas, sugestões ou problemas técnicos, por favor, entre em contato através dos seguintes canais:</p>
-            <ul>
-                <li><strong>Email:</strong> <a href="mailto:seuemail@exemplo.com">suporte@fidelizamax.app.br</a></li>
-                <li><strong>Telefone / WhatsApp:</strong> (65) 99961-6000</li>
-            </ul>
-        </div>
+    </div>
 
-        <div class="mt-4">
-    <h4 class="border-bottom pb-2 mb-3">Lei Geral de Proteção de Dados (LGPD)</h4>
-
-    {#<p class="fw-bold">O seu direito à privacidade é a nossa prioridade.</p>#}
-
-    <p>A Lei nº 13.709/2018, conhecida como Lei Geral de Proteção de Dados (LGPD), estabelece normas sobre o tratamento de dados pessoais, tanto por pessoas físicas quanto jurídicas, públicas ou privadas, com o objetivo de proteger os direitos fundamentais de liberdade e privacidade. </p>
-
-    <div class="accordion" id="accordionLgpd">
-      <div class="accordion-item">
-        <h2 class="accordion-header" id="headingOne">
-          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-            <strong>Para que os seus dados são utilizados?</strong>
-          </button>
-        </h2>
-        <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionLgpd">
-          <div class="accordion-body">
-            Os dados pessoais recolhidos (como nome, telefone e localidade) são utilizados exclusivamente para fins de organização, comunicação e mobilização relacionados às atividades de campanha do Deputado Estadual Max Russi. Isto inclui o envio de convites para eventos, comunicados e outras informações relevantes.
-          </div>
-        </div>
-      </div>
-      <div class="accordion-item">
-        <h2 class="accordion-header" id="headingTwo">
-          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-            <strong>Os seus dados estão seguros?</strong>
-          </button>
-        </h2>
-        <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionLgpd">
-          <div class="accordion-body">
-            Sim. Adotamos medidas de segurança técnicas e administrativas para proteger os seus dados contra acessos não autorizados e situações acidentais ou ilícitas. O acesso às informações é restrito apenas a pessoal autorizado da campanha. Os seus dados não serão, em hipótese alguma, vendidos ou partilhados com terceiros para fins comerciais.
-          </div>
-        </div>
-      </div>
-      <div class="accordion-item">
-        <h2 class="accordion-header" id="headingThree">
-          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-            <strong>Quais são os seus direitos?</strong>
-          </button>
-        </h2>
-        <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#accordionLgpd">
-          <div class="accordion-body">
-            De acordo com a LGPD, você, como titular dos dados, tem o direito de solicitar a qualquer momento: a confirmação da existência de tratamento dos seus dados, o acesso aos seus dados, a correção de dados incompletos ou desatualizados, e a eliminação dos seus dados do nosso sistema. Para exercer os seus direitos, por favor, entre em contato através dos canais de suporte indicados nesta página.
-          </div>
-        </div>
-      </div>
+    <div class="card-footer text-center text-muted d-flex flex-column flex-sm-row justify-content-between align-items-center">
+        <small>
+            <i class="bi bi-c-circle me-1"></i>{% now "Y" %} LMS Technologies
+        </small>
+        <small>v{{ versao_app }}</small>
     </div>
 </div>
-
-    </div>
-
-<div class="card-footer text-center text-muted">
-        <small>&copy; {% now "Y" %} Luciano Marchi de Souza @ SisAps. Todos os direitos reservados.</small>
-    </div>
-</div>
-
 {% endblock %}

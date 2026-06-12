@@ -304,6 +304,7 @@ def relatorio_colaboradores_view(request):
             "cidade",
             "bairro",
             "total_convidados",
+            "status_meta",
             "tipo",
         ]  # Colunas padrão (exceto data_cadastro)
 
@@ -336,12 +337,14 @@ def relatorio_colaboradores_view(request):
         page_obj = None
         colaboradores_page = f.qs
 
+    destaque = request.GET.get("destaque", "none")
+
     if "export_excel" in request.GET:
         return exportar_colaboradores_excel(f.qs, selected_columns)
     if "export_pdf" in request.GET:
-        return exportar_colaboradores_pdf(f.qs, selected_columns, f)
+        return exportar_colaboradores_pdf(f.qs, selected_columns, f, destaque)
     if "export_print" in request.GET:
-        return imprimir_relatorio_colaboradores(f.qs, selected_columns, f)
+        return imprimir_relatorio_colaboradores(f.qs, selected_columns, f, destaque)
 
     context = {
         "filter": f,
@@ -353,6 +356,7 @@ def relatorio_colaboradores_view(request):
         "per_page": per_page,
         "per_page_options": [20, 50, 100, 200],
         "tipos_colaborador": tipos_do_usuario(request.user).order_by("nome"),
+        "destaque": destaque,
     }
     return render(request, "relatorios/relatorio_colaboradores_form.html", context)
 

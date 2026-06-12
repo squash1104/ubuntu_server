@@ -265,9 +265,9 @@
                                     </td>
                                 {% endfor %}
                                 <td>
-                                    {% if colaborador.total_convidados < 20 %}
+                                    {% if colaborador.total_convidados < 30 %}
                                         <span class="status-badge status-pendente">Pendente</span>
-                                    {% elif colaborador.total_convidados == 20 %}
+                                    {% elif colaborador.total_convidados == 30 %}
                                         <span class="status-badge status-atingida">Atingida</span>
                                     {% else %}
                                         <span class="status-badge status-superada">Superada</span>
