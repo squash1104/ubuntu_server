@@ -1,3 +1,4 @@
+import contextlib
 from datetime import timedelta
 
 from django.contrib import messages
@@ -13,7 +14,7 @@ from convidados.models import Convidado
 from historico.models import Historico, TipoAcao, TipoObjeto
 from historico.utils import registrar_reset_senha
 
-from .forms import CustomPasswordChangeForm, ProfileForm
+from .forms import CustomPasswordChangeForm, ForcePasswordChangeForm, ProfileForm
 from .models import Profile, UserSession
 
 
@@ -353,3 +354,35 @@ def productivity_data(request):
             data.append(count_for_date(d))
 
     return JsonResponse({"labels": labels, "data": data})
+
+
+@login_required
+def force_password_change(request):
+    """View para troca obrigatória de senha no primeiro login ou após reset"""
+    profile, _ = Profile.objects.get_or_create(user=request.user)
+
+    if not profile.force_password_change:
+        return redirect("home")
+
+    if request.method == "POST":
+        form = ForcePasswordChangeForm(user=request.user, data=request.POST)
+        if form.is_valid():
+            form.save()
+            profile.force_password_change = False
+            profile.save(update_fields=["force_password_change"])
+            update_session_auth_hash(request, request.user)
+            with contextlib.suppress(Exception):
+                registrar_reset_senha(request.user, request=request)
+            messages.success(
+                request,
+                "Senha alterada com sucesso! Você já pode acessar o sistema.",
+            )
+            return redirect("home")
+    else:
+        form = ForcePasswordChangeForm(user=request.user)
+
+    return render(
+        request,
+        "registration/force_password_change.html",
+        {"form": form},
+    )

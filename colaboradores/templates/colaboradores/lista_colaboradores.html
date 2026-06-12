@@ -2,7 +2,7 @@
 {% load static %}
 {% load colaboradores_filters %}
 
-{% block title %}SisAps - Colaboradores{% endblock %}
+{% block title %}SisAps - Apoiadores{% endblock %}
 
 {% block extra_css %}
      <style>
@@ -451,10 +451,10 @@
                                                     <a href="{% url 'convidados:colaborador_convidados' colaborador.id %}" class="btn btn-sm btn-info" data-bs-toggle="tooltip" title="Ver Convidados">
                                                         <i class="bi bi-people-fill"></i>
                                                     </a>
-                                                    <a href="{% url 'colaboradores:editar_colaborador' colaborador.id %}" class="btn btn-sm btn-warning" data-bs-toggle="tooltip" title="Editar Colaborador">
+                                                    <a href="{% url 'colaboradores:editar_colaborador' colaborador.id %}" class="btn btn-sm btn-warning" data-bs-toggle="tooltip" title="Editar Apoiador">
                                                         <i class="bi bi-pencil-square"></i>
                                                     </a>
-                                                    <form action="{% url 'colaboradores:excluir_colaborador' colaborador.id %}" method="post" class="d-inline" onsubmit="return confirm('Tem certeza que deseja excluir o colaborador {{ colaborador.nome }}?');">
+                                                    <form action="{% url 'colaboradores:excluir_colaborador' colaborador.id %}" method="post" class="d-inline" onsubmit="return confirm('Tem certeza que deseja excluir o apoiador {{ colaborador.nome }}?');">
                                                         {% csrf_token %}
                                                         <input type="hidden" name="redirect_url" value="{{ request.path }}">
                                                         <button type="submit" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" title="Excluir Colaborador">
@@ -469,7 +469,7 @@
                                     <tr>
                                         <td colspan="8">
                                             <div class="alert alert-warning text-center mt-4" role="alert">
-                                                Nenhum colaborador encontrado.
+                                                Nenhum apoiador encontrado.
                                             </div>
                                         </td>
                                     </tr>
@@ -483,7 +483,7 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <span>
-                                    <strong>Totais desta página:</strong> {{ total_colaboradores_pagina }} colaborador(es).<br>
+                                    <strong>Totais desta página:</strong> {{ total_colaboradores_pagina }} apoiador(es).<br>
                                     <strong>Capital:</strong> {{ total_capital_pagina }}<br>
                                     <strong>Interior:</strong> {{ total_interior_pagina }}
                                 </span>

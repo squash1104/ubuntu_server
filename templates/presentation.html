@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>SisAps - Apresentação do Sistema</title>
+<style>
+    @page {
+        size: a4 landscape;
+        margin: 1.5cm 1cm 1cm 1cm;
+        @frame footer {
+            -pdf-frame-content: footerContent;
+            bottom: 0cm;
+            margin-left: 1cm;
+            margin-right: 1cm;
+            height: 1cm;
+        }
+    }
+    @page capa {
+        size: a4 landscape;
+        margin: 0;
+        @frame footer {
+            -pdf-frame-content: footerContent;
+            bottom: 0cm;
+            margin-left: 1cm;
+            margin-right: 1cm;
+            height: 1cm;
+        }
+    }
+    body {
+        font-family: Helvetica, Arial, sans-serif;
+        font-size: 10pt;
+        color: #333;
+        line-height: 1.4;
+    }
+    h1 {
+        font-size: 22pt;
+        color: #1a237e;
+        margin-bottom: 5pt;
+    }
+    h2 {
+        font-size: 14pt;
+        color: #283593;
+        border-bottom: 2px solid #283593;
+        padding-bottom: 3pt;
+        margin-top: 15pt;
+        margin-bottom: 8pt;
+    }
+    h3 {
+        font-size: 12pt;
+        color: #1565c0;
+        margin-top: 10pt;
+        margin-bottom: 5pt;
+    }
+    p { margin: 3pt 0; }
+    table { width: 100%; border-collapse: collapse; margin: 5pt 0; }
+    td, th { padding: 4pt 6pt; border: 1px solid #ccc; vertical-align: top; }
+    th {
+        background-color: #1a237e;
+        color: white;
+        font-weight: bold;
+        text-align: left;
+    }
+    tr:nth-child(even) { background-color: #f5f5f5; }
+    .screenshot {
+        width: 100%;
+        max-height: 420pt;
+        object-fit: contain;
+    }
+    .page-break { page-break-before: always; }
+    .capa-page {
+        page: capa;
+        text-align: center;
+        padding-top: 120pt;
+    }
+    .capa-page h1 {
+        font-size: 36pt;
+        color: #1a237e;
+        margin-bottom: 15pt;
+    }
+    .capa-page .subtitle {
+        font-size: 18pt;
+        color: #5c6bc0;
+        margin-bottom: 30pt;
+    }
+    .capa-page .info {
+        font-size: 12pt;
+        color: #666;
+        margin-top: 40pt;
+    }
+    .desc-section {
+        margin: 5pt 0;
+        padding: 4pt 8pt;
+        background-color: #e8eaf6;
+        border-left: 3pt solid #283593;
+    }
+    .badge {
+        display: inline-block;
+        background-color: #1565c0;
+        color: white;
+        padding: 1pt 5pt;
+        font-size: 8pt;
+        border-radius: 2pt;
+    }
+    .features-table td:first-child {
+        width: 25%;
+        font-weight: bold;
+    }
+    .features-table td:last-child {
+        width: 75%;
+    }
+</style>
+</head>
+<body>
+
+<div class="capa-page">
+    <h1>SisAps</h1>
+    <div class="subtitle">Sistema de Fidelização de Apoiadores</div>
+    <div class="subtitle" style="font-size:14pt; color:#999;">Apresentação do Sistema</div>
+    <div class="info">
+        Versão {{ versao }}<br>
+        {{ data_geracao }}<br><br>
+        <span style="font-size:10pt; color:#999;">
+            {{ total_apoiadores }} apoiadores &middot; {{ total_convidados }} convidados &middot; {{ total_cidades }} cidades &middot; {{ total_bairros }} bairros
+        </span>
+    </div>
+</div>
+
+<div id="footerContent">
+    <hr style="margin:0; padding:0;">
+    <span style="font-size:8pt; color:#999;">SisAps - Sistema de Fidelização de Apoiadores &nbsp;&nbsp;|&nbsp;&nbsp; Página <pdf:pagenumber> de <pdf:pagecount></span>
+</div>
+
+<!-- ============================================================ -->
+<!-- ÍNDICE -->
+<!-- ============================================================ -->
+<h2>Índice</h2>
+<table>
+    <tr><th style="width:5%;">#</th><th style="width:35%;">Página</th><th style="width:60%;">Descrição</th></tr>
+    {% for item in paginas %}
+    <tr><td>{{ forloop.counter }}</td><td>{{ item.nome }}</td><td>{{ item.descricao_curta }}</td></tr>
+    {% endfor %}
+</table>
+
+<!-- ============================================================ -->
+<!-- VISÃO GERAL -->
+<!-- ============================================================ -->
+<div class="page-break"></div>
+<h2>Visão Geral do Sistema</h2>
+
+<p>O <strong>SisAps</strong> é um sistema web desenvolvido em <strong>Django 5.2</strong> para gerenciamento e fidelização de apoiadores políticos. O sistema oferece funcionalidades completas de cadastro, monitoramento, comunicação e análise de dados, com dashboards interativos, mapas de calor e relatórios exportáveis.</p>
+
+<h3>Arquitetura</h3>
+<table class="features-table">
+    <tr><td>Framework</td><td>Django 5.2.4 + Daphne (ASGI)</td></tr>
+    <tr><td>Banco de Dados</td><td>PostgreSQL</td></tr>
+    <tr><td>Frontend</td><td>Bootstrap 5, Chart.js, Leaflet.js</td></tr>
+    <tr><td>Comunicação</td><td>Twilio SMS + WhatsApp Cloud API (Meta)</td></tr>
+    <tr><td>WebSockets</td><td>Django Channels 4 (atualizações em tempo real)</td></tr>
+    <tr><td>Autenticação</td><td>Django Auth + rate limiting + idle timeout</td></tr>
+</table>
+
+<h3>Módulos Principais</h3>
+<table>
+    <tr><th style="width:25%;">Módulo</th><th style="width:75%;">Funcionalidades</th></tr>
+    {% for modulo in modulos %}
+    <tr><td>{{ modulo.nome }}</td><td>{{ modulo.descricao }}</td></tr>
+    {% endfor %}
+</table>
+
+<!-- ============================================================ -->
+<!-- PÁGINAS DO SISTEMA -->
+<!-- ============================================================ -->
+{% for pagina in paginas %}
+<div class="page-break"></div>
+<h2>{{ pagina.nome }}</h2>
+<div class="desc-section">{{ pagina.descricao }}</div>
+
+{% if pagina.imagem %}
+<p style="text-align:center;">
+    <img src="{{ pagina.imagem }}" class="screenshot" alt="{{ pagina.nome }}">
+</p>
+{% endif %}
+
+{% if pagina.caracteristicas %}
+<h3>Características</h3>
+<ul>
+    {% for item in pagina.caracteristicas %}
+    <li>{{ item }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+{% endfor %}
+
+</body>
+</html>

@@ -22,6 +22,12 @@ class Profile(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Criado em")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Atualizado em")
 
+    force_password_change = models.BooleanField(
+        default=False,
+        verbose_name="Forçar troca de senha no próximo login",
+        help_text="Se ativo, redirecionado para redefinir a senha ao fazer login",
+    )
+
     acesso_aniversariantes = models.BooleanField(
         default=False, verbose_name="Acesso a Aniversariantes"
     )

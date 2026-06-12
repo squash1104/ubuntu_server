@@ -4,6 +4,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import logout
 from django.shortcuts import redirect
+from django.urls import reverse
 from django.utils import timezone
 
 from .models import UserSession
@@ -43,6 +44,14 @@ class UserActivityMiddleware:
                 logout(request)
                 messages.warning(request, "Sessão expirada por inatividade")
                 return redirect("login")
+
+            force_change_url = reverse("user_profiles:force_password_change")
+            if (
+                hasattr(request.user, "profile")
+                and request.user.profile.force_password_change
+                and request.path_info != force_change_url
+            ):
+                return redirect(force_change_url)
 
             sess.last_seen_at = now
             sess.save(update_fields=["last_seen_at"])

@@ -1,15 +1,19 @@
 import contextlib
+import io
 import json
 
-from django.contrib.auth.decorators import login_required  # Importe este decorador
+from django.conf import settings
+from django.contrib.auth.decorators import login_required
 from django.db.models import Count
+from django.http import HttpResponse
 from django.shortcuts import render
+from django.template.loader import get_template
+from django.utils import timezone
+from xhtml2pdf import pisa
 
-from colaboradores.models import (  # Importe o modelo Colaborador
-    Colaborador,
-    TipoColaborador,
-)
+from colaboradores.models import Colaborador, TipoColaborador
 from convidados.models import Convidado
+from geografia.models import Bairro, Cidade
 
 CIDADE_PARA_MESORREGIAO = {
     # NORTE
@@ -950,6 +954,504 @@ def mapa_apoiadores(request):
 
 
 def sobre(request):
-    # Futuramente, podemos passar a versão do app dinamicamente aqui
     context = {"versao_app": "1.0.0"}
     return render(request, "sobre.html", context)
+
+
+@login_required
+def apresentacao_pdf(request):
+    img_dir = settings.BASE_DIR / "static" / "img" / "apresentacao"
+
+    def img_path(name):
+        p = img_dir / name
+        return str(p) if p.exists() else ""
+
+    paginas = [
+        {
+            "nome": "Tela de Login",
+            "descricao": (
+                "Autenticação segura com proteção contra ataques de força bruta (rate "
+                "limiting de 5 tentativas/minuto por IP). Suporte a reset de senha via "
+                "e-mail."
+            ),
+            "descricao_curta": "Autenticação com rate limiting e recuperação de senha",
+            "imagem": img_path("01_login.png"),
+            "caracteristicas": [
+                "Rate limiting: 5 tentativas por minuto por IP",
+                "Redirecionamento inteligente (Recepcionistas para Recepção)",
+                "Idle timeout com notificação na tela de login",
+                "Recuperação de senha via e-mail SMTP",
+                "CSRF protection e HTTPS obrigatório em produção",
+            ],
+        },
+        {
+            "nome": "Página Inicial",
+            "descricao": (
+                "Home page do sistema com visão geral e acesso rápido aos principais "
+                "módulos."
+            ),
+            "descricao_curta": "Home com visão geral e navegação principal",
+            "imagem": img_path("02_home.png"),
+            "caracteristicas": [
+                "Cards de atalho para principais funcionalidades",
+                "Indicadores resumidos de desempenho",
+                "Navegação responsiva com Bootstrap 5",
+                "Menu adaptado ao perfil do usuário",
+            ],
+        },
+        {
+            "nome": "Dashboard - Mapa de Concentração",
+            "descricao": (
+                "Mapa de calor interativo (Leaflet.js + Leaflet.heat) mostrando a "
+                "distribuição geográfica de apoiadores e convidados em todo o estado. "
+                "Cuiabá é detalhada por bairro; demais cidades por coordenada "
+                "geográfica."
+            ),
+            "descricao_curta": (
+                "Mapa de calor com distribuição geográfica de apoiadores"
+            ),
+            "imagem": img_path("03_dashboard_top.png"),
+            "caracteristicas": [
+                "Gradiente de cores: azul (baixa) até vermelho (alta concentração)",
+                "Tooltips com nome, quantidade de apoiadores e convidados",
+                "Normalização com transformação exponencial (^0.3) para "
+                "melhor visibilidade",
+                "Zoom e pan interativos",
+            ],
+        },
+        {
+            "nome": "Dashboard - Gráficos Analíticos",
+            "descricao": (
+                "Conjunto de gráficos Chart.js com dados de desempenho: Convidados por "
+                "Região do Estado (dual dataset: apoiadores + convidados), Capital vs "
+                "Interior (barras agrupadas), Top 15 Bairros, Top 15 Cidades e "
+                "Desempenho por Meta (doughnut)."
+            ),
+            "descricao_curta": (
+                "Gráficos de desempenho por região, capital/interior e rankings"
+            ),
+            "imagem": img_path("04_dashboard_charts.png"),
+            "caracteristicas": [
+                "Barras agrupadas com dual dataset (apoiadores + convidados)",
+                "ChartDataLabels com valores nas barras",
+                "Subtítulos informativos com percentuais",
+                "Gráfico de rosca para metas (threshold: 30 convidados)",
+                "Ranking Top 20 apoiadores com badges",
+            ],
+        },
+        {
+            "nome": "Dashboard - Completo",
+            "descricao": (
+                "Visão completa do dashboard com todos os indicadores, rankings de "
+                "usuários, badges de desempenho e eficiência média."
+            ),
+            "descricao_curta": "Dashboard completo com KPIs, rankings e badges",
+            "imagem": img_path("05_dashboard_full.png"),
+            "caracteristicas": [
+                "Cards de KPI: total apoiadores, convidados, eficiência média",
+                "Ranking de usuários com badges (Ouro, Diamante, etc.)",
+                "Desempenho por tipo de colaborador (grupos)",
+                "Indicador de convidados sem colaborador vinculado",
+            ],
+        },
+        {
+            "nome": "Mapa de Apoiadores",
+            "descricao": (
+                "Página dedicada ao mapa interativo em tela cheia, com os mesmos dados "
+                "do dashboard mas em visualização ampliada para melhor exploração "
+                "geográfica."
+            ),
+            "descricao_curta": "Mapa interativo em tela cheia",
+            "imagem": img_path("06_mapa_apoiadores.png"),
+            "caracteristicas": [
+                "Leaflet.js com tiles OpenStreetMap",
+                "Camada de calor (heatLayer) com gradiente azul até vermelho",
+                "Markers invisíveis com tooltips em popups",
+                "Zoom para nível de rua em Cuiabá (bairros)",
+            ],
+        },
+        {
+            "nome": "Lista de Apoiadores",
+            "descricao": (
+                "Listagem completa de todos os apoiadores cadastrados, com busca, "
+                "filtros e paginação. Acesso rápido para editar, excluir ou visualizar "
+                "convidados vinculados."
+            ),
+            "descricao_curta": "CRUD completo de apoiadores com busca e filtros",
+            "imagem": img_path("07_colaboradores_lista.png"),
+            "caracteristicas": [
+                "Busca por nome e telefone",
+                "Filtros por tipo de colaborador, cidade e bairro",
+                "Paginação integrada",
+                "Ações rápidas: editar, excluir, ver convidados",
+                "Indicador visual de meta (>=30 convidados)",
+            ],
+        },
+        {
+            "nome": "Cadastro de Apoiador",
+            "descricao": (
+                "Formulário de cadastro com validação de unicidade (nome e telefone "
+                "via"
+                "AJAX), seleção de cidade/bairro com cascata AJAX, e campos completos "
+                "de endereço e contato."
+            ),
+            "descricao_curta": "Formulário com validação AJAX e cascata cidade/bairro",
+            "imagem": img_path("08_colaboradores_form.png"),
+            "caracteristicas": [
+                "Verificação AJAX de nome e telefone duplicados",
+                "Dropdowns em cascata: estado para cidade para bairro",
+                "Máscaras de telefone via JavaScript",
+                "Suporte a WhatsApp e múltiplos telefones",
+            ],
+        },
+        {
+            "nome": "Tipos de Colaborador",
+            "descricao": (
+                "Gerenciamento dos tipos/grupos de colaboradores (ex: Liderança, "
+                "Militante, Simpatizante). CRUD completo com controle de responsáveis "
+                "por cada tipo."
+            ),
+            "descricao_curta": "CRUD de tipos/grupos de colaboradores",
+            "imagem": img_path("09_tipos_colaborador.png"),
+            "caracteristicas": [
+                "Cadastro, edição e exclusão de tipos",
+                "Atribuição de responsáveis (usuários gestores)",
+                "Controle de acesso por tipo de colaborador",
+                "Indicador ativo/inativo",
+            ],
+        },
+        {
+            "nome": "Lista de Convidados",
+            "descricao": (
+                "Listagem de todos os convidados indicados pelos apoiadores, com "
+                "vínculo ao colaborador que realizou a indicação. Busca, filtros e "
+                "ações de edição/exclusão."
+            ),
+            "descricao_curta": "CRUD de convidados com vínculo ao apoiador",
+            "imagem": img_path("10_convidados_lista.png"),
+            "caracteristicas": [
+                "Filtros por cidade, bairro e colaborador",
+                "Busca por nome e telefone",
+                "Visualização do apoiador responsável pela indicação",
+                "Exportação para Excel e HTML (impressão)",
+            ],
+        },
+        {
+            "nome": "Cadastro de Convidado",
+            "descricao": (
+                "Formulário de cadastro de convidados com cascata cidade/bairro, "
+                "validação AJAX de unicidade e vínculo opcional a um colaborador "
+                "existente."
+            ),
+            "descricao_curta": "Formulário com validação e vínculo ao apoiador",
+            "imagem": img_path("11_convidados_form.png"),
+            "caracteristicas": [
+                "Dropdowns em cascata: cidade para bairro",
+                "Verificação AJAX de duplicidade",
+                "Vínculo opcional a colaborador",
+                "Máscaras de telefone automáticas",
+            ],
+        },
+        {
+            "nome": "Recepção - Home",
+            "descricao": (
+                "Interface simplificada para recepcionistas, com acesso rápido às "
+                "funções de atendimento: registro de visitantes, fila de espera e "
+                "declarações."
+            ),
+            "descricao_curta": "Interface do recepcionista com acesso rápido",
+            "imagem": img_path("12_recepcao_home.png"),
+            "caracteristicas": [
+                "Redirecionamento automático para recepcionistas",
+                "Acesso rápido a visitantes e fila",
+                "Interface simplificada e objetiva",
+            ],
+        },
+        {
+            "nome": "Recepção - Dashboard",
+            "descricao": (
+                "Painel da recepção com indicadores de atendimento, visitantes do dia "
+                "e"
+                "estatísticas operacionais."
+            ),
+            "descricao_curta": "Painel de indicadores da recepção",
+            "imagem": img_path("13_recepcao_dashboard.png"),
+            "caracteristicas": [
+                "Métricas de atendimento do dia",
+                "Lista de visitantes aguardando",
+                "Histórico de atendimentos",
+            ],
+        },
+        {
+            "nome": "Recepção - Visitantes",
+            "descricao": (
+                "Gerenciamento completo de visitantes: cadastro, edição, "
+                "encaminhamento"
+                "para fila de atendimento e declaração de visita."
+            ),
+            "descricao_curta": "Gerenciamento de visitantes e fila",
+            "imagem": img_path("14_recepcao_visitantes.png"),
+            "caracteristicas": [
+                "Cadastro e edição de visitantes",
+                "Fila de atendimento (chamar próximo)",
+                "Declaração de visita em PDF",
+                "Anexos aos atendimentos",
+            ],
+        },
+        {
+            "nome": "Painel de Mensagens",
+            "descricao": (
+                "Central de comunicação com integração Twilio (SMS) e WhatsApp Cloud "
+                "API (Meta). Envio individual ou em massa, templates e campanhas."
+            ),
+            "descricao_curta": "Central de comunicação SMS + WhatsApp",
+            "imagem": img_path("15_mensagens_painel.png"),
+            "caracteristicas": [
+                "Envio individual e em massa",
+                "Suporte a SMS (Twilio) e WhatsApp (Meta Cloud API)",
+                "Templates de mensagens reutilizáveis",
+                "Campanhas com agendamento",
+                "Upload de imagens para mídia WhatsApp",
+            ],
+        },
+        {
+            "nome": "Envio de Mensagens",
+            "descricao": (
+                "Compositor de mensagens com seleção de destinatários, templates "
+                "salvos"
+                "e preview antes do envio."
+            ),
+            "descricao_curta": "Compositor de mensagens com templates",
+            "imagem": img_path("16_mensagens_enviar.png"),
+            "caracteristicas": [
+                "Seleção múltipla de destinatários",
+                "Templates de mensagens com variáveis",
+                "Upload de imagens e mídia",
+                "Confirmação antes do envio",
+            ],
+        },
+        {
+            "nome": "Histórico de Mensagens",
+            "descricao": (
+                "Registro completo de todas as mensagens enviadas, com status de "
+                "entrega, data/hora e conteúdo."
+            ),
+            "descricao_curta": "Registro de mensagens enviadas",
+            "imagem": img_path("17_mensagens_historico.png"),
+            "caracteristicas": [
+                "Filtros por data, status e destinatário",
+                "Indicador visual de entrega (enviada, recebida, falha)",
+                "Detalhamento por campanha",
+                "Reenvio de mensagens",
+            ],
+        },
+        {
+            "nome": "Campanhas",
+            "descricao": (
+                "Gerenciamento de campanhas de comunicação: criação, agendamento, "
+                "execução e relatórios de desempenho."
+            ),
+            "descricao_curta": "Gerenciamento de campanhas de comunicação",
+            "imagem": img_path("18_mensagens_campanhas.png"),
+            "caracteristicas": [
+                "Criação e agendamento de campanhas",
+                "Segmentação de público",
+                "Relatórios de entrega",
+                "Métricas de engajamento",
+            ],
+        },
+        {
+            "nome": "Histórico do Sistema",
+            "descricao": (
+                "Log completo de todas as ações realizadas no sistema (cadastros, "
+                "edições, exclusões) com atualização em tempo real via WebSocket."
+            ),
+            "descricao_curta": "Log de ações com WebSocket em tempo real",
+            "imagem": img_path("19_historico.png"),
+            "caracteristicas": [
+                "Registro automático de todas as ações CRUD",
+                "Atualização em tempo real via Django Channels",
+                "Filtros por usuário, ação e data",
+                "Detalhamento completo de cada evento",
+            ],
+        },
+        {
+            "nome": "Aniversariantes",
+            "descricao": (
+                "Lista de aniversariantes do mês entre apoiadores e convidados, com "
+                "opção de envio de mensagens personalizadas de parabéns."
+            ),
+            "descricao_curta": "Aniversariantes do mês com envio de parabéns",
+            "imagem": img_path("20_aniversariantes.png"),
+            "caracteristicas": [
+                "Agrupamento por mês",
+                "Filtro por tipo (apoiador/convidado)",
+                "Botão para envio de mensagem de parabéns",
+                "Integração com WhatsApp",
+            ],
+        },
+        {
+            "nome": "Sobre o Sistema",
+            "descricao": (
+                "Informações da versão, tecnologias utilizadas e créditos do sistema "
+                "SisAps."
+            ),
+            "descricao_curta": "Informações e versão do sistema",
+            "imagem": img_path("21_sobre.png"),
+            "caracteristicas": [
+                "Versão do sistema",
+                "Tecnologias utilizadas (Django, PostgreSQL, etc.)",
+                "Links de suporte",
+            ],
+        },
+        {
+            "nome": "Relatório de Apoiadores",
+            "descricao": (
+                "Relatório personalizado com seleção de colunas, filtros avançados "
+                "(tipo, cidade, bairro, período) e ordenação. Exportação para Excel e "
+                "HTML otimizado para impressão."
+            ),
+            "descricao_curta": "Relatório personalizado com exportação Excel/HTML",
+            "imagem": img_path("22_relatorio_colaboradores.png"),
+            "caracteristicas": [
+                "Seleção dinâmica de colunas",
+                "Filtros por tipo, cidade, bairro e data",
+                "Ordenação por qualquer campo",
+                "Exportação Excel (openpyxl) e HTML para impressão",
+            ],
+        },
+        {
+            "nome": "Relatório de Convidados",
+            "descricao": (
+                "Relatório de convidados com filtros, seleção de colunas e exportação, "
+                "similar ao relatório de apoiadores."
+            ),
+            "descricao_curta": "Relatório de convidados com exportação",
+            "imagem": img_path("23_relatorio_convidados.png"),
+            "caracteristicas": [
+                "Filtros por cidade, bairro e período",
+                "Seleção de colunas para exibição",
+                "Exportação Excel e HTML",
+                "Vínculo com apoiador",
+            ],
+        },
+        {
+            "nome": "Configurações do Usuário",
+            "descricao": (
+                "Preferências do usuário: dados do perfil, senha, notificações e "
+                "permissões de acesso a módulos."
+            ),
+            "descricao_curta": "Perfil, senha e preferências do usuário",
+            "imagem": img_path("24_user_settings.png"),
+            "caracteristicas": [
+                "Edição de dados pessoais",
+                "Alteração de senha",
+                "Configuração de notificações",
+                "Controle de acesso a módulos (para gestores)",
+            ],
+        },
+        {
+            "nome": "Administração Django",
+            "descricao": (
+                "Interface administrativa nativa do Django para gerenciamento avançado "
+                "de usuários, grupos, permissões e dados do sistema."
+            ),
+            "descricao_curta": "Painel administrativo Django nativo",
+            "imagem": img_path("25_admin.png"),
+            "caracteristicas": [
+                "Gerenciamento de usuários e grupos",
+                "Controle de permissões granular",
+                "Gerenciamento de todos os modelos do sistema",
+                "Logs de ações administrativas",
+            ],
+        },
+    ]
+
+    modulos = [
+        {
+            "nome": "Apoiadores (Colaboradores)",
+            "descricao": (
+                "Cadastro completo com tipos, geolocalização por bairro/cidade, "
+                "ranking"
+                "por convidados indicados e meta de desempenho (30 convidados)."
+            ),
+        },
+        {
+            "nome": "Convidados",
+            "descricao": (
+                "Cadastro de convidados vinculados a apoiadores, com geolocalização e "
+                "relatórios exportáveis."
+            ),
+        },
+        {
+            "nome": "Dashboard",
+            "descricao": (
+                "Painel analítico com mapa de calor, gráficos Chart.js, KPIs, rankings "
+                "e badges de usuários."
+            ),
+        },
+        {
+            "nome": "Recepção",
+            "descricao": (
+                "Módulo de atendimento presencial com fila de visitantes, declarações "
+                "e histórico de atendimentos."
+            ),
+        },
+        {
+            "nome": "Mensagens",
+            "descricao": (
+                "Comunicação multicanal (SMS + WhatsApp) com templates, campanhas e "
+                "envio em massa."
+            ),
+        },
+        {
+            "nome": "Geografia",
+            "descricao": (
+                "Cadastro de cidades e bairros com coordenadas geográficas "
+                "para mapa de calor."
+            ),
+        },
+        {
+            "nome": "Histórico",
+            "descricao": (
+                "Auditoria completa com WebSocket para atualizações " "em tempo real."
+            ),
+        },
+        {
+            "nome": "Aniversariantes",
+            "descricao": (
+                "Lista de aniversários com integração ao sistema " "de mensagens."
+            ),
+        },
+    ]
+
+    total_apoiadores = Colaborador.objects.count()
+    total_convidados = Convidado.objects.count()
+    total_cidades = Cidade.objects.count()
+    total_bairros = Bairro.objects.count()
+
+    context = {
+        "versao": "1.0.0",
+        "data_geracao": timezone.now().strftime("%d/%m/%Y %H:%M"),
+        "paginas": paginas,
+        "modulos": modulos,
+        "total_apoiadores": total_apoiadores,
+        "total_convidados": total_convidados,
+        "total_cidades": total_cidades,
+        "total_bairros": total_bairros,
+    }
+
+    template = get_template("presentation.html")
+    html = template.render(context)
+
+    result = io.BytesIO()
+    pdf = pisa.pisaDocument(io.BytesIO(html.encode("utf-8")), dest=result)
+
+    if pdf.err:
+        return HttpResponse(f"Erro ao gerar PDF: {pdf.err}", status=500)
+
+    response = HttpResponse(result.getvalue(), content_type="application/pdf")
+    response["Content-Disposition"] = (
+        f'attachment; filename="sisaps_apresentacao_{timezone.now():%Y%m%d}.pdf"'
+    )
+    return response

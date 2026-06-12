@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth.forms import PasswordChangeForm, SetPasswordForm
 
 from .models import Profile
 
@@ -31,8 +31,8 @@ class ProfileForm(forms.ModelForm):
 
     class Meta:
         model = Profile
-        fields = ["photo"]
-        widgets = {
+        fields = ["photo"]  # noqa: RUF012
+        widgets = {  # noqa: RUF012
             "photo": forms.FileInput(
                 attrs={"class": "form-control", "accept": "image/*"}
             ),
@@ -69,6 +69,21 @@ class ProfileForm(forms.ModelForm):
             profile.save()
 
         return profile
+
+
+class ForcePasswordChangeForm(SetPasswordForm):
+    """Formulário para troca obrigatória de senha (sem senha antiga)"""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs.update({"class": "form-control form-control-lg"})
+        self.fields["new_password1"].widget.attrs.update(
+            {"placeholder": "Digite sua nova senha", "autofocus": True}
+        )
+        self.fields["new_password2"].widget.attrs.update(
+            {"placeholder": "Confirme sua nova senha"}
+        )
 
 
 class CustomPasswordChangeForm(PasswordChangeForm):

@@ -155,6 +155,16 @@
                     <p class="text-muted small mb-0">Acesse sua conta</p>
                 </div>
 
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} d-flex align-items-center gap-2 py-2 small alert-dismissible fade show" role="alert">
+                        <i class="bi {% if message.tags == 'warning' %}bi-exclamation-triangle-fill{% else %}bi-info-circle-fill{% endif %} flex-shrink-0"></i>
+                        <div>{{ message }}</div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+
                 {% if form.errors %}
                     <div class="alert alert-danger d-flex align-items-center gap-2 py-2 small" role="alert">
                         <i class="bi bi-exclamation-triangle-fill flex-shrink-0"></i>

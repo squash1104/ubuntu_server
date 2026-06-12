@@ -5,55 +5,15 @@
 
 {% block extra_css %}
 <style>
-    .settings-container {
-        max-width: 1000px;
-        margin: 0 auto;
-    }
-    
-    .settings-card {
-        border: none;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        border-radius: 0.75rem;
-    }
-    
-    .settings-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border-radius: 0.75rem 0.75rem 0 0;
-        padding: 2rem;
-        text-align: center;
-    }
-    
-    .settings-card .card-header {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        border-bottom: 2px solid #dee2e6;
-        padding: 1rem 1.5rem;
-        border-radius: 0.75rem 0.75rem 0 0 !important;
-    }
-    
-    .settings-card .card-header h5 {
-        color: #495057;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-    
-    .settings-card .card-header h5 i {
-        color: #667eea;
-    }
-    
     .profile-photo {
         width: 120px;
         height: 120px;
         border-radius: 50% !important;
         object-fit: cover !important;
-        border: 4px solid white;
-        margin-bottom: 1rem;
+        border: 4px solid var(--bs-body-bg);
         box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        display: block;
     }
-    
+
     .profile-photo-placeholder {
         width: 120px;
         height: 120px;
@@ -61,238 +21,68 @@
         display: flex !important;
         align-items: center;
         justify-content: center;
-        background-color: #f8f9fa;
-        color: #6c757d;
-        margin-bottom: 1rem;
+        background: var(--bs-secondary-bg);
+        color: var(--bs-secondary-color);
+        border: 4px solid var(--bs-body-bg);
         box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
-    
+
     .photo-actions {
         display: flex;
         gap: 0.5rem;
         justify-content: center;
         margin-top: 1rem;
     }
-    
-    .photo-actions .btn {
-        padding: 0.375rem 0.75rem;
-        font-size: 0.875rem;
+
+    .prod-range.active {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: #fff;
+        border-color: transparent;
     }
-    
-    .nav-pills .nav-link {
-        border-radius: 0.5rem;
-        margin-right: 0.5rem;
-        margin-bottom: 0.5rem;
-        padding: 0.75rem 1rem;
-        font-weight: 500;
-        transition: all 0.3s ease;
-    }
-    
-    .nav-pills .nav-link:hover {
-        background-color: #e9ecef;
-        transform: translateY(-2px);
-    }
-    
-    .nav-pills .nav-link.active {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-    }
-    
-    /* Estilos para campos de formulário */
-    .form-control, .form-select {
-        border: 2px solid #e9ecef;
-        border-radius: 0.5rem;
-        padding: 0.75rem 1rem;
-        transition: all 0.3s ease;
-    }
-    
-    .form-control:focus, .form-select:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
-    }
-    
-    .form-label {
-        font-weight: 600;
-        color: #495057;
-        margin-bottom: 0.5rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-    
-    .form-label i {
-        color: #667eea;
-    }
-    
-    .form-group {
-        margin-bottom: 1.25rem;
-    }
-    
-    .form-group:last-child {
-        margin-bottom: 0;
-    }
-    
-    /* Cards de estatísticas */
-    .stats-card {
-        border: none;
-        border-radius: 0.75rem;
-        padding: 1.5rem;
-        text-align: center;
-        margin-bottom: 1rem;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-    
-    .stats-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-    }
-    
-    .stats-card.total { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; color: white !important; }
-    .stats-card.today { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important; color: white !important; }
-    .stats-card.week { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important; color: white !important; }
-    .stats-card.month { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important; color: white !important; }
-    
-    .stats-card .card-body {
-        padding: 1.5rem;
-    }
-    
-    .stats-card .stats-icon {
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        background: rgba(255,255,255,0.25) !important;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 0.75rem;
-    }
-    
-    .stats-card .stats-icon i {
-        font-size: 1.5rem;
-        color: white !important;
-    }
-    
-    .stats-card .stats-number {
-        font-size: 2rem;
-        font-weight: bold;
-        margin-bottom: 0.25rem;
-        color: white !important;
-    }
-    
-    .stats-card .stats-label {
-        font-size: 0.875rem;
-        opacity: 0.9;
-        color: white !important;
-    }
-    
-    /* Info cards */
-    .info-card {
-        background: white;
-        border-radius: 0.75rem;
-        padding: 1.25rem;
-        border-left: 4px solid #667eea;
-        margin-bottom: 1rem;
-    }
-    
-    .info-card h6 {
-        color: #667eea;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-    }
-    
-    .btn-save {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border: none;
-        color: white;
-        padding: 0.75rem 2rem;
-        border-radius: 0.5rem;
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-    
-    .btn-save:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-        color: white;
-    }
-    
-    .photo-preview {
-        width: 100px;
-        height: 100px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 3px solid #e2e8f0;
-        margin-top: 1rem;
-    }
-    
-    /* Garantir moldura circular mesmo após reload */
-    img#current-photo { border-radius: 50% !important; object-fit: cover !important; }
-    
-    /* Tabela de histórico */
-    .table thead th {
-        background-color: #f8f9fa;
-        border-bottom: 2px solid #dee2e6;
-        color: #495057;
-        font-weight: 600;
-    }
-    
-    .table tbody tr {
-        transition: background-color 0.2s ease;
-    }
-    
-    .table tbody tr:hover {
-        background-color: #f8f9fa;
-    }
-    
-    /* Seção de informações da conta */
-    .account-info {
+
+    .account-info-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 1rem;
     }
-    
+
     .account-info-item {
         display: flex;
         flex-direction: column;
         padding: 1rem;
-        background: #f8f9fa;
+        background: var(--bs-secondary-bg);
         border-radius: 0.5rem;
     }
-    
+
     .account-info-item strong {
-        color: #667eea;
+        color: var(--bs-primary);
         font-size: 0.75rem;
         text-transform: uppercase;
         letter-spacing: 0.5px;
         margin-bottom: 0.25rem;
     }
-    
+
     .account-info-item span {
-        color: #495057;
+        color: var(--bs-body-color);
         font-weight: 500;
     }
-    
-    /* Badges */
-    .badge {
-        padding: 0.5rem 0.75rem;
-        font-weight: 500;
+
+    img#current-photo {
+        border-radius: 50% !important;
+        object-fit: cover !important;
     }
-    
-    /* Responsivo */
+
     @media (max-width: 768px) {
-        .settings-header {
-            padding: 1.5rem;
-        }
-        
-        .profile-photo {
+        .profile-photo,
+        .profile-photo-placeholder {
             width: 80px;
             height: 80px;
         }
-        
+
         .nav-pills {
             flex-direction: column;
         }
-        
+
         .nav-pills .nav-link {
             margin-right: 0;
             margin-bottom: 0.5rem;
@@ -304,163 +94,152 @@
 
 {% block content %}
 <div class="container-fluid px-3 px-md-4">
-    <div class="settings-container">
-        <!-- Header do Perfil -->
-        <div class="card settings-card mb-4">
-            <div class="settings-header">
-                <div class="d-flex flex-column align-items-center">
-                    {% if profile.photo %}
-                        <img src="{{ profile.photo.url }}" alt="Foto do perfil" class="profile-photo rounded-circle" id="current-photo">
-                    {% else %}
-                        <div class="profile-photo-placeholder" id="current-photo">
-                            <i class="bi bi-person-fill" style="font-size: 3rem;"></i>
-                        </div>
-                    {% endif %}
-                    <h2 class="mb-1">{{ profile.display_name }}</h2>
-                    <p class="mb-0 opacity-75">{{ request.user.username }}</p>
-                    
-                    <!-- Botões de ação da foto -->
-                    <div class="photo-actions">
-                        <button type="button" class="btn btn-light btn-sm" onclick="document.getElementById('{{ profile_form.photo.id_for_label }}').click()">
-                            <i class="bi bi-camera me-1"></i>Editar
-                        </button>
-                        {% if profile.photo %}
-                            <button type="button" class="btn btn-outline-light btn-sm" onclick="removePhoto()">
-                                <i class="bi bi-trash me-1"></i>Remover
-                            </button>
-                        {% endif %}
-                    </div>
+    <div class="page-header">
+        <h1 class="h4"><i class="bi bi-gear-fill"></i> Configurações do Usuário</h1>
+        <p class="text-muted">Gerencie seu perfil, altere sua senha e acompanhe suas estatísticas</p>
+    </div>
+
+    <!-- Profile Header -->
+    <div class="card mb-4">
+        <div class="card-body text-center py-4">
+            {% if profile.photo %}
+                <img src="{{ profile.photo.url }}" alt="Foto do perfil" class="profile-photo" id="current-photo">
+            {% else %}
+                <div class="profile-photo-placeholder mx-auto" id="current-photo">
+                    <i class="bi bi-person-fill" style="font-size: 3rem;"></i>
                 </div>
+            {% endif %}
+            <h4 class="mb-1 mt-2">{{ profile.display_name }}</h4>
+            <p class="text-muted mb-0">{{ request.user.username }}</p>
+
+            <div class="photo-actions">
+                <button type="button" class="btn btn-primary btn-sm" onclick="document.getElementById('{{ profile_form.photo.id_for_label }}').click()">
+                    <i class="bi bi-camera me-1"></i>Editar
+                </button>
+                {% if profile.photo %}
+                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="removePhoto()">
+                        <i class="bi bi-trash me-1"></i>Remover
+                    </button>
+                {% endif %}
             </div>
         </div>
+    </div>
 
-        <!-- Navegação por Abas -->
-        <div class="card settings-card mb-4">
-            <div class="card-body">
-                <ul class="nav nav-pills nav-fill" id="settingsTabs" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="profile-tab" data-bs-toggle="pill" data-bs-target="#profile" type="button" role="tab">
-                            <i class="bi bi-person me-2"></i>Perfil
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="password-tab" data-bs-toggle="pill" data-bs-target="#password" type="button" role="tab">
-                            <i class="bi bi-lock me-2"></i>Senha
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="stats-tab" data-bs-toggle="pill" data-bs-target="#stats" type="button" role="tab">
-                            <i class="bi bi-graph-up me-2"></i>Estatísticas
-                        </button>
-                    </li>
-                </ul>
-            </div>
+    <!-- Tab Navigation -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <ul class="nav nav-pills nav-fill" id="settingsTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="profile-tab" data-bs-toggle="pill" data-bs-target="#profile" type="button" role="tab">
+                        <i class="bi bi-person me-2"></i>Perfil
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="password-tab" data-bs-toggle="pill" data-bs-target="#password" type="button" role="tab">
+                        <i class="bi bi-lock me-2"></i>Senha
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="stats-tab" data-bs-toggle="pill" data-bs-target="#stats" type="button" role="tab">
+                        <i class="bi bi-graph-up me-2"></i>Estatísticas
+                    </button>
+                </li>
+            </ul>
         </div>
+    </div>
 
-        <!-- Conteúdo das Abas -->
-        <div class="tab-content" id="settingsTabsContent">
-            <!-- Aba Perfil -->
-            <div class="tab-pane fade show active" id="profile" role="tabpanel">
-                <div class="card settings-card">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="bi bi-person-badge"></i>Informações do Perfil
-                        </h5>
-                    </div>
-                    <div class="card-body p-4">
-                        <form method="post" enctype="multipart/form-data">
-                            {% csrf_token %}
-                            <input type="hidden" name="profile_submit" value="1">
-                            
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="{{ profile_form.first_name.id_for_label }}" class="form-label">
-                                            <i class="bi bi-person"></i>Nome
-                                        </label>
-                                        {{ profile_form.first_name }}
-                                        {% if profile_form.first_name.errors %}
-                                            <div class="text-danger small mt-1">
-                                                {% for error in profile_form.first_name.errors %}
-                                                    {{ error }}
-                                                {% endfor %}
-                                            </div>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="{{ profile_form.last_name.id_for_label }}" class="form-label">
-                                            <i class="bi bi-person"></i>Sobrenome
-                                        </label>
-                                        {{ profile_form.last_name }}
-                                        {% if profile_form.last_name.errors %}
-                                            <div class="text-danger small mt-1">
-                                                {% for error in profile_form.last_name.errors %}
-                                                    {{ error }}
-                                                {% endfor %}
-                                            </div>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </div>
+    <!-- Tab Content -->
+    <div class="tab-content" id="settingsTabsContent">
+        <!-- Aba Perfil -->
+        <div class="tab-pane fade show active" id="profile" role="tabpanel">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-person-badge me-2"></i>Informações do Perfil</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <input type="hidden" name="profile_submit" value="1">
 
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="{{ profile_form.email.id_for_label }}" class="form-label">
-                                            <i class="bi bi-envelope"></i>Email
-                                        </label>
-                                        {{ profile_form.email }}
-                                        {% if profile_form.email.errors %}
-                                            <div class="text-danger small mt-1">
-                                                {% for error in profile_form.email.errors %}
-                                                    {{ error }}
-                                                {% endfor %}
-                                            </div>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Campo de foto oculto -->
-                            <div style="display: none;">
-                                {{ profile_form.photo }}
-                                {% if profile_form.photo.errors %}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="{{ profile_form.first_name.id_for_label }}" class="form-label">
+                                    <i class="bi bi-person me-1"></i>Nome
+                                </label>
+                                {{ profile_form.first_name }}
+                                {% if profile_form.first_name.errors %}
                                     <div class="text-danger small mt-1">
-                                        {% for error in profile_form.photo.errors %}
+                                        {% for error in profile_form.first_name.errors %}
                                             {{ error }}
                                         {% endfor %}
                                     </div>
                                 {% endif %}
                             </div>
-
-                            <div class="d-flex justify-content-end mt-4">
-                                <button type="submit" class="btn btn-save">
-                                    <i class="bi bi-check-lg me-2"></i>Salvar Alterações
-                                </button>
+                            <div class="col-md-6">
+                                <label for="{{ profile_form.last_name.id_for_label }}" class="form-label">
+                                    <i class="bi bi-person me-1"></i>Sobrenome
+                                </label>
+                                {{ profile_form.last_name }}
+                                {% if profile_form.last_name.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in profile_form.last_name.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
                             </div>
-                        </form>
-                    </div>
+                            <div class="col-md-6">
+                                <label for="{{ profile_form.email.id_for_label }}" class="form-label">
+                                    <i class="bi bi-envelope me-1"></i>Email
+                                </label>
+                                {{ profile_form.email }}
+                                {% if profile_form.email.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in profile_form.email.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div style="display: none;">
+                            {{ profile_form.photo }}
+                            {% if profile_form.photo.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in profile_form.photo.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-flex justify-content-end mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-lg me-2"></i>Salvar Alterações
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
+        </div>
 
-            <!-- Aba Senha -->
-            <div class="tab-pane fade" id="password" role="tabpanel">
-                <div class="card settings-card">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="bi bi-shield-lock"></i>Alterar Senha
-                        </h5>
-                    </div>
-                    <div class="card-body p-4">
-                        <form method="post">
-                            {% csrf_token %}
-                            <input type="hidden" name="password_submit" value="1">
-                            
-                            <div class="form-group">
+        <!-- Aba Senha -->
+        <div class="tab-pane fade" id="password" role="tabpanel">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-shield-lock me-2"></i>Alterar Senha</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="password_submit" value="1">
+                        <input type="text" name="username" value="{{ request.user.username }}" autocomplete="username" hidden>
+
+                        <div class="row g-3">
+                            <div class="col-12">
                                 <label for="{{ password_form.old_password.id_for_label }}" class="form-label">
-                                    <i class="bi bi-key"></i>Senha Atual
+                                    <i class="bi bi-key me-1"></i>Senha Atual
                                 </label>
                                 {{ password_form.old_password }}
                                 {% if password_form.old_password.errors %}
@@ -471,352 +250,298 @@
                                     </div>
                                 {% endif %}
                             </div>
-
-                            <div class="row mt-3">
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="{{ password_form.new_password1.id_for_label }}" class="form-label">
-                                            <i class="bi bi-key-fill"></i>Nova Senha
-                                        </label>
-                                        {{ password_form.new_password1 }}
-                                        {% if password_form.new_password1.errors %}
-                                            <div class="text-danger small mt-1">
-                                                {% for error in password_form.new_password1.errors %}
-                                                    {{ error }}
-                                                {% endfor %}
-                                            </div>
-                                        {% endif %}
+                            <div class="col-md-6">
+                                <label for="{{ password_form.new_password1.id_for_label }}" class="form-label">
+                                    <i class="bi bi-key-fill me-1"></i>Nova Senha
+                                </label>
+                                {{ password_form.new_password1 }}
+                                {% if password_form.new_password1.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in password_form.new_password1.errors %}
+                                            {{ error }}
+                                        {% endfor %}
                                     </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="{{ password_form.new_password2.id_for_label }}" class="form-label">
-                                            <i class="bi bi-key-fill"></i>Confirmar Nova Senha
-                                        </label>
-                                        {{ password_form.new_password2 }}
-                                        {% if password_form.new_password2.errors %}
-                                            <div class="text-danger small mt-1">
-                                                {% for error in password_form.new_password2.errors %}
-                                                    {{ error }}
-                                                {% endfor %}
-                                            </div>
-                                        {% endif %}
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ password_form.new_password2.id_for_label }}" class="form-label">
+                                    <i class="bi bi-key-fill me-1"></i>Confirmar Nova Senha
+                                </label>
+                                {{ password_form.new_password2 }}
+                                {% if password_form.new_password2.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in password_form.new_password2.errors %}
+                                            {{ error }}
+                                        {% endfor %}
                                     </div>
-                                </div>
+                                {% endif %}
                             </div>
+                        </div>
 
-                            <div class="alert alert-info mt-3" role="alert">
-                                <i class="bi bi-info-circle me-2"></i>
-                                <strong>Dica:</strong> Use uma senha forte com pelo menos 8 caracteres, incluindo letras, números e símbolos.
-                            </div>
+                        <div class="alert alert-info mt-3" role="alert">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <strong>Dica:</strong> Use uma senha forte com pelo menos 8 caracteres, incluindo letras, números e símbolos.
+                        </div>
 
-                            <div class="d-flex justify-content-end mt-4">
-                                <button type="submit" class="btn btn-save">
-                                    <i class="bi bi-check-lg me-2"></i>Alterar Senha
-                                </button>
-                            </div>
-                        </form>
+                        <div class="d-flex justify-content-end mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-lg me-2"></i>Alterar Senha
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Aba Estatísticas -->
+        <div class="tab-pane fade" id="stats" role="tabpanel">
+            <!-- Stats Cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-6 col-md-3">
+                    <div class="card stat-card h-100">
+                        <h3><i class="bi bi-people-fill me-1"></i>Total</h3>
+                        <p>{{ stats.total_cadastros_usuario }}</p>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card stat-card h-100">
+                        <h3><i class="bi bi-calendar-day me-1"></i>Hoje</h3>
+                        <p>{{ stats.convidados_hoje }}</p>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card stat-card h-100">
+                        <h3><i class="bi bi-calendar-week me-1"></i>Semana</h3>
+                        <p>{{ stats.convidados_semana }}</p>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card stat-card h-100">
+                        <h3><i class="bi bi-calendar-month me-1"></i>Mês</h3>
+                        <p>{{ stats.convidados_mes }}</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Aba Estatísticas -->
-            <div class="tab-pane fade" id="stats" role="tabpanel">
-                <!-- Cards de Estatísticas -->
-                <div class="row mb-4">
-                    <div class="col-md-6 mb-3">
-                        <div class="card stats-card total border-0 shadow-sm">
-                            <div class="card-body text-center">
-                                <div class="stats-icon">
-                                    <i class="bi bi-people-fill"></i>
-                                </div>
-                                <h3 class="stats-number mb-1">{{ stats.total_cadastros_usuario }}</h3>
-                                <p class="stats-label mb-0">Total de Cadastros</p>
-                            </div>
+            <!-- Ranking + Tempo de Uso -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="bi bi-trophy me-2"></i>Ranking</h5>
+                        </div>
+                        <div class="card-body text-center py-4">
+                            <i class="bi bi-trophy-fill text-warning" style="font-size: 3rem;"></i>
+                            <h6 class="text-muted mt-2 mb-2">
+                                <i class="bi bi-star-fill me-1"></i>
+                                Posição no Ranking Geral
+                            </h6>
+                            <p class="display-4 mb-0 text-primary fw-bold">{{ stats.posicao_ranking|default:'-' }}º</p>
                         </div>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="card stats-card today border-0 shadow-sm">
-                            <div class="card-body text-center">
-                                <div class="stats-icon">
-                                    <i class="bi bi-calendar-day"></i>
-                                </div>
-                                <h3 class="stats-number mb-1">{{ stats.convidados_hoje }}</h3>
-                                <p class="stats-label mb-0">Cadastrados Hoje</p>
-                            </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Tempo de Uso</h5>
                         </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="card stats-card week border-0 shadow-sm">
-                            <div class="card-body text-center">
-                                <div class="stats-icon">
-                                    <i class="bi bi-calendar-week"></i>
+                        <div class="card-body">
+                            <div class="row text-center g-3">
+                                <div class="col-4">
+                                    <div class="p-3 bg-primary bg-opacity-10 rounded mb-1">
+                                        <i class="bi bi-hourglass-split text-primary" style="font-size: 1.5rem;"></i>
+                                    </div>
+                                    <h4 class="text-primary mb-0">{{ stats.horas_logado|default:"0" }}</h4>
+                                    <small class="text-muted">Horas</small>
                                 </div>
-                                <h3 class="stats-number mb-1">{{ stats.convidados_semana }}</h3>
-                                <p class="stats-label mb-0">Esta Semana</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="card stats-card month border-0 shadow-sm">
-                            <div class="card-body text-center">
-                                <div class="stats-icon">
-                                    <i class="bi bi-calendar-month"></i>
+                                <div class="col-4">
+                                    <div class="p-3 bg-success bg-opacity-10 rounded mb-1">
+                                        <i class="bi bi-lightning text-success" style="font-size: 1.5rem;"></i>
+                                    </div>
+                                    <h4 class="text-success mb-0">{{ stats.sessoes_hoje|default:"0" }}</h4>
+                                    <small class="text-muted">Sessões</small>
                                 </div>
-                                <h3 class="stats-number mb-1">{{ stats.convidados_mes }}</h3>
-                                <p class="stats-label mb-0">Este Mês</p>
+                                <div class="col-4">
+                                    <div class="p-3 bg-warning bg-opacity-10 rounded mb-1">
+                                        <i class="bi bi-calendar-check text-warning" style="font-size: 1.5rem;"></i>
+                                    </div>
+                                    <h4 class="text-warning mb-0">{{ stats.dias_ativo|default:"0" }}</h4>
+                                    <small class="text-muted">Dias</small>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Ranking -->
-                <div class="row mb-4">
-                    <div class="col-md-6">
-                        <div class="card settings-card">
-                            <div class="card-header">
-                                <h5 class="mb-0">
-                                    <i class="bi bi-trophy"></i>Ranking
-                                </h5>
-                            </div>
-                            <div class="card-body text-center py-4">
-                                <div class="mb-3">
-                                    <i class="bi bi-trophy-fill text-warning" style="font-size: 3rem;"></i>
-                                </div>
-                                <h6 class="text-muted mb-2">
-                                    <i class="bi bi-star-fill me-1"></i>
-                                    Posição no Ranking Geral
-                                </h6>
-                                <p class="display-4 mb-0 text-primary fw-bold">{{ stats.posicao_ranking|default:'-' }}º</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="card settings-card">
-                            <div class="card-header">
-                                <h5 class="mb-0">
-                                    <i class="bi bi-clock-history"></i>Tempo de Uso
-                                </h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="row text-center">
-                                    <div class="col-4">
-                                        <div class="p-3 bg-primary bg-opacity-10 rounded mb-2">
-                                            <i class="bi bi-hourglass-split text-primary" style="font-size: 1.5rem;"></i>
+            <!-- Conquistas -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-award me-2"></i>Conquistas</h5>
+                </div>
+                <div class="card-body">
+                    {% if stats.badges %}
+                        <div class="row g-3">
+                            {% for badge in stats.badges %}
+                                <div class="col-6 col-md-4 col-lg-3">
+                                    <div class="d-flex align-items-center gap-3 p-3 border rounded" data-bs-toggle="tooltip" title="{{ badge.nome }}: {{ badge.min|default:0 }}+ cadastros">
+                                        <span class="badge {{ badge.cor }} fs-5">{{ badge.emoji }}</span>
+                                        <div>
+                                            <div class="fw-semibold">{{ badge.nome }}</div>
+                                            {% if badge.data %}
+                                                <small class="text-muted">{{ badge.data|date:"d/m/Y H:i" }}</small>
+                                            {% endif %}
                                         </div>
-                                        <h4 class="text-primary mb-1">{{ stats.horas_logado|default:"0" }}</h4>
-                                        <small class="text-muted">Horas</small>
-                                    </div>
-                                    <div class="col-4">
-                                        <div class="p-3 bg-success bg-opacity-10 rounded mb-2">
-                                            <i class="bi bi-lightning text-success" style="font-size: 1.5rem;"></i>
-                                        </div>
-                                        <h4 class="text-success mb-1">{{ stats.sessoes_hoje|default:"0" }}</h4>
-                                        <small class="text-muted">Sessões</small>
-                                    </div>
-                                    <div class="col-4">
-                                        <div class="p-3 bg-warning bg-opacity-10 rounded mb-2">
-                                            <i class="bi bi-calendar-check text-warning" style="font-size: 1.5rem;"></i>
-                                        </div>
-                                        <h4 class="text-warning mb-1">{{ stats.dias_ativo|default:"0" }}</h4>
-                                        <small class="text-muted">Dias</small>
                                     </div>
                                 </div>
-                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-emoji-smile text-muted" style="font-size: 3rem;"></i>
+                            <p class="text-muted mb-0 mt-2">Nenhuma badge conquistada ainda.</p>
+                            <small class="text-muted">Continue cadastrando para desbloquear conquistas!</small>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Gráfico de Produtividade -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>Produtividade</h5>
+                        <div class="btn-group" role="group" aria-label="Filtro de período">
+                            <button type="button" class="btn btn-sm btn-outline-primary prod-range" data-range="day">Dia</button>
+                            <button type="button" class="btn btn-sm btn-outline-primary prod-range active" data-range="week">Semana</button>
+                            <button type="button" class="btn btn-sm btn-outline-primary prod-range" data-range="month">Mês</button>
+                            <button type="button" class="btn btn-sm btn-outline-primary prod-range" data-range="year">Ano</button>
                         </div>
                     </div>
                 </div>
-
-                <!-- Conquistas -->
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <div class="card settings-card">
-                            <div class="card-header">
-                                <h5 class="mb-0">
-                                    <i class="bi bi-award"></i>Conquistas
-                                </h5>
-                            </div>
-                            <div class="card-body p-4">
-                                {% if stats.badges %}
-                                    <div class="row g-3">
-                                        {% for badge in stats.badges %}
-                                            <div class="col-6 col-md-4 col-lg-3">
-                                                <div class="d-flex align-items-center gap-3 p-3 border rounded bg-light" data-bs-toggle="tooltip" title="{{ badge.nome }}: {{ badge.min|default:0 }}+ cadastros">
-                                                    <span class="badge {{ badge.cor }} fs-5">{{ badge.emoji }}</span>
-                                                    <div>
-                                                        <div class="fw-semibold">{{ badge.nome }}</div>
-                                                        {% if badge.data %}
-                                                            <small class="text-muted">{{ badge.data|date:"d/m/Y H:i" }}</small>
-                                                        {% endif %}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        {% endfor %}
-                                    </div>
-                                {% else %}
-                                    <div class="text-center py-4">
-                                        <i class="bi bi-emoji-smile text-muted" style="font-size: 3rem;"></i>
-                                        <p class="text-muted mb-0 mt-2">Nenhuma badge conquistada ainda.</p>
-                                        <small class="text-muted">Continue cadastrando para desbloquear conquistas!</small>
-                                    </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
+                <div class="card-body" style="min-height: 300px;">
+                    <canvas id="productivityChart"></canvas>
                 </div>
+            </div>
 
-                <!-- Gráfico de Produtividade -->
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <div class="card settings-card">
-                            <div class="card-header">
-                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                                    <h5 class="mb-0">
-                                        <i class="bi bi-graph-up"></i>Produtividade
-                                    </h5>
-                                    <div class="btn-group" role="group" aria-label="Filtro de período">
-                                        <button type="button" class="btn btn-sm btn-outline-primary prod-range" data-range="day">Dia</button>
-                                        <button type="button" class="btn btn-sm btn-outline-primary prod-range active" data-range="week">Semana</button>
-                                        <button type="button" class="btn btn-sm btn-outline-primary prod-range" data-range="month">Mês</button>
-                                        <button type="button" class="btn btn-sm btn-outline-primary prod-range" data-range="year">Ano</button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card-body" style="min-height: 300px;">
-                                <canvas id="productivityChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
+            <!-- Histórico do Usuário -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Seu Histórico de Atividades</h5>
                 </div>
+                <div class="card-body p-0">
+                    {% if stats.page_obj %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th><i class="bi bi-calendar3 me-1"></i>Data/Hora</th>
+                                        <th><i class="bi bi-lightning me-1"></i>Ação</th>
+                                        <th><i class="bi bi-tag me-1"></i>Objeto</th>
+                                        <th><i class="bi bi-text-left me-1"></i>Descrição</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for historico in stats.page_obj %}
+                                        <tr>
+                                            <td class="text-muted small">
+                                                <i class="bi bi-clock me-1"></i>
+                                                {{ historico.data_hora|date:"d/m/Y H:i" }}
+                                            </td>
+                                            <td>
+                                                <span class="badge {{ historico.acao_color }}">
+                                                    <i class="bi {{ historico.acao_icon }} me-1"></i>
+                                                    {{ historico.get_acao_display }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-secondary bg-opacity-10 text-secondary">
+                                                    <i class="bi {{ historico.tipo_objeto_icon }} me-1"></i>
+                                                    {{ historico.get_tipo_objeto_display }}
+                                                </span>
+                                            </td>
+                                            <td>{{ historico.descricao|truncatechars:50 }}</td>
+                                        </tr>
+                                    {% empty %}
+                                        <tr>
+                                            <td colspan="4" class="text-center text-muted py-4">
+                                                <i class="bi bi-inbox me-2"></i>
+                                                Nenhuma atividade registrada ainda.
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
 
-                <!-- Histórico do Usuário -->
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <div class="card settings-card">
-                            <div class="card-header">
-                                <h5 class="mb-0">
-                                    <i class="bi bi-clock-history"></i>Seu Histórico de Atividades
-                                </h5>
-                            </div>
-                            <div class="card-body p-0">
-                                {% if stats.page_obj %}
-                                    <div class="table-responsive">
-                                        <table class="table table-hover mb-0">
-                                            <thead class="table-light">
-                                                <tr>
-                                                    <th><i class="bi bi-calendar3 me-1"></i>Data/Hora</th>
-                                                    <th><i class="bi bi-lightning me-1"></i>Ação</th>
-                                                    <th><i class="bi bi-tag me-1"></i>Objeto</th>
-                                                    <th><i class="bi bi-text-left me-1"></i>Descrição</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {% for historico in stats.page_obj %}
-                                                    <tr>
-                                                        <td class="text-muted small">
-                                                            <i class="bi bi-clock me-1"></i>
-                                                            {{ historico.data_hora|date:"d/m/Y H:i" }}
-                                                        </td>
-                                                        <td>
-                                                            <span class="badge {{ historico.acao_color }}">
-                                                                <i class="bi {{ historico.acao_icon }} me-1"></i>
-                                                                {{ historico.get_acao_display }}
-                                                            </span>
-                                                        </td>
-                                                        <td>
-                                                            <span class="badge bg-secondary bg-opacity-10 text-secondary">
-                                                                <i class="bi {{ historico.tipo_objeto_icon }} me-1"></i>
-                                                                {{ historico.get_tipo_objeto_display }}
-                                                            </span>
-                                                        </td>
-                                                        <td>{{ historico.descricao|truncatechars:50 }}</td>
-                                                    </tr>
-                                                {% empty %}
-                                                    <tr>
-                                                        <td colspan="4" class="text-center text-muted py-4">
-                                                            <i class="bi bi-inbox me-2"></i>
-                                                            Nenhuma atividade registrada ainda.
-                                                        </td>
-                                                    </tr>
-                                                {% endfor %}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    
-                                    <!-- Paginação -->
-                                    {% if stats.page_obj.has_other_pages %}
-                                        <nav aria-label="Paginação do histórico">
-                                            <ul class="pagination justify-content-center">
-                                                {% if stats.page_obj.has_previous %}
-                                                    <li class="page-item">
-                                                        <a class="page-link" href="?page=1">Primeira</a>
-                                                    </li>
-                                                    <li class="page-item">
-                                                        <a class="page-link" href="?page={{ stats.page_obj.previous_page_number }}">Anterior</a>
-                                                    </li>
-                                                {% endif %}
-                                                
-                                                <li class="page-item active">
-                                                    <span class="page-link">
-                                                        Página {{ stats.page_obj.number }} de {{ stats.page_obj.paginator.num_pages }}
-                                                    </span>
-                                                </li>
-                                                
-                                                {% if stats.page_obj.has_next %}
-                                                    <li class="page-item">
-                                                        <a class="page-link" href="?page={{ stats.page_obj.next_page_number }}">Próxima</a>
-                                                    </li>
-                                                    <li class="page-item">
-                                                        <a class="page-link" href="?page={{ stats.page_obj.paginator.num_pages }}">Última</a>
-                                                    </li>
-                                                {% endif %}
-                                            </ul>
-                                        </nav>
+                        {% if stats.page_obj.has_other_pages %}
+                            <nav aria-label="Paginação do histórico">
+                                <ul class="pagination justify-content-center my-3">
+                                    {% if stats.page_obj.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page=1">Primeira</a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ stats.page_obj.previous_page_number }}">Anterior</a>
+                                        </li>
                                     {% endif %}
-                                {% else %}
-                                    <p class="text-muted text-center">
-                                        <i class="bi bi-inbox me-2"></i>
-                                        Nenhuma atividade registrada ainda.
-                                    </p>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Informações da Conta -->
-                <div class="card settings-card">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="bi bi-info-circle"></i>Informações da Conta
-                        </h5>
-                    </div>
-                    <div class="card-body p-4">
-                        <div class="account-info">
-                            <div class="account-info-item">
-                                <strong><i class="bi bi-person me-1"></i>Usuário</strong>
-                                <span>{{ request.user.username }}</span>
-                            </div>
-                            <div class="account-info-item">
-                                <strong><i class="bi bi-person-badge me-1"></i>Nome Completo</strong>
-                                <span>{{ profile.display_name }}</span>
-                            </div>
-                            <div class="account-info-item">
-                                <strong><i class="bi bi-envelope me-1"></i>Email</strong>
-                                <span>{{ request.user.email|default:"Não informado" }}</span>
-                            </div>
-                            <div class="account-info-item">
-                                <strong><i class="bi bi-clock me-1"></i>Último Login</strong>
-                                <span>{{ request.user.last_login|date:"d/m/Y H:i"|default:"Nunca" }}</span>
-                            </div>
-                            <div class="account-info-item">
-                                <strong><i class="bi bi-calendar-plus me-1"></i>Membro desde</strong>
-                                <span>{{ request.user.date_joined|date:"d/m/Y" }}</span>
-                            </div>
-                            <div class="account-info-item">
-                                <strong><i class="bi bi-calendar-check me-1"></i>Perfil criado</strong>
-                                <span>{{ profile.created_at|date:"d/m/Y H:i" }}</span>
-                            </div>
+                                    <li class="page-item active">
+                                        <span class="page-link">
+                                            Página {{ stats.page_obj.number }} de {{ stats.page_obj.paginator.num_pages }}
+                                        </span>
+                                    </li>
+
+                                    {% if stats.page_obj.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ stats.page_obj.next_page_number }}">Próxima</a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ stats.page_obj.paginator.num_pages }}">Última</a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        {% endif %}
+                    {% else %}
+                        <p class="text-muted text-center py-3">
+                            <i class="bi bi-inbox me-2"></i>
+                            Nenhuma atividade registrada ainda.
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Informações da Conta -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Informações da Conta</h5>
+                </div>
+                <div class="card-body">
+                    <div class="account-info-grid">
+                        <div class="account-info-item">
+                            <strong><i class="bi bi-person me-1"></i>Usuário</strong>
+                            <span>{{ request.user.username }}</span>
+                        </div>
+                        <div class="account-info-item">
+                            <strong><i class="bi bi-person-badge me-1"></i>Nome Completo</strong>
+                            <span>{{ profile.display_name }}</span>
+                        </div>
+                        <div class="account-info-item">
+                            <strong><i class="bi bi-envelope me-1"></i>Email</strong>
+                            <span>{{ request.user.email|default:"Não informado" }}</span>
+                        </div>
+                        <div class="account-info-item">
+                            <strong><i class="bi bi-clock me-1"></i>Último Login</strong>
+                            <span>{{ request.user.last_login|date:"d/m/Y H:i"|default:"Nunca" }}</span>
+                        </div>
+                        <div class="account-info-item">
+                            <strong><i class="bi bi-calendar-plus me-1"></i>Membro desde</strong>
+                            <span>{{ request.user.date_joined|date:"d/m/Y" }}</span>
+                        </div>
+                        <div class="account-info-item">
+                            <strong><i class="bi bi-calendar-check me-1"></i>Perfil criado</strong>
+                            <span>{{ profile.created_at|date:"d/m/Y H:i" }}</span>
                         </div>
                     </div>
                 </div>
@@ -839,12 +564,11 @@
                     if (currentPhoto.tagName && currentPhoto.tagName.toLowerCase() === 'img') {
                         currentPhoto.src = e.target.result;
                     } else {
-                        // Substitui placeholder por uma imagem circular
                         const img = document.createElement('img');
                         img.id = 'current-photo';
                         img.alt = 'Foto do perfil';
                         img.src = e.target.result;
-                        img.className = 'profile-photo rounded-circle';
+                        img.className = 'profile-photo';
                         currentPhoto.parentNode.replaceChild(img, currentPhoto);
                     }
                 }
@@ -853,14 +577,11 @@
         }
     });
 
-    // Função para remover foto
     function removePhoto() {
         if (confirm('Tem certeza que deseja remover a foto do perfil?')) {
-            // Criar um input file vazio para "limpar" a foto
             const photoInput = document.getElementById('{{ profile_form.photo.id_for_label }}');
             photoInput.value = '';
-            
-            // Marcar campo hidden para remoção
+
             let removeInput = document.getElementById('id_remove_photo');
             if (!removeInput) {
                 removeInput = document.createElement('input');
@@ -872,19 +593,16 @@
             } else {
                 removeInput.value = 'true';
             }
-            
-            // Remover a foto atual e mostrar placeholder
+
             const currentPhoto = document.getElementById('current-photo');
             if (currentPhoto) {
                 const placeholder = document.createElement('div');
-                placeholder.className = 'profile-photo-placeholder';
+                placeholder.className = 'profile-photo-placeholder mx-auto';
                 placeholder.innerHTML = '<i class="bi bi-person-fill" style="font-size: 3rem;"></i>';
                 placeholder.id = 'current-photo';
-                
                 currentPhoto.parentNode.replaceChild(placeholder, currentPhoto);
             }
-            
-            // Esconder o botão de remover
+
             const removeBtn = document.querySelector('button[onclick="removePhoto()"]');
             if (removeBtn) {
                 removeBtn.style.display = 'none';
@@ -892,7 +610,6 @@
         }
     }
 
-    // Gráfico de Produtividade com filtro (dia/semana/mês/ano)
     document.addEventListener('DOMContentLoaded', function() {
         const canvas = document.getElementById('productivityChart');
         if (!canvas) return;
@@ -907,8 +624,8 @@
                     datasets: [{
                         label: 'Cadastros',
                         data: data,
-                        borderColor: 'rgb(75, 192, 192)',
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
                         tension: 0.1,
                         fill: true
                     }]
@@ -921,12 +638,10 @@
                 }
             });
         }
-        // Inicial com semana (dados do template)
         const initialData = {{ stats.productivity_data|default:"[0,0,0,0,0,0,0]"|safe }};
         const initialLabels = ['{{ stats.last_7_days.0|default:"Dom" }}', '{{ stats.last_7_days.1|default:"Seg" }}', '{{ stats.last_7_days.2|default:"Ter" }}', '{{ stats.last_7_days.3|default:"Qua" }}', '{{ stats.last_7_days.4|default:"Qui" }}', '{{ stats.last_7_days.5|default:"Sex" }}', '{{ stats.last_7_days.6|default:"Sáb" }}'];
         renderChart(initialLabels, initialData);
 
-        // Troca de período
         document.querySelectorAll('.prod-range').forEach(btn => {
             btn.addEventListener('click', async function() {
                 document.querySelectorAll('.prod-range').forEach(b => b.classList.remove('active'));

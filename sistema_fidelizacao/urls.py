@@ -91,6 +91,7 @@ urlpatterns = [
     path("historico/", include("historico.urls", namespace="historico")),
     path("health/", health_check_view),
     path("sobre/", views.sobre, name="sobre"),
+    path("apresentacao/", views.apresentacao_pdf, name="apresentacao_pdf"),
     # path("chat/", include("chat.urls")),  # Chat desabilitado temporariamente
     # security: apenas em produção e se o app existir
     # Página de aniversariantes

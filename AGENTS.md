@@ -64,6 +64,7 @@ ENVIRONMENT=development  # set 'production' to load security app
 - `UserActivityMiddleware` tracks session activity; idle >30 min marks session ended
 - Session max age: 8 hours
 - Login required on most views (`@login_required`)
+- **Forced password change**: campo `force_password_change` no Profile. Admin tem checkbox "Forçar troca de senha no próximo login". Middleware redireciona para `user_profiles:force_password_change` se True. View usa `SetPasswordForm` (não pede senha antiga). URL: `/user-profiles/force-password-change/`
 
 ## Lint/format
 - Ruff (select: E,F,W,I,UP,B,C4,RET,SIM,N,RUF; ignore E203 for Black compat)
