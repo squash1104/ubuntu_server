@@ -223,6 +223,13 @@ def dashboard(request):
         round(meta_superada / total_com_meta * 100, 1) if total_com_meta else 0
     )
 
+    # Meta global: total de apoiadores * 30 convidados cada
+    meta_global = total_colaboradores * meta
+    progresso_meta_global = (
+        round((total_convidados / meta_global) * 100, 1) if meta_global > 0 else 0
+    )
+    faltam_meta_global = max(meta_global - total_convidados, 0)
+
     # Calcula nosso top 10 para grafico
     top_15_colaboradores = (
         Colaborador.objects.select_related("tipo")
@@ -767,6 +774,9 @@ def dashboard(request):
         "pct_abaixo": pct_abaixo,
         "pct_na": pct_na,
         "pct_superada": pct_superada,
+        "meta_global": meta_global,
+        "progresso_meta_global": progresso_meta_global,
+        "faltam_meta_global": faltam_meta_global,
         "top_15_colaboradores": top_15_colaboradores,
         "labels_cidades_colab": json.dumps(labels_cidades_colab),
         "data_cidades_colab": json.dumps(data_cidades_colab),

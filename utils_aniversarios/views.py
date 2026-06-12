@@ -235,35 +235,8 @@ def aniversariantes_view(request):
                 )
             )
 
-        # Separar meses: circulares (mes_atual-Dez) e anteriores (Jan-mes_atual-1)
-        lista_meses_circular = OrderedDict()
+        lista_meses_circular = lista_todos_meses
         lista_anteriores = OrderedDict()
-        mes_atual = hoje.month
-
-        for mes_num in sorted(lista_todos_meses.keys()):
-            if mes_num >= mes_atual:
-                lista_meses_circular[mes_num] = lista_todos_meses[mes_num]
-            else:
-                lista_anteriores[mes_num] = lista_todos_meses[mes_num]
-
-        # Dividir mês atual: futuros/hoje para circular,
-        # passados para anteriores
-        if mes_atual in lista_meses_circular:
-            datas_dict = lista_meses_circular[mes_atual]
-            datas_futuras = OrderedDict()
-            datas_passadas = OrderedDict()
-            for data_str, pessoas in datas_dict.items():
-                day = int(data_str.split("/")[0])
-                if day >= hoje.day:
-                    datas_futuras[data_str] = pessoas
-                else:
-                    datas_passadas[data_str] = pessoas
-            if datas_futuras:
-                lista_meses_circular[mes_atual] = datas_futuras
-            else:
-                del lista_meses_circular[mes_atual]
-            if datas_passadas:
-                lista_anteriores[mes_atual] = datas_passadas
 
     context = {
         "hoje_str": hoje.strftime("%d/%m"),

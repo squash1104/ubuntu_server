@@ -273,66 +273,6 @@
 					</table>
 				</div>
 			{% endfor %}
-
-			{% if lista_anteriores %}
-			<hr class="my-4">
-			<h5>Aniversários anteriores</h5>
-			{% for mes_num, datas_dict in lista_anteriores.items %}
-				<h5 class="mt-2">
-					{% if mes_num == 1 %}Janeiro{% elif mes_num == 2 %}Fevereiro{% elif mes_num == 3 %}Março{% elif mes_num == 4 %}Abril{% elif mes_num == 5 %}Maio{% elif mes_num == 6 %}Junho{% elif mes_num == 7 %}Julho{% elif mes_num == 8 %}Agosto{% elif mes_num == 9 %}Setembro{% elif mes_num == 10 %}Outubro{% elif mes_num == 11 %}Novembro{% elif mes_num == 12 %}Dezembro{% endif %}
-				</h5>
-				<div class="table-responsive mb-4">
-					<table class="table table-striped table-hover">
-						<thead class="table-light">
-							<tr>
-								<th width="50"></th>
-								<th>Data</th>
-								<th>Nome</th>
-								<th>Tipo</th>
-								{% if tipo == 'todos' or tipo == 'convidados' %}
-									<th>Convidado por</th>
-								{% endif %}
-								<th>Idade</th>
-								<th>Telefone</th>
-								<th>Cidade</th>
-								<th>Bairro</th>
-							</tr>
-						</thead>
-						<tbody>
-							{% for data_str, pessoas in datas_dict.items %}
-								{% for p in pessoas %}
-								<tr>
-									<td>
-										<input type="checkbox" class="aniversariante-checkbox" data-section="mes"
-										   data-nome="{{ p.nome }}" data-telefone="{{ p.telefone }}"
-										   data-tipo="{{ p.tipo_registro }}" data-id="{{ forloop.counter0 }}"
-										   onchange="updateEnvioButton()">
-									</td>
-								<td class="text-nowrap"><strong>{{ data_str }}</strong></td>
-								<td>{{ p.nome }}</td>
-								<td>
-									{% if p.tipo_registro == 'colaborador' %}
-										<span class="badge bg-primary">Colaborador</span>
-										{% if p.tipo__nome %}<span class="badge bg-{{ p.tipo__cor }}">{{ p.tipo__nome }}</span>{% endif %}
-									{% else %}
-										<span class="badge bg-success">Convidado</span>
-									{% endif %}
-								</td>
-								{% if tipo == 'todos' or tipo == 'convidados' %}
-									<td>{% if p.tipo_registro == 'convidado' %}{{ p.colaborador_nome|default:'-' }}{% if p.colaborador__tipo__nome %} <span class="badge bg-{{ p.colaborador__tipo__cor }}">{{ p.colaborador__tipo__nome }}</span>{% endif %}{% else %}-{% endif %}</td>
-								{% endif %}
-								<td>{{ p.idade|default:'-' }}</td>
-								<td>{{ p.telefone|default:'-' }}</td>
-								<td>{{ p.cidade__nome_cidade|default:'-' }}</td>
-								<td>{{ p.bairro__nome_bairro|default:'-' }}</td>
-							</tr>
-							{% endfor %}
-						{% endfor %}
-						</tbody>
-					</table>
-				</div>
-			{% endfor %}
-			{% endif %}
 		{% endif %}
 	</div>
 </div>

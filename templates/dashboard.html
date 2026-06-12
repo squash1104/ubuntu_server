@@ -79,6 +79,24 @@
         #topBairrosCapitalChart,
         #topCidadesInteriorChart {
             height: 400px !important;
+            min-height: 500px;
+        }
+
+        /* Card de grupos - altura via CSS para responsividade */
+        .grupos-card-body {
+            height: 350px;
+        }
+
+        /* Mapa de calor - altura via CSS para responsividade */
+        #heatmap {
+            height: 450px;
+            border-radius: 8px;
+        }
+
+        /* Ranking table - altura responsiva */
+        .ranking-scroll {
+            max-height: 500px;
+            overflow-y: auto;
         }
 
         /* Responsive adjustments */
@@ -94,6 +112,47 @@
             #topBairrosCapitalChart,
             #topCidadesInteriorChart {
                 height: 350px !important;
+                min-height: 350px;
+            }
+            .grupos-card-body {
+                height: 300px;
+            }
+            #heatmap {
+                height: 350px;
+            }
+            .ranking-scroll {
+                max-height: 400px;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            .card-body {
+                min-height: 250px;
+            }
+            #colaboradoresPorCidadeChart,
+            #convidadosPorCidadeChart,
+            #mesorregioesChart {
+                height: 250px !important;
+            }
+            #topBairrosCapitalChart,
+            #topCidadesInteriorChart {
+                height: 300px !important;
+                min-height: 300px;
+            }
+            #metasChart {
+                max-height: 180px !important;
+            }
+            .grupos-card-body {
+                height: 280px;
+            }
+            #heatmap {
+                height: 300px;
+            }
+            .ranking-scroll {
+                max-height: 350px;
+            }
+            .chart-container {
+                min-height: 200px;
             }
         }
 
@@ -129,6 +188,29 @@
 
         @media (max-width: 768px) {
             .header { flex-direction: column; gap: 15px; }
+            .action-btn {
+                padding: 18px;
+                min-height: 130px;
+            }
+            .action-btn span {
+                font-size: 2em;
+            }
+            .action-btn p {
+                font-size: 0.95em;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            .action-btn {
+                padding: 12px;
+                min-height: 100px;
+            }
+            .action-btn span {
+                font-size: 1.6em;
+            }
+            .action-btn p {
+                font-size: 0.85em;
+            }
         }
 
         .badge.bg-purple {
@@ -182,6 +264,23 @@
     .stat-card .kpi-subtitle {
         font-size: 0.65rem;
         white-space: nowrap;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .stat-card {
+        padding: 0.5rem;
+    }
+    .stat-card h3 {
+        font-size: 0.6rem;
+        margin-bottom: 1px;
+        letter-spacing: 0;
+    }
+    .stat-card p {
+        font-size: 1.1em;
+    }
+    .stat-card .kpi-subtitle {
+        font-size: 0.55rem;
     }
 }
 
@@ -308,7 +407,7 @@
                     </div>
                     <div class="col-lg-6">
                         <div class="card h-100">
-                            <div class="card-body py-2 px-3 d-flex flex-column" style="height: 350px;">
+                            <div class="card-body py-2 px-3 d-flex flex-column grupos-card-body">
                                 <div class="d-flex justify-content-between align-items-center mb-2 flex-shrink-0">
                                     <span style="color: var(--bs-primary); font-size: 1rem; font-weight: 600; letter-spacing: 0.5px;">Apoiadores e Convidados por Grupo</span>
                                 </div>
@@ -368,6 +467,44 @@
             </div>
         </div>
 
+        <!-- Meta Global -->
+        <div class="row g-4 mb-4">
+            <div class="col-12">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title mb-1">🎯 Meta Global</h5>
+                        <p class="text-muted small mb-3">Meta = {{ total_colaboradores }} apoiadores × 30 convidados cada = <strong>{{ meta_global }}</strong> convidados</p>
+                        <div class="chart-container" style="min-height: 80px; height: 80px;">
+                            <canvas id="metaGlobalChart"></canvas>
+                        </div>
+                        <div class="row mt-3 text-center">
+                            <div class="col-4">
+                                <div class="fw-bold fs-4 text-primary">{{ total_convidados }}</div>
+                                <small class="text-muted">Convidados</small>
+                            </div>
+                            <div class="col-4">
+                                <div class="fw-bold fs-4 text-success">{{ progresso_meta_global }}%</div>
+                                <small class="text-muted">Concluído</small>
+                            </div>
+                            <div class="col-4">
+                                <div class="fw-bold fs-4 text-warning">{{ faltam_meta_global }}</div>
+                                <small class="text-muted">Faltam</small>
+                            </div>
+                        </div>
+                        {% if faltam_meta_global > 0 %}
+                        <div class="text-center mt-2">
+                            <small class="text-muted">Faltam <strong>{{ faltam_meta_global }}</strong> convidados para atingir a meta de <strong>{{ meta_global }}</strong> convidados</small>
+                        </div>
+                        {% else %}
+                        <div class="text-center mt-2">
+                            <small class="text-success fw-bold">✅ Meta atingida! Total de {{ total_convidados }} convidados (meta: {{ meta_global }})</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <hr class="my-4">
         <h3 class="mb-3">Análise Geográfica</h3>
 
@@ -376,7 +513,7 @@
                 <div class="card h-100">
                     <div class="card-body">
                         <h5 class="card-title mb-3">🔥 Mapa de Concentração</h5>
-                        <div id="heatmap" style="height: 450px; border-radius: 8px;"></div>
+                        <div id="heatmap"></div>
                     </div>
                 </div>
             </div>
@@ -418,9 +555,6 @@
             </div>
         </div>
 
-        <style>
-            #topBairrosCapitalChart, #topCidadesInteriorChart { min-height: 500px; }
-        </style>
         <div class="row g-4 mb-4">
             <div class="col-lg-6">
                 <div class="card h-100">
@@ -502,7 +636,7 @@
                 <div class="card h-100">
                     <div class="card-body">
                         <h5 class="card-title mb-4">📊 Ranking Completo</h5>
-                        <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                        <div class="table-responsive ranking-scroll">
                             <table class="table table-hover mb-0">
                                 <thead class="table-dark sticky-top">
                                     <tr>
@@ -772,6 +906,97 @@ document.addEventListener('DOMContentLoaded', function() {
                         formatter: (value, ctx) => {
                             const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
                             return total > 0 ? (value / total * 100).toFixed(1) + '%' : '0%';
+                        }
+                    }
+                }
+            },
+            plugins: [ChartDataLabels]
+        });
+    }
+
+    // GRÁFICO 1.5: META GLOBAL (barra horizontal)
+    const ctxMetaGlobal = document.getElementById('metaGlobalChart');
+    if (ctxMetaGlobal) {
+        const convidados = {{ total_convidados }};
+        const metaTotal = {{ meta_global }};
+        const faltam = Math.max(metaTotal - convidados, 0);
+        new Chart(ctxMetaGlobal.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: [''],
+                datasets: [
+                    {
+                        label: 'Convidados',
+                        data: [convidados],
+                        backgroundColor: '#10b981',
+                        borderColor: '#059669',
+                        borderWidth: 1,
+                        barPercentage: 0.6,
+                    },
+                    {
+                        label: 'Faltam',
+                        data: [faltam],
+                        backgroundColor: '#e5e7eb',
+                        borderColor: '#d1d5db',
+                        borderWidth: 1,
+                        barPercentage: 0.6,
+                    }
+                ]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        stacked: true,
+                        max: metaTotal,
+                        grid: { display: false },
+                        ticks: { display: false }
+                    },
+                    y: {
+                        stacked: true,
+                        grid: { display: false },
+                        ticks: { display: false }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                return ctx.dataset.label + ': ' + ctx.parsed.x;
+                            }
+                        }
+                    },
+                    datalabels: {
+                        display: function(ctx) {
+                            return ctx.datasetIndex === 0 || (ctx.datasetIndex === 1 && faltam > 0);
+                        },
+                        color: function(ctx) {
+                            return ctx.datasetIndex === 0 ? '#fff' : '#374151';
+                        },
+                        font: function(ctx) {
+                            return {
+                                weight: 'bold',
+                                size: ctx.datasetIndex === 0 ? 13 : 11
+                            };
+                        },
+                        anchor: function(ctx) {
+                            return ctx.datasetIndex === 0 ? 'center' : 'end';
+                        },
+                        align: function(ctx) {
+                            return ctx.datasetIndex === 0 ? 'center' : 'end';
+                        },
+                        offset: function(ctx) {
+                            return ctx.datasetIndex === 0 ? 0 : 4;
+                        },
+                        formatter: function(value, ctx) {
+                            if (ctx.datasetIndex === 0) {
+                                var pct = metaTotal > 0 ? (convidados / metaTotal * 100).toFixed(1) : 0;
+                                return value + ' (' + pct + '%)';
+                            }
+                            return metaTotal;
                         }
                     }
                 }
