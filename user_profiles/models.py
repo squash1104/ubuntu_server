@@ -1,3 +1,4 @@
+import os
 import typing
 
 from django.contrib.auth.models import User
@@ -47,29 +48,37 @@ class Profile(models.Model):
         return f"Perfil de {self.user.username}"
 
     def save(self, *args, **kwargs):
+        photo_changed = bool(self.pk and self.photo)
+        if photo_changed:
+            try:
+                old = Profile.objects.get(pk=self.pk)
+                photo_changed = old.photo != self.photo
+            except Profile.DoesNotExist:
+                photo_changed = True
+
         super().save(*args, **kwargs)
 
-        # Redimensionar foto se existir
-        if self.photo:
+        if self.photo and photo_changed:
             self.resize_photo()
 
     def resize_photo(self):
         """Redimensiona a foto para 200x200 pixels"""
-        if self.photo:
-            try:
-                img = Image.open(self.photo.path)
+        if not self.photo:
+            return
+        try:
+            img = Image.open(self.photo.path)
 
-                # Converter para RGB se necessário
-                if img.mode in ("RGBA", "LA", "P"):
-                    img = img.convert("RGB")
+            if img.mode in ("RGBA", "LA", "P"):
+                img = img.convert("RGB")
 
-                # Redimensionar mantendo proporção
-                img.thumbnail((200, 200), Image.Resampling.LANCZOS)
+            img.thumbnail((200, 200), Image.Resampling.LANCZOS)
 
-                # Salvar a imagem redimensionada
-                img.save(self.photo.path, "JPEG", quality=85)
-            except Exception as e:
-                print(f"Erro ao redimensionar foto: {e}")
+            # Determine format from original extension
+            ext = os.path.splitext(self.photo.path)[1].lower()
+            fmt = "JPEG" if ext in (".jpg", ".jpeg") else None
+            img.save(self.photo.path, fmt, quality=85)
+        except Exception as e:
+            print(f"Erro ao redimensionar foto: {e}")
 
     @property
     def display_name(self):

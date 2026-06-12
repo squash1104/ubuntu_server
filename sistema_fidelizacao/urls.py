@@ -115,10 +115,9 @@ try:
 except Exception:
     pass
 
-# Adicionar URLs para arquivos estáticos
-if settings.DEBUG:
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Adicionar URLs para arquivos estáticos e mídia
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 # Você também pode adicionar o favicon.ico diretamente aqui para facilitar
 # from django.views.generic.base import RedirectView
 # urlpatterns += [
