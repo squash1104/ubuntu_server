@@ -365,6 +365,19 @@
     #tabela-colaboradores tbody tr {
         border-bottom: 1px solid #000;
     }
+
+    /* Label acima do campo no mobile */
+    @media (max-width: 767.98px) {
+        .controle-mobile-stack {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            width: 100%;
+        }
+        .controle-mobile-stack label {
+            margin-right: 0 !important;
+            margin-bottom: 0.25rem !important;
+        }
+    }
     </style>
 {% endblock %}
 
@@ -388,7 +401,7 @@
 
                     <!-- Controles de Paginação -->
                     <div class="d-flex justify-content-between align-items-center mb-3 mt-3 flex-wrap gap-2">
-                        <div class="d-flex align-items-center">
+                        <div class="d-flex align-items-center controle-mobile-stack">
                             <label for="per-page-select" class="form-label me-2 mb-0">Registros por página:</label>
                             <select id="per-page-select" class="form-select form-select-sm" style="width: auto;" onchange="changePerPage(this.value)">
                                 {% for option in per_page_options %}
@@ -397,7 +410,7 @@
                             </select>
                         </div>
                         <div class="d-flex align-items-center gap-3 flex-wrap justify-content-center controles-mobile">
-                            <div class="d-flex align-items-center">
+                            <div class="d-flex align-items-center controle-mobile-stack">
                                 <label for="regiao-select" class="form-label me-2 mb-0">Região:</label>
                                 <select id="regiao-select" class="form-select form-select-sm" style="width: auto;" onchange="changeRegiao(this.value)">
                                     <option value="todos" {% if regiao == 'todos' %}selected{% endif %}>Todas</option>
@@ -405,7 +418,7 @@
                                     <option value="interior" {% if regiao == 'interior' %}selected{% endif %}>Interior</option>
                                 </select>
                             </div>
-                            <div class="d-flex align-items-center">
+                            <div class="d-flex align-items-center controle-mobile-stack">
                                 <label for="tipo-select" class="form-label me-2 mb-0">Grupo de trabalho:</label>
                                 <select id="tipo-select" class="form-select form-select-sm" style="width: auto;" onchange="changeTipo(this.value)">
                                     <option value="todos" {% if not tipo or tipo == 'todos' %}selected{% endif %}>Todos</option>
@@ -414,7 +427,7 @@
                                     {% endfor %}
                                 </select>
                             </div>
-                            <div class="d-flex align-items-center">
+                            <div class="d-flex align-items-center controle-mobile-stack">
                                 <label class="form-label me-2 mb-0" style="font-size:0.85rem;">Destacar:</label>
                                 <div class="btn-group btn-group-sm" role="group">
                                     <input type="radio" class="btn-check" name="destaque" id="destaque-meta" value="meta" checked>
