@@ -6,6 +6,11 @@ app_name = "colaboradores"
 
 urlpatterns = [
     path("", views.lista_colaboradores, name="lista_colaboradores"),
+    path(
+        "relatorio-impressao/",
+        views.relatorio_colaboradores_print,
+        name="relatorio_colaboradores_print",
+    ),
     path("adicionar/", views.adicionar_colaborador, name="adicionar_colaborador"),
     path("editar/<int:pk>/", views.editar_colaborador, name="editar_colaborador"),
     path(

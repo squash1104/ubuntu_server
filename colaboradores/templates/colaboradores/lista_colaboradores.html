@@ -404,6 +404,8 @@
     @media (max-width: 767.98px) {
         .legenda-cores { grid-column: 1 / -1; }
     }
+
+    }
     </style>
 {% endblock %}
 
@@ -412,7 +414,10 @@
     <div class="card-body">
         <div class="d-flex align-items-center mb-4">
             <h1 class="card-title h3 mb-0">Apoiadores</h1>
-            <a href="{% url 'colaboradores:adicionar_colaborador' %}" class="btn btn-primary ms-auto">
+            <a href="{% url 'colaboradores:relatorio_colaboradores_print' %}?q={{ termo_busca }}&regiao={{ regiao }}&tipo={{ tipo }}&ordenar_por={{ ordenar_por }}&direcao={{ direcao }}&destaque=meta" class="btn btn-info ms-auto" target="_blank" onclick="var d=document.querySelector('input[name=destaque]:checked');this.href=this.href.split('&destaque')[0]+'&destaque='+(d?d.value:'meta')">
+                <i class="bi bi-printer me-1"></i>Imprimir
+            </a>
+            <a href="{% url 'colaboradores:adicionar_colaborador' %}" class="btn btn-primary ms-2">
                 <i class="fas fa-plus"></i> Adicionar 
             </a>
         </div>
@@ -517,7 +522,7 @@
                                     <th><a href="?ordenar_por=bairro__nome_bairro&direcao={% if ordenar_por == 'bairro__nome_bairro' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if per_page != 20 %}&per_page={{ per_page }}{% endif %}{% if termo_busca %}&q={{ termo_busca }}{% endif %}{% if regiao and regiao != 'todos' %}&regiao={{ regiao }}{% endif %}{% if tipo and tipo != 'todos' %}&tipo={{ tipo }}{% endif %}">Bairro {% if ordenar_por == 'bairro__nome_bairro' %}<i class="bi {% if direcao == 'asc' %}bi-caret-up-fill{% else %}bi-caret-down-fill{% endif %}"></i>{% endif %}</a></th>
                                     <th class="text-center"><a href="?ordenar_por=tipo&direcao={% if ordenar_por == 'tipo' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if per_page != 20 %}&per_page={{ per_page }}{% endif %}{% if termo_busca %}&q={{ termo_busca }}{% endif %}{% if regiao and regiao != 'todos' %}&regiao={{ regiao }}{% endif %}{% if tipo and tipo != 'todos' %}&tipo={{ tipo }}{% endif %}">Grupo de trabalho {% if ordenar_por == 'tipo' %}<i class="bi {% if direcao == 'asc' %}bi-caret-up-fill{% else %}bi-caret-down-fill{% endif %}"></i>{% endif %}</a></th>
                                     <th class="text-center px-4"><a href="?ordenar_por=num_convidados&direcao={% if ordenar_por == 'num_convidados' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if per_page != 20 %}&per_page={{ per_page }}{% endif %}{% if termo_busca %}&q={{ termo_busca }}{% endif %}{% if regiao and regiao != 'todos' %}&regiao={{ regiao }}{% endif %}{% if tipo and tipo != 'todos' %}&tipo={{ tipo }}{% endif %}">Convidados {% if ordenar_por == 'num_convidados' %}<i class="bi {% if direcao == 'asc' %}bi-caret-up-fill{% else %}bi-caret-down-fill{% endif %}"></i>{% endif %}</a></th>
-                                    <th class="text-center">Ações</th>
+                                    <th class="text-center coluna-acoes">Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -533,7 +538,7 @@
 <span class="badge bg-{{ colaborador.tipo.cor }}">{{ colaborador.tipo.nome }}</span>
 </td>
                                             <td class="text-center fw-bold px-4">{{ num_convidados }}</td>
-                                            <td class="text-center">
+                                            <td class="text-center coluna-acoes">
                                                 <div class="d-flex justify-content-center gap-2">
                                                     <a href="{% url 'convidados:colaborador_convidados' colaborador.id %}" class="btn btn-sm btn-info" data-bs-toggle="tooltip" title="Ver Convidados">
                                                         <i class="bi bi-people-fill"></i>

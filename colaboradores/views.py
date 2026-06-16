@@ -28,56 +28,37 @@ from .utils import (
 )
 
 
-@login_required
-def lista_colaboradores(request):
-    # Parâmetros de busca e ordenação
+def _filtrar_colaboradores(request):
+    """Compartilhado entre lista (paginada) e relatório (completo)."""
     termo_busca = request.GET.get("q", "")
     ordenar_por_param = request.GET.get("ordenar_por", "num_convidados")
     direcao = request.GET.get("direcao", "desc")
-    per_page = request.GET.get("per_page", "20")
-    regiao = request.GET.get("regiao", "todos")  # Filtro por região (capital/interior)
-    tipo = request.GET.get("tipo", "todos")  # Filtro por tipo (colaborador/acs_ace)
+    regiao = request.GET.get("regiao", "todos")
+    tipo = request.GET.get("tipo", "todos")
 
-    # Validar per_page
-    valid_per_page_options = [20, 50, 100, 200]
-    try:
-        per_page = int(per_page)
-        if per_page not in valid_per_page_options:
-            per_page = 20
-    except (ValueError, TypeError):
-        per_page = 20
-
-    # Ordenação
     ordenar_por_query = ordenar_por_param
     if direcao == "desc":
         ordenar_por_query = f"-{ordenar_por_param}"
 
-    # Query base
     colaboradores_qs = Colaborador.objects.select_related("cidade", "bairro")
     colaboradores_qs = colaboradores_qs.filter(tipo__in=tipos_do_usuario(request.user))
 
-    # Filtro por região (Capital/Interior)
     capitais = ["Cuiabá", "Várzea Grande"]
     if regiao == "capital":
         colaboradores_qs = colaboradores_qs.filter(cidade__nome_cidade__in=capitais)
     elif regiao == "interior":
-        # Interior inclui demais cidades e registros sem cidade
         colaboradores_qs = colaboradores_qs.exclude(cidade__nome_cidade__in=capitais)
 
-    # Filtro por tipo (usando ForeignKey)
     if tipo and tipo != "todos":
         try:
-            # Tentar converter para int (ID do tipo)
             tipo_id = int(tipo)
             colaboradores_qs = colaboradores_qs.filter(tipo_id=tipo_id)
         except ValueError:
-            # Se não for ID, tentar filtrar por nome (para compatibilidade)
             if tipo == "colaborador":
                 colaboradores_qs = colaboradores_qs.filter(tipo__nome="Colaborador")
             elif tipo == "acs_ace":
                 colaboradores_qs = colaboradores_qs.filter(tipo__nome="ACS/ACE")
 
-    # Filtro de busca
     if termo_busca:
         colaboradores_qs = colaboradores_qs.filter(
             Q(nome__icontains=termo_busca)
@@ -86,14 +67,12 @@ def lista_colaboradores(request):
             | Q(bairro__nome_bairro__icontains=termo_busca)
         )
 
-    # Aplicar ordenação
     colaboradores_final = (
         colaboradores_qs.select_related("cidade")
         .annotate(num_convidados=Count("convidados", distinct=True))
         .order_by(ordenar_por_query)
     )
 
-    # Totais do conjunto filtrado (não apenas da página) e da página atual
     total_colaboradores_filtrados = colaboradores_final.count()
     soma_convidados_filtrados = colaboradores_final.aggregate(
         total=Sum("num_convidados")
@@ -108,8 +87,41 @@ def lista_colaboradores(request):
         .count()
     )
 
+    return {
+        "colaboradores": colaboradores_final,
+        "total_colaboradores": total_colaboradores_filtrados,
+        "total_convidados": total_convidados_filtrados,
+        "total_capital": total_capital_filtrados,
+        "total_interior": total_interior_filtrados,
+        "termo_busca": termo_busca,
+        "ordenar_por": ordenar_por_param,
+        "direcao": direcao,
+        "regiao": regiao,
+        "tipo": tipo,
+    }
+
+
+@login_required
+def lista_colaboradores(request):
+    data = _filtrar_colaboradores(request)
+
+    per_page = request.GET.get("per_page", "20")
+    valid_per_page_options = [20, 50, 100, 200]
+    try:
+        per_page = int(per_page)
+        if per_page not in valid_per_page_options:
+            per_page = 20
+    except (ValueError, TypeError):
+        per_page = 20
+
+    ordenar_por_param = data["ordenar_por"]
+    direcao = data["direcao"]
+    regiao = data["regiao"]
+    tipo = data["tipo"]
+    termo_busca = data["termo_busca"]
+
     # Paginação
-    paginator = Paginator(colaboradores_final, per_page)
+    paginator = Paginator(data["colaboradores"], per_page)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
@@ -134,8 +146,8 @@ def lista_colaboradores(request):
     tipos_colaborador = tipos_do_usuario(request.user).order_by("nome")
 
     context = {
-        "page_obj": page_obj,  # Usar page_obj (padrão Django)
-        "paginator": paginator,  # Adicionar paginator também
+        "page_obj": page_obj,
+        "paginator": paginator,
         "termo_busca": termo_busca,
         "ordenar_por": ordenar_por_param,
         "direcao": direcao,
@@ -144,17 +156,24 @@ def lista_colaboradores(request):
         "regiao": regiao,
         "tipo": tipo,
         "tipos_colaborador": tipos_colaborador,
-        "total_colaboradores_filtrados": total_colaboradores_filtrados,
-        "total_convidados_filtrados": total_convidados_filtrados,
+        "total_colaboradores_filtrados": data["total_colaboradores"],
+        "total_convidados_filtrados": data["total_convidados"],
         "total_colaboradores_pagina": total_colaboradores_pagina,
         "total_convidados_pagina": total_convidados_pagina,
         "total_capital_pagina": total_capital_pagina,
         "total_interior_pagina": total_interior_pagina,
-        "total_capital_filtrados": total_capital_filtrados,
-        "total_interior_filtrados": total_interior_filtrados,
+        "total_capital_filtrados": data["total_capital"],
+        "total_interior_filtrados": data["total_interior"],
     }
 
     return render(request, "colaboradores/lista_colaboradores.html", context)
+
+
+@login_required
+def relatorio_colaboradores_print(request):
+    data = _filtrar_colaboradores(request)
+    data["destaque"] = request.GET.get("destaque", "meta")
+    return render(request, "colaboradores/relatorio_colaboradores_print.html", data)
 
 
 @login_required

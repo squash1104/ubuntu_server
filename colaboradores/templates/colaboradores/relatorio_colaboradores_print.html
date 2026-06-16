@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório de Apoiadores</title>
+    {% load colaboradores_filters %}
+    <style>
+        @page { margin: 0.15in 0.5in 0.4in; size: A4; }
+        * { box-sizing: border-box; }
+        body { font-family: sans-serif; font-size: 10pt; color: #000; margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .print-header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 6pt; margin-bottom: 10pt; }
+        .print-header h1 { font-size: 14pt; margin: 0 0 4pt 0; }
+        .print-header .info { font-size: 9pt; line-height: 1.6; }
+        .print-header .info span { margin: 0 6pt; }
+        table { width: 100%; border-collapse: collapse; font-size: 9pt; }
+        thead th {
+            background: #e9ecef; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.3px; padding: 4pt 5pt; border-bottom: 2px solid #000;
+            border-top: 1px solid #000;
+            text-align: left; font-size: 8pt;
+        }
+        tbody td { padding: 2.5pt 5pt; border-bottom: 1px solid #000; vertical-align: top; white-space: normal; word-wrap: break-word; overflow-wrap: break-word; }
+        tbody tr:nth-child(even) { background: #f8f8f8; }
+        tbody tr { page-break-inside: avoid; orphans: 3; widows: 3; }
+        thead { display: table-header-group; }
+        .print-footer { text-align: center; font-size: 7pt; color: #666; margin-top: 10pt; border-top: 1px solid #ccc; padding-top: 3pt; }
+        .text-center { text-align: center; }
+        .badge { display: inline-block; padding: 0 4pt; border-radius: 3px; font-size: 8pt; }
+        /* Cores de destaque META */
+        .meta-danger { background-color: #f8d7da !important; }
+        .meta-success { background-color: #d1e7dd !important; }
+        .meta-primary { background-color: #cfe2ff !important; }
+        /* Cores de destaque MUNICÍPIO */
+        .capital-row { background-color: #367962 !important; color: #fff !important; }
+        .interior-row { background-color: #D4A373 !important; color: #fff !important; }
+    </style>
+</head>
+<body>
+    <div class="print-header">
+        <h1>Relatório de Apoiadores</h1>
+        <div class="info">
+            <span><strong>Total:</strong> {{ total_colaboradores }} apoiadores</span>
+            <span><strong>Capital:</strong> {{ total_capital }}</span>
+            <span><strong>Interior:</strong> {{ total_interior }}</span>
+            <span><strong>Convidados:</strong> {{ total_convidados }}</span>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width:5%;text-align:center;">Seq.</th>
+                <th style="width:30%;">Nome</th>
+                <th style="width:14%;">Telefone</th>
+                <th style="width:14%;">Cidade</th>
+                <th style="width:14%;">Bairro</th>
+                <th style="width:18%;">Grupo de trabalho</th>
+                <th style="width:5%;text-align:center;">Conv.</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in colaboradores %}
+            <tr class="{% if destaque == 'municipio' %}{% if c.cidade.nome_cidade == 'Cuiabá' %}capital-row{% elif c.cidade %}interior-row{% endif %}{% else %}{% if c.num_convidados < 30 %}meta-danger{% elif c.num_convidados == 30 %}meta-success{% else %}meta-primary{% endif %}{% endif %}">
+                <td class="text-center">{{ forloop.counter }}.</td>
+                <td>{{ c.nome }}</td>
+                <td>{{ c.telefone|format_telefone|default:"-" }}</td>
+                <td>{{ c.cidade.nome_cidade|default:"-" }}</td>
+                <td>{{ c.bairro.nome_bairro|default:"-" }}</td>
+                <td>{{ c.tipo.nome }}</td>
+                <td class="text-center">{{ c.num_convidados|default:"0" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" style="text-align:center;padding:10pt;color:#666;">
+                    Nenhum apoiador encontrado com os filtros aplicados.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="print-footer">Impresso em: {% now "d/m/Y H:i" %}</div>
+
+</body>
+</html>
