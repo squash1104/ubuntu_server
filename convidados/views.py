@@ -381,7 +381,7 @@ def relatorio_convidados_view(request):
 
     # Definir colunas padrão: todas exceto data_cadastro
     if not selected_columns:
-        selected_columns = ["nome", "telefone", "cidade", "bairro", "convidado_por"]
+        selected_columns = ["nome", "telefone", "cidade", "bairro", "endereco", "convidado_por"]
 
     # Verificar se é uma requisição de exportação (não paginar)
     is_export = (

@@ -32,6 +32,7 @@ class ConvidadoForm(forms.ModelForm):
             "data_nascimento",
             "cidade",
             "bairro",
+            "endereco",
             "colaborador",
         ]
         labels: typing.ClassVar = {
@@ -39,7 +40,8 @@ class ConvidadoForm(forms.ModelForm):
             "telefone": "Telefone:",
             "cidade": "Cidade:",
             "bairro": "Bairro:",
-            "colaborador": "Colaborador:",
+            "endereco": "Endereço:",
+            "colaborador": "Apoiador:",
         }
         widgets: typing.ClassVar = {
             "colaborador": forms.Select(attrs={"class": "form-control select2"}),
@@ -65,6 +67,8 @@ class ConvidadoForm(forms.ModelForm):
         # Placeholders dos selects e classes select2
         self.fields["cidade"].empty_label = "Selecione uma cidade"
         self.fields["bairro"].empty_label = "Primeiro escolha uma cidade"
+
+        self.fields["endereco"].widget.attrs.update({"class": "form-control"})
 
         self.fields["cidade"].widget.attrs.update({"class": "select2"})
         self.fields["bairro"].widget.attrs.update({"class": "select2"})

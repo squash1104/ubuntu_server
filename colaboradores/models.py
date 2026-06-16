@@ -76,6 +76,7 @@ class Colaborador(models.Model):
     # ForeignKeys para Cidade e Bairro. O Django criará 'cidade_id' e 'bairro_id' no DB.
     cidade = models.ForeignKey(Cidade, on_delete=models.SET_NULL, null=True, blank=True)
     bairro = models.ForeignKey(Bairro, on_delete=models.SET_NULL, null=True, blank=True)
+    endereco = models.CharField(max_length=255, blank=True, null=True, verbose_name="Endereço")
 
     tipo = models.ForeignKey(
         TipoColaborador,

@@ -1,3 +1,4 @@
+import json
 import re
 
 from django.contrib import messages
@@ -182,7 +183,17 @@ def adicionar_colaborador(request):
             return redirect("colaboradores:lista_colaboradores")
     else:
         form = ColaboradorForm(user=request.user)
-    return render(request, "colaboradores/adicionar_colaborador.html", {"form": form})
+
+    tipos_descricoes = {
+        t.id: t.descricao
+        for t in TipoColaborador.objects.filter(ativo=True)
+        if t.descricao
+    }
+    return render(
+        request,
+        "colaboradores/adicionar_colaborador.html",
+        {"form": form, "tipos_descricoes_json": json.dumps(tipos_descricoes)},
+    )
 
 
 @login_required
@@ -226,6 +237,9 @@ def editar_colaborador(request, pk):
             )
 
             messages.success(request, "Colaborador editado com sucesso!")
+            next_url = request.POST.get("next") or request.GET.get("next")
+            if next_url:
+                return redirect(next_url)
             return redirect("colaboradores:lista_colaboradores")
     else:
         form = ColaboradorForm(instance=colaborador, user=request.user)
@@ -234,6 +248,14 @@ def editar_colaborador(request, pk):
         "form": form,
         "colaborador": colaborador,
     }
+
+    tipos_descricoes = {
+        t.id: t.descricao
+        for t in TipoColaborador.objects.filter(ativo=True)
+        if t.descricao
+    }
+    context["tipos_descricoes_json"] = json.dumps(tipos_descricoes)
+
     return render(request, "colaboradores/editar_colaborador.html", context)
 
 
@@ -303,6 +325,7 @@ def relatorio_colaboradores_view(request):
             "telefone",
             "cidade",
             "bairro",
+            "endereco",
             "total_convidados",
             "status_meta",
             "tipo",

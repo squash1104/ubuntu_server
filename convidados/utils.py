@@ -26,6 +26,7 @@ def exportar_convidados_excel(convidado_queryset, selected_columns):
             ("telefone", "Telefone"),
             ("cidade", "Cidade"),
             ("bairro", "Bairro"),
+            ("endereco", "Endereço"),
             ("convidado_por", "Convidado por"),
             ("data_cadastro", "Data Cadastro"),
         ]

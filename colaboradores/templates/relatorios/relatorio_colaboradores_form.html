@@ -254,6 +254,14 @@
                     </div>
                     <div class="col-lg-3 col-md-4 col-sm-6">
                         <div class="form-check">
+                            <input type="checkbox" class="form-check-input" name="columns" value="endereco" id="col_endereco" {% if 'endereco' in selected_columns %}checked{% endif %}>
+                            <label class="form-check-label" for="col_endereco">
+                                <i class="bi bi-geo-alt-fill me-1"></i>Endereço
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-4 col-sm-6">
+                        <div class="form-check">
                             <input type="checkbox" class="form-check-input" name="columns" value="total_convidados" id="col_total_convidados" {% if 'total_convidados' in selected_columns %}checked{% endif %}>
                             <label class="form-check-label" for="col_total_convidados">
                                 <i class="bi bi-people-fill me-1"></i>Total Convidados
@@ -371,6 +379,7 @@
                                     {% if column == 'telefone' %}<i class="bi bi-telephone-fill me-1"></i>Telefone{% endif %}
                                     {% if column == 'cidade' %}<i class="bi bi-geo-alt-fill me-1"></i>Cidade{% endif %}
                                     {% if column == 'bairro' %}<i class="bi bi-pin-map-fill me-1"></i>Bairro{% endif %}
+                                    {% if column == 'endereco' %}<i class="bi bi-geo-alt-fill me-1"></i>Endereço{% endif %}
                                     {% if column == 'total_convidados' %}<i class="bi bi-people-fill me-1"></i>Convidados{% endif %}
                                     {% if column == 'data_cadastro' %}<i class="bi bi-calendar-date me-1"></i>Data Cadastro{% endif %}
                                     {% if column == 'tipo' %}<i class="bi bi-person-badge me-1"></i>Grupo{% endif %}
@@ -402,6 +411,9 @@
                                         {% endif %}
                                         {% if column == 'bairro' %}
                                             {{ colaborador.bairro|default:"<span class='text-muted fst-italic'>Não informado</span>" }}
+                                        {% endif %}
+                                        {% if column == 'endereco' %}
+                                            {{ colaborador.endereco|default:"<span class='text-muted fst-italic'>Não informado</span>" }}
                                         {% endif %}
                                         {% if column == 'total_convidados' %}
                                             <span class="badge bg-info">

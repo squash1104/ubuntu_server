@@ -69,6 +69,7 @@ def exportar_colaboradores_excel(colaborador_queryset, selected_columns):
             ("telefone", "Telefone"),
             ("cidade", "Cidade"),
             ("bairro", "Bairro"),
+            ("endereco", "Endereço"),
             ("total_convidados", "Convidados"),
             ("status_meta", "Status Meta"),
             ("data_cadastro", "Data Cadastro"),
@@ -90,6 +91,8 @@ def exportar_colaboradores_excel(colaborador_queryset, selected_columns):
                 row_data.append(str(colaborador.cidade) if colaborador.cidade else "")
             elif col == "bairro":
                 row_data.append(str(colaborador.bairro) if colaborador.bairro else "")
+            elif col == "endereco":
+                row_data.append(colaborador.endereco or "")
             elif col == "total_convidados":
                 row_data.append(colaborador.total_convidados)
             elif col == "status_meta":

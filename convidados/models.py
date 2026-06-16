@@ -20,6 +20,7 @@ class Convidado(models.Model):
     # O Django criará 'cidade_id', 'bairro_id', 'colaborador_id' no DB.
     cidade = models.ForeignKey(Cidade, on_delete=models.SET_NULL, null=True, blank=True)
     bairro = models.ForeignKey(Bairro, on_delete=models.SET_NULL, null=True, blank=True)
+    endereco = models.CharField(max_length=255, blank=True, null=True, verbose_name="Endereço")
     colaborador = models.ForeignKey(
         Colaborador,
         on_delete=models.CASCADE,

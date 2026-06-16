@@ -216,6 +216,7 @@
                                     {% if column == 'telefone' %}📞 Telefone{% endif %}
                                     {% if column == 'cidade' %}🏙️ Cidade{% endif %}
                                     {% if column == 'bairro' %}📍 Bairro{% endif %}
+                                    {% if column == 'endereco' %}📍 Endereço{% endif %}
                                     {% if column == 'convidado_por' %}🤝 Convidado por{% endif %}
                                     {% if column == 'data_cadastro' %}📅 Data Cadastro{% endif %}
                                 </th>
@@ -232,6 +233,7 @@
                                         {% if column == 'telefone' %}{{ convidado.telefone|default:"-" }}{% endif %}
                                         {% if column == 'cidade' %}{{ convidado.cidade|default:"-" }}{% endif %}
                                         {% if column == 'bairro' %}{{ convidado.bairro|default:"-" }}{% endif %}
+                                        {% if column == 'endereco' %}{{ convidado.endereco|default:"-" }}{% endif %}
                                         {% if column == 'convidado_por' %}
                                             {% if convidado.colaborador %}
                                                 {{ convidado.colaborador.nome }}

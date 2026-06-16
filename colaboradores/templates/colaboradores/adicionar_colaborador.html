@@ -52,6 +52,7 @@
                              {% elif field.id_for_label == 'id_tipo' %}
                                  {{ field.label_tag }}
                                  {{ field }}
+                                 <div id="descricao-grupo" class="form-text text-muted small fst-italic mt-1"></div>
                              {% elif field.id_for_label == 'id_tipo_outro' %}
                                  <div id="tipo-outro-container">
                                      {{ field.label_tag }}
@@ -192,6 +193,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Listener para mudança no select de tipo
     tipoSelect.on('change', verificarTipoOutro);
+
+    // Descrição do grupo de trabalho
+    var tiposDescricoes = {{ tipos_descricoes_json|safe }};
+    function atualizarDescricaoGrupo() {
+        var tipoId = $('#id_tipo').val();
+        if (tipoId && tiposDescricoes[tipoId]) {
+            $('#descricao-grupo').text(tiposDescricoes[tipoId]).show();
+        } else {
+            $('#descricao-grupo').hide();
+        }
+    }
+    tipoSelect.on('change', atualizarDescricaoGrupo);
+    atualizarDescricaoGrupo();
 
 
     // =========================================================================

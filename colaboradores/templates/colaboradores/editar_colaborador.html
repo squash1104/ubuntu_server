@@ -50,6 +50,7 @@
                             {% elif field.id_for_label == 'id_tipo' %}
                                 {{ field.label_tag }}
                                 {{ field }}
+                                <div id="descricao-grupo" class="form-text text-muted small fst-italic mt-1"></div>
                             {% elif field.id_for_label == 'id_tipo_outro' %}
                                 <div id="tipo-outro-container">
                                     {{ field.label_tag }}
@@ -99,8 +100,12 @@
                     {% endfor %}
 
                     <div class="mt-4 border-top pt-3">
+                        {% if request.GET.next %}
+                            <input type="hidden" name="next" value="{{ request.GET.next }}">
+                        {% endif %}
+                        {% url 'colaboradores:lista_colaboradores' as lista_url %}
                         <button type="submit" class="btn btn-success" id="btn-salvar">Salvar Alterações</button>
-                        <a href="{% url 'colaboradores:lista_colaboradores' %}" class="btn btn-secondary">Cancelar</a>
+                        <a href="{{ request.GET.next|default:lista_url }}" class="btn btn-secondary">Cancelar</a>
                     </div>
                 </form>
             </div>
@@ -169,6 +174,19 @@
 
         // Listener para mudança no select de tipo
         tipoSelect.on('change', verificarTipoOutro);
+
+        // Descrição do grupo de trabalho
+        var tiposDescricoes = {{ tipos_descricoes_json|safe }};
+        function atualizarDescricaoGrupo() {
+            var tipoId = $('#id_tipo').val();
+            if (tipoId && tiposDescricoes[tipoId]) {
+                $('#descricao-grupo').text(tiposDescricoes[tipoId]).show();
+            } else {
+                $('#descricao-grupo').hide();
+            }
+        }
+        tipoSelect.on('change', atualizarDescricaoGrupo);
+        atualizarDescricaoGrupo();
 
         // =========================================================================
         // LÓGICA DE CRIAR NOVO BAIRRO

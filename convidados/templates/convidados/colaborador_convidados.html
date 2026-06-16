@@ -315,14 +315,20 @@
             <div class="col-lg-8">
                 <div class="card info-card h-100">
                     <div class="card-body">
-                        <h5 class="mb-3">Informações do Apoiador</h5>
+                        <h5 class="mb-3">
+                            Informações do Apoiador
+                            <a href="{% url 'colaboradores:editar_colaborador' colaborador.id %}?next={{ request.get_full_path|urlencode }}" class="btn btn-sm btn-outline-primary float-end">
+                                <i class="bi bi-pencil"></i> Editar
+                            </a>
+                        </h5>
                         <p class="mb-1"><strong>Nome:</strong>
                             {{ colaborador.nome }}
                             <span class="badge bg-{{ colaborador.tipo.cor }}">{{ colaborador.tipo.nome }}</span>
                         </p>
                         <p class="mb-1"><strong>Telefone:</strong> {{ colaborador.telefone|format_telefone|default:"-" }}</p>
                         <p class="mb-1"><strong>Cidade:</strong> {{ colaborador.cidade.nome_cidade|default:"-" }}</p>
-                        <p class="mb-0"><strong>Bairro:</strong> {{ colaborador.bairro.nome_bairro|default:"-" }}</p>
+                        <p class="mb-1"><strong>Bairro:</strong> {{ colaborador.bairro.nome_bairro|default:"-" }}</p>
+                        <p class="mb-0"><strong>Endereço:</strong> {{ colaborador.endereco|default:"-" }}</p>
 
                         <hr class="my-2"> <p class="mb-1">
                             <strong>Data de Cadastro:</strong> {{ colaborador.data_cadastro|date:"d/m/Y H:i" }}

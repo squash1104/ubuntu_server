@@ -105,9 +105,9 @@ class ColaboradorForm(forms.ModelForm):
 
     tipo = forms.ModelChoiceField(
         queryset=TipoColaborador.objects.filter(ativo=True),
-        label="Grupo:",
+        label="Grupo de trabalho:",
         widget=forms.Select(attrs={"class": "form-control"}),
-        empty_label="Selecione um grupo",
+        empty_label="Selecione um grupo de trabalho:",
     )
 
     class Meta:
@@ -118,6 +118,7 @@ class ColaboradorForm(forms.ModelForm):
             "data_nascimento",
             "cidade",
             "bairro",
+            "endereco",
             "tipo",
             "novo_bairro",
         ]
@@ -126,6 +127,7 @@ class ColaboradorForm(forms.ModelForm):
             "telefone": "Telefone:",
             "cidade": "Cidade:",
             "bairro": "Bairro:",
+            "endereco": "Endereço:",
         }
 
     has_phone_warning = False
@@ -202,6 +204,8 @@ class ColaboradorForm(forms.ModelForm):
 
         self.fields["cidade"].empty_label = "Selecione uma cidade"
         self.fields["bairro"].empty_label = "Primeiro escolha uma cidade"
+
+        self.fields["endereco"].widget.attrs.update({"class": "form-control"})
 
         self.fields["cidade"].widget.attrs.update({"class": "select2"})
         self.fields["bairro"].widget.attrs.update({"class": "select2"})

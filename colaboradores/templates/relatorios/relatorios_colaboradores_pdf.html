@@ -177,6 +177,7 @@
                                 {% if column == 'telefone' %}Telefone{% endif %}
                                 {% if column == 'cidade' %}Cidade{% endif %}
                                 {% if column == 'bairro' %}Bairro{% endif %}
+                                {% if column == 'endereco' %}Endereço{% endif %}
                                 {% if column == 'total_convidados' %}Convidados{% endif %}
                                 {% if column == 'data_cadastro' %}Data Cadastro{% endif %}
                                 {% if column == 'tipo' %}Tipo{% endif %}
@@ -195,6 +196,7 @@
                                     {% if column == 'telefone' %}{{ colaborador.telefone|default:"-" }}{% endif %}
                                     {% if column == 'cidade' %}{{ colaborador.cidade|default:"-" }}{% endif %}
                                     {% if column == 'bairro' %}{{ colaborador.bairro|default:"-" }}{% endif %}
+                                    {% if column == 'endereco' %}{{ colaborador.endereco|default:"-" }}{% endif %}
                                     {% if column == 'total_convidados' %}{{ colaborador.total_convidados }}{% endif %}
                                     {% if column == 'data_cadastro' %}{{ colaborador.data_cadastro|date:"d/m/Y H:i" }}{% endif %}
                                     {% if column == 'tipo' %}
