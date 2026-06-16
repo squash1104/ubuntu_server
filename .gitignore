@@ -4,6 +4,7 @@
 # Arquivos de segurança
 # Arquivos Estáticos e Mídia
 # Arquivos sensíveis
+backup_*.json
 backups/
 # Banco de Dados
 build/
