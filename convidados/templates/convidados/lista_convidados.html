@@ -219,15 +219,29 @@
             --bs-table-hover-color: #ffffff;
         }
     </style>
+
+    <style>
+        @media (max-width: 767.98px) {
+            .controle-mobile-stack {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                width: 100%;
+            }
+            .controle-mobile-stack label {
+                margin-right: 0 !important;
+                margin-bottom: 0.25rem !important;
+            }
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
 <div class="card shadow-sm">
     <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex align-items-center mb-4">
             <h1 class="card-title h3 mb-0">Convidados</h1>
-            <a href="{% url 'convidados:cadastrar_convidado' %}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Novo Convidado
+            <a href="{% url 'convidados:cadastrar_convidado' %}" class="btn btn-primary ms-auto">
+                <i class="fas fa-plus"></i> Adicionar
             </a>
         </div>
 
@@ -241,7 +255,7 @@
 
         <!-- Controles de Registros por Página -->
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <div class="d-flex align-items-center">
+            <div class="d-flex align-items-center controle-mobile-stack">
                 <label for="per_page_select" class="form-label mb-0 me-2">Registros por página:</label>
                 <select id="per_page_select" name="per_page" class="form-select form-select-sm" style="width: auto;" onchange="changePerPage()">
                     {% for option in per_page_options %}
