@@ -85,6 +85,19 @@
         }
     }
 
+    @media (min-width: 769px) {
+        #tabela-colaboradores th:nth-child(6),
+        #tabela-colaboradores td:nth-child(6) {
+            padding-left: 2rem !important;
+            padding-right: 2rem !important;
+        }
+        #tabela-colaboradores th:nth-child(7),
+        #tabela-colaboradores td:nth-child(7) {
+            padding-left: 3.5rem !important;
+            padding-right: 3.5rem !important;
+        }
+    }
+
     @media (max-width: 767.98px) {
         .controles-mobile {
             display: grid !important;
@@ -354,6 +367,9 @@
     .btn-destaque-meta:checked ~ .btn-outline-secondary {
         background-color: #0d6efd !important;
     }
+    .btn-group[role="group"] .btn-outline-secondary {
+        border: 1px solid #000 !important;
+    }
 
     /* ── Separador entre linhas ── */
     #tabela-colaboradores tbody tr {
@@ -371,6 +387,22 @@
             margin-right: 0 !important;
             margin-bottom: 0.25rem !important;
         }
+    }
+
+    /* ── Legenda dinâmica ── */
+    .legend-square {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border-radius: 3px;
+        border: 1px solid #dee2e6;
+        flex-shrink: 0;
+    }
+    body:has(#destaque-municipio:checked) .legenda-meta { display: none !important; }
+    body:has(#destaque-meta:checked) .legenda-municipio { display: none !important; }
+
+    @media (max-width: 767.98px) {
+        .legenda-cores { grid-column: 1 / -1; }
     }
     </style>
 {% endblock %}
@@ -430,6 +462,29 @@
                                     <label class="btn btn-outline-secondary" for="destaque-municipio">Município</label>
                                 </div>
                             </div>
+                            <div class="d-flex align-items-center flex-wrap legenda-cores" style="gap: 0.75rem;">
+                                <small class="fw-medium me-1">Legenda:</small>
+                                <span class="d-flex align-items-center gap-1 legenda-meta">
+                                    <span class="legend-square" style="background:#f8d7da;"></span>
+                                    <small>Pendente</small>
+                                </span>
+                                <span class="d-flex align-items-center gap-1 legenda-meta">
+                                    <span class="legend-square" style="background:#d1e7dd;"></span>
+                                    <small>Atingida</small>
+                                </span>
+                                <span class="d-flex align-items-center gap-1 legenda-meta">
+                                    <span class="legend-square" style="background:#cfe2ff;"></span>
+                                    <small>Superada</small>
+                                </span>
+                                <span class="d-flex align-items-center gap-1 legenda-municipio">
+                                    <span class="legend-square" style="background:#367962;"></span>
+                                    <small>Capital</small>
+                                </span>
+                                <span class="d-flex align-items-center gap-1 legenda-municipio">
+                                    <span class="legend-square" style="background:#D4A373;"></span>
+                                    <small>Interior</small>
+                                </span>
+                            </div>
                         </div>
                     </div>
 
@@ -443,6 +498,16 @@
                     <!-- Tabela de Colaboradores -->
                     <div class="table-scroll-container">
                         <table class="table table-hover" id="tabela-colaboradores" data-destaque="meta">
+                            <colgroup>
+                                <col style="width: 40px">
+                                <col>
+                                <col>
+                                <col>
+                                <col>
+                                <col>
+                                <col style="min-width: 120px">
+                                <col style="min-width: 130px">
+                            </colgroup>
                             <thead class="table-light">
                                 <tr>
                                     <th>Seq.</th>
@@ -450,8 +515,8 @@
                                     <th><a href="?ordenar_por=telefone&direcao={% if ordenar_por == 'telefone' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if per_page != 20 %}&per_page={{ per_page }}{% endif %}{% if termo_busca %}&q={{ termo_busca }}{% endif %}{% if regiao and regiao != 'todos' %}&regiao={{ regiao }}{% endif %}{% if tipo and tipo != 'todos' %}&tipo={{ tipo }}{% endif %}">Telefone {% if ordenar_por == 'telefone' %}<i class="bi {% if direcao == 'asc' %}bi-caret-up-fill{% else %}bi-caret-down-fill{% endif %}"></i>{% endif %}</a></th>
                                     <th><a href="?ordenar_por=cidade__nome_cidade&direcao={% if ordenar_por == 'cidade__nome_cidade' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if per_page != 20 %}&per_page={{ per_page }}{% endif %}{% if termo_busca %}&q={{ termo_busca }}{% endif %}{% if regiao and regiao != 'todos' %}&regiao={{ regiao }}{% endif %}{% if tipo and tipo != 'todos' %}&tipo={{ tipo }}{% endif %}">Cidade {% if ordenar_por == 'cidade__nome_cidade' %}<i class="bi {% if direcao == 'asc' %}bi-caret-up-fill{% else %}bi-caret-down-fill{% endif %}"></i>{% endif %}</a></th>
                                     <th><a href="?ordenar_por=bairro__nome_bairro&direcao={% if ordenar_por == 'bairro__nome_bairro' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if per_page != 20 %}&per_page={{ per_page }}{% endif %}{% if termo_busca %}&q={{ termo_busca }}{% endif %}{% if regiao and regiao != 'todos' %}&regiao={{ regiao }}{% endif %}{% if tipo and tipo != 'todos' %}&tipo={{ tipo }}{% endif %}">Bairro {% if ordenar_por == 'bairro__nome_bairro' %}<i class="bi {% if direcao == 'asc' %}bi-caret-up-fill{% else %}bi-caret-down-fill{% endif %}"></i>{% endif %}</a></th>
-                                    <th><a href="?ordenar_por=tipo&direcao={% if ordenar_por == 'tipo' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if per_page != 20 %}&per_page={{ per_page }}{% endif %}{% if termo_busca %}&q={{ termo_busca }}{% endif %}{% if regiao and regiao != 'todos' %}&regiao={{ regiao }}{% endif %}{% if tipo and tipo != 'todos' %}&tipo={{ tipo }}{% endif %}">Grupo de trabalho {% if ordenar_por == 'tipo' %}<i class="bi {% if direcao == 'asc' %}bi-caret-up-fill{% else %}bi-caret-down-fill{% endif %}"></i>{% endif %}</a></th>
-                                    <th><a href="?ordenar_por=num_convidados&direcao={% if ordenar_por == 'num_convidados' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if per_page != 20 %}&per_page={{ per_page }}{% endif %}{% if termo_busca %}&q={{ termo_busca }}{% endif %}{% if regiao and regiao != 'todos' %}&regiao={{ regiao }}{% endif %}{% if tipo and tipo != 'todos' %}&tipo={{ tipo }}{% endif %}">Convidados {% if ordenar_por == 'num_convidados' %}<i class="bi {% if direcao == 'asc' %}bi-caret-up-fill{% else %}bi-caret-down-fill{% endif %}"></i>{% endif %}</a></th>
+                                    <th class="text-center"><a href="?ordenar_por=tipo&direcao={% if ordenar_por == 'tipo' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if per_page != 20 %}&per_page={{ per_page }}{% endif %}{% if termo_busca %}&q={{ termo_busca }}{% endif %}{% if regiao and regiao != 'todos' %}&regiao={{ regiao }}{% endif %}{% if tipo and tipo != 'todos' %}&tipo={{ tipo }}{% endif %}">Grupo de trabalho {% if ordenar_por == 'tipo' %}<i class="bi {% if direcao == 'asc' %}bi-caret-up-fill{% else %}bi-caret-down-fill{% endif %}"></i>{% endif %}</a></th>
+                                    <th class="text-center px-4"><a href="?ordenar_por=num_convidados&direcao={% if ordenar_por == 'num_convidados' and direcao == 'asc' %}desc{% else %}asc{% endif %}{% if per_page != 20 %}&per_page={{ per_page }}{% endif %}{% if termo_busca %}&q={{ termo_busca }}{% endif %}{% if regiao and regiao != 'todos' %}&regiao={{ regiao }}{% endif %}{% if tipo and tipo != 'todos' %}&tipo={{ tipo }}{% endif %}">Convidados {% if ordenar_por == 'num_convidados' %}<i class="bi {% if direcao == 'asc' %}bi-caret-up-fill{% else %}bi-caret-down-fill{% endif %}"></i>{% endif %}</a></th>
                                     <th class="text-center">Ações</th>
                                 </tr>
                             </thead>
@@ -459,15 +524,15 @@
                                 {% for colaborador in page_obj %}
                                     {% with num_convidados=colaborador.num_convidados %}
                                         <tr class="{% if num_convidados < 30 %}meta-danger{% elif num_convidados == 30 %}meta-success{% else %}meta-primary{% endif %} {% if colaborador.cidade.nome_cidade == 'Cuiabá' %}capital-row{% elif colaborador.cidade %}interior-row{% endif %}">
-                                            <td>{{ page_obj.start_index|add:forloop.counter0 }}</td>
+                                            <td>{{ page_obj.start_index|add:forloop.counter0 }}.</td>
                                             <td><strong>{{ colaborador.nome }}</strong></td>
                                             <td>{{ colaborador.telefone|format_telefone|default:"-" }}</td>
                                             <td>{{ colaborador.cidade.nome_cidade|default:"-" }}</td>
                                             <td>{{ colaborador.bairro.nome_bairro|default:"-" }}</td>
-                                            <td>
+                                            <td class="text-center">
 <span class="badge bg-{{ colaborador.tipo.cor }}">{{ colaborador.tipo.nome }}</span>
 </td>
-                                            <td class="text-center fw-bold">{{ num_convidados }}</td>
+                                            <td class="text-center fw-bold px-4">{{ num_convidados }}</td>
                                             <td class="text-center">
                                                 <div class="d-flex justify-content-center gap-2">
                                                     <a href="{% url 'convidados:colaborador_convidados' colaborador.id %}" class="btn btn-sm btn-info" data-bs-toggle="tooltip" title="Ver Convidados">

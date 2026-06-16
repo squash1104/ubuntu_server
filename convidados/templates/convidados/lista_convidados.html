@@ -274,7 +274,7 @@
 
         <!-- Tabela de Convidados -->
         <div class="table-scroll-container">
-            <table class="table table-hover table-striped">
+            <table class="table table-hover">
                 <thead class="table-light">
                     <tr>
                         <th>Seq.</th>
@@ -290,7 +290,7 @@
                 <tbody>
                     {% for convidado in page_obj %}
                         <tr class="{% if convidado.cidade.nome_cidade == 'Cuiabá' %}capital-row{% elif convidado.cidade %}interior-row{% endif %}">
-                            <td>{{ page_obj.start_index|add:forloop.counter0 }}</td>
+                            <td>{{ page_obj.start_index|add:forloop.counter0 }}.</td>
                             <td><strong>{{ convidado.nome }}</strong></td>
                             <td>{{ convidado.telefone|format_telefone|default:"-" }}</td>
                             <td>{{ convidado.cidade.nome_cidade|default:"-" }}</td>
