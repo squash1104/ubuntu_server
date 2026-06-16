@@ -176,6 +176,7 @@ text-align: left;
     overflow-y: auto;
     z-index: 1030;
     padding: 0;
+    transition: width 0.3s ease, padding 0.3s ease, overflow 0.3s ease;
 }
 
 .sisvot-sidebar .nav-link {
@@ -219,6 +220,18 @@ text-align: left;
         margin-left: 0 !important;
         width: 100% !important;
     }
+}
+
+/* Sidebar recolhido (toggle desktop) */
+.sisvot-sidebar.collapsed {
+    width: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.sisvot-sidebar.collapsed ~ .sisvot-content {
+    margin-left: 0;
+    width: 100%;
 }
 
 /* BOTÕES DE AÇÃO NAS TABELAS - TODAS AS RESOLUÇÕES */
@@ -992,6 +1005,13 @@ text-align: left;
                 <span class="navbar-toggler-icon"></span>
             </button>
 
+            {% block sidebar_toggle_button %}
+            <!-- Botão toggle sidebar fixo (desktop) -->
+            <button class="btn btn-sm btn-outline-light me-2 d-none d-lg-flex align-items-center" type="button" id="sidebarToggle" title="Alternar menu lateral">
+                <i class="bi bi-layout-sidebar"></i>
+            </button>
+            {% endblock %}
+
             <!-- Brand/Título -->
             <a class="navbar-brand mx-2 flex-grow-1 text-truncate" href="{% url 'home' %}"><span class="d-none d-sm-inline">Fidelização de Apoiadores</span><span class="d-inline d-sm-none">SisAps</span></a>
 
@@ -1252,6 +1272,31 @@ text-align: left;
     return new bootstrap.Tooltip(tooltipTriggerEl);
 
     });
+
+    // Sidebar toggle (desktop)
+    const sidebarToggleBtn = document.getElementById('sidebarToggle');
+    if (sidebarToggleBtn) {
+        sidebarToggleBtn.addEventListener('click', function () {
+            const sidebar = document.querySelector('.sisvot-sidebar');
+            if (!sidebar) return;
+            sidebar.classList.toggle('collapsed');
+            const icon = sidebarToggleBtn.querySelector('i');
+            icon.classList.toggle('bi-layout-sidebar');
+            icon.classList.toggle('bi-layout-sidebar-reverse');
+            localStorage.setItem('sidebar_collapsed', sidebar.classList.contains('collapsed'));
+        });
+
+        // Restaurar estado ao carregar
+        if (localStorage.getItem('sidebar_collapsed') === 'true') {
+            const sidebar = document.querySelector('.sisvot-sidebar');
+            if (sidebar) {
+                sidebar.classList.add('collapsed');
+                const icon = sidebarToggleBtn.querySelector('i');
+                icon.classList.remove('bi-layout-sidebar');
+                icon.classList.add('bi-layout-sidebar-reverse');
+            }
+        }
+    }
 
     });
 

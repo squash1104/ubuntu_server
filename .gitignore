@@ -1,86 +1,61 @@
+
 # -----------------------
 # Ambientes Virtuais
-# -----------------------
-.venv/
-venv/
-env/
-
-# -----------------------
-# Python
-# -----------------------
-__pycache__/
-*.py[cod]
-*.pyo
-*.pyd
-*.pdb
-
-# -----------------------
+# Arquivos de segurança
+# Arquivos Estáticos e Mídia
+# Arquivos sensíveis
+backups/
+# Banco de Dados
+build/
+.cache/
+# Cache e temporários
 # Configurações Locais
-# -----------------------
-*.env
+database_credentials.txt
+db.sqlite3
 development.env
+dist/
+.DS_Store
+*.dump
+# Editores/IDE
+*.env
+env/
 .env.development
 .env.local
-local_settings.py
-
-# -----------------------
-# Banco de Dados
-# -----------------------
-*.sqlite3
-db.sqlite3
-
-# -----------------------
-# Arquivos Estáticos e Mídia
-# -----------------------
-/media/
-/staticfiles/
-/static/admin/
-
-# -----------------------
-# Logs e temporários
-# -----------------------
-*.log
-*.pot
-*.mo
-
-# -----------------------
-# Editores/IDE
-# -----------------------
-.cache/
 .idea/
-.vscode/
-
-# -----------------------
+# IDEs
+local_settings.py
+*.log
+logs/
+# Logs e temporários
+/media/
+*.mo
+.next/
 # Node / Frontend
-# -----------------------
 node_modules/
+nohup.out
 npm-debug.log
+*.pdb
+*.pot
+*.pyc
+__pycache__/
+*.py[cod]
+*.pyd
+*.pyo
+# Python
+.Python
+secret_key.txt
+security/
+# Sistema
+# SO
+*.sqlite3
+/static/admin/
+/staticfiles/
+# Swap files
+*.swo
+*.swp
+Thumbs.db
+.venv/
+venv/
+.vscode/
 yarn-debug.log
 yarn-error.log
-.next/
-dist/
-build/
-
-# -----------------------
-# SO
-# -----------------------
-.DS_Store
-Thumbs.db
-# Arquivos de segurança
-logs/
-backups/
-security/
-*.dump
-# Arquivos sensíveis
-secret_key.txt
-database_credentials.txt
-# Cache e temporários
-*.pyc
-.Python
-# IDEs
-*.swp
-*.swo
-# Sistema
-# Swap files
-*.swp
-*.swo
