@@ -234,7 +234,7 @@
             }
             table {
                 width: 100%;
-                table-layout: fixed;
+                table-layout: auto;
                 border-collapse: collapse;
                 font-size: 11pt;
                 line-height: 1.2;
@@ -257,15 +257,9 @@
                 vertical-align: top;
                 white-space: normal !important;
                 word-wrap: break-word;
+                overflow-wrap: break-word;
             }
             table tbody td strong { font-weight: normal; }
-
-            /* Larguras de coluna */
-            table th:nth-child(1), table td:nth-child(1) { width: 6%; text-align: center; }
-            table th:nth-child(2), table td:nth-child(2) { width: 37%; }
-            table th:nth-child(3), table td:nth-child(3) { width: 17%; }
-            table th:nth-child(4), table td:nth-child(4) { width: 18%; }
-            table th:nth-child(5), table td:nth-child(5) { width: 22%; }
 
             /* Striped suave */
             table tbody tr:nth-child(even) {
@@ -296,6 +290,7 @@
         <span><strong>Tel:</strong> {{ colaborador.telefone|format_telefone|default:"-" }}</span>
         <span><strong>Cidade:</strong> {{ colaborador.cidade.nome_cidade|default:"-" }}</span>
         <span><strong>Bairro:</strong> {{ colaborador.bairro.nome_bairro|default:"-" }}</span>
+        <span><strong>Endereço:</strong> {{ colaborador.endereco|default:"-" }}</span>
     </div>
     <div class="print-subtitle">
         <span><strong>Total:</strong> {{ total_convidados }} convidados</span>

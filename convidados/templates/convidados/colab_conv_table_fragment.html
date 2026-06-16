@@ -29,17 +29,19 @@
                         {% if ordenar_por == 'bairro' %}<span class="sort-arrow">{% if direcao == 'asc' %}&#9650;{% else %}&#9660;{% endif %}</span>{% endif %}
                     </a>
                 </th>
+                    <th scope="col">Endereço</th>
                     <th scope="col" class="coluna-acoes">Ações</th>
                 </tr>
             </thead>
             <tbody>
                 {% for convidado in convidados %}
                 <tr class="{% if convidado.cidade.nome_cidade == 'Cuiabá' %}capital-row{% elif convidado.cidade %}interior-row{% endif %}">
-				    <td>{{ forloop.counter }}</td>
+				    <td>{{ forloop.counter }}.</td>
                     <td><strong>{{ convidado.nome }}</strong></td>
                     <td>{{ convidado.telefone|default:"-" }}</td>
                     <td>{{ convidado.cidade.nome_cidade|default:"-" }}</td>
                     <td>{{ convidado.bairro.nome_bairro|default:"-" }}</td>
+                    <td>{{ convidado.endereco|default:"-" }}</td>
 
                     <td class="coluna-acoes">
                         <div class="d-flex justify-content-center gap-2">

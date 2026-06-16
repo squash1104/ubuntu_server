@@ -27,6 +27,9 @@
             <div class="card-body">
                 <form method="post" id="convidado-form">
                     {% csrf_token %}
+                    {% if next %}
+                        <input type="hidden" name="next" value="{{ next }}">
+                    {% endif %}
                     <input type="hidden" name="pk" value="{{ convidado.pk }}">
 
                     {% for field in form %}
